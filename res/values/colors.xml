@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bt_devices_caption_bgcolor">#000055</color>
+    <color name="bt_device_caption_fgcolor">#FFFFFF</color>
+    <color name="nfc_writer_caption_bgcolor">#550000</color>
+    <color name="nfc_writer_caption_fgcolor">#FFFFFF</color>
+
+    
+</resources>
