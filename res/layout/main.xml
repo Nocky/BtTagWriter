@@ -5,9 +5,41 @@
     android:orientation="vertical" >
 
     <ViewFlipper
-        android:id="@+id/viewFlipper1"
+        android:id="@+id/mainFlipper"
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
+        
+        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    		android:layout_width="match_parent"
+		    android:layout_height="match_parent"
+		    android:orientation="vertical">
+		
+		    <ImageView
+		        android:id="@+id/imageView1"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_marginLeft="6pt"
+		        android:layout_marginRight="6pt"
+		        android:src="@drawable/start" />
+		
+		    <TextView
+		        android:id="@+id/textView1"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:paddingLeft="6pt"
+		        android:paddingRight="6pt"
+		        android:text="@string/start_guide_str" />
+		
+		    <Button
+		        android:id="@+id/button1"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_marginLeft="6pt"
+		        android:layout_marginRight="6pt"
+		        android:layout_marginTop="6pt"
+		        android:text="@string/start_button_str" />
+		
+		</LinearLayout>
     </ViewFlipper>
 
 </LinearLayout>

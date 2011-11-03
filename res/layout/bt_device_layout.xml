@@ -6,16 +6,15 @@
 
     <TextView
         android:id="@+id/textView1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/start_guide_str" />
-
-    <Button
-        android:id="@+id/button1"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="6pt"
-        android:layout_marginRight="6pt"
-        android:text="@string/start_button_str" />
+        android:text="@string/bt_device_name_str"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/bt_device_address_str" />
 
 </LinearLayout>
