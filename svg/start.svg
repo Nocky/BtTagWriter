@@ -323,18 +323,6 @@
          stdDeviation="1.7281123"
          id="feGaussianBlur4690" />
     </filter>
-    <filter
-       inkscape:collect="always"
-       id="filter4710"
-       x="-0.2511109"
-       width="1.5022218"
-       y="-0.07883723"
-       height="1.1576745">
-      <feGaussianBlur
-         inkscape:collect="always"
-         stdDeviation="0.58439575"
-         id="feGaussianBlur4712" />
-    </filter>
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient4614"
@@ -381,6 +369,24 @@
        x2="272.96179"
        y2="242.97423"
        gradientUnits="userSpaceOnUse" />
+    <linearGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient4446"
+       id="linearGradient4793"
+       gradientUnits="userSpaceOnUse"
+       x1="420.60159"
+       y1="459.52975"
+       x2="416.93335"
+       y2="416.56293"
+       gradientTransform="matrix(0.87110123,0,0,0.87110123,31.282508,319.5173)" />
+    <filter
+       inkscape:collect="always"
+       id="filter4823">
+      <feGaussianBlur
+         inkscape:collect="always"
+         stdDeviation="1.1749623"
+         id="feGaussianBlur4825" />
+    </filter>
   </defs>
   <sodipodi:namedview
      id="base"
@@ -389,9 +395,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.30212837"
-     inkscape:cx="1076.1262"
-     inkscape:cy="94.94003"
+     inkscape:zoom="2.4170269"
+     inkscape:cx="446.29177"
+     inkscape:cy="342.01101"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
@@ -416,6 +422,15 @@
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1">
+    <path
+       style="fill:#000000;fill-opacity:0.56164383;stroke:none;filter:url(#filter4823)"
+       d="m 597.22888,661.9093 c -19.30929,2.31178 -38.98188,5.22959 -57.28125,11.8125 -4.58293,1.05869 -6.01344,5.88394 -4.5625,10 3.418,15.19954 8.02026,30.73917 16.28125,43.9375 4.09442,5.64533 12.08955,1.60008 17.625,1.1875 20.12502,-4.82748 40.74974,-9.9465 59.09375,-19.6875 6.18241,-2.8335 2.92686,-10.28051 0.125,-14.375 -7.97574,-12.03449 -17.24765,-23.67575 -28.59375,-32.53125 -0.84441,-0.392 -1.75684,-0.43414 -2.6875,-0.34375 z"
+       id="path4805"
+       inkscape:connector-curvature="0"
+       transform="matrix(0.87110123,0,0,0.87110123,-108.91386,95.707676)"
+       inkscape:export-filename="/home/alump/Development/bttagwriter/res/drawable-hdpi/ic_launcher.png"
+       inkscape:export-xdpi="68.210526"
+       inkscape:export-ydpi="68.210526" />
     <path
        sodipodi:nodetypes="zzzzz"
        inkscape:connector-curvature="0"
@@ -1053,5 +1068,97 @@
        inkscape:export-filename="/home/alump/Development/bttagwriter/res/drawable-hdpi/start.png"
        inkscape:export-xdpi="87.411659"
        inkscape:export-ydpi="87.411659" />
+    <path
+       inkscape:export-ydpi="68.210526"
+       inkscape:export-xdpi="68.210526"
+       inkscape:export-filename="/home/alump/Development/bttagwriter/res/drawable-hdpi/ic_launcher.png"
+       sodipodi:nodetypes="zzzzz"
+       inkscape:connector-curvature="0"
+       id="path4787"
+       d="m 358.59794,685.07905 c -1.45836,5.28821 10.38105,40.88883 15.6874,43.52774 5.30634,2.63891 62.17899,-13.84557 65.04064,-20.04323 2.86163,-6.19766 -23.94959,-35.41632 -27.15398,-35.96066 -3.20439,-0.54434 -52.11569,7.18794 -53.57406,12.47615 z"
+       style="fill:url(#linearGradient4793);fill-opacity:1;stroke:#000000;stroke-width:0.8711012px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    <path
+       inkscape:export-ydpi="68.210526"
+       inkscape:export-xdpi="68.210526"
+       inkscape:export-filename="/home/alump/Development/bttagwriter/res/drawable-hdpi/ic_launcher.png"
+       sodipodi:nodetypes="ccccccccccccccccccccccccc"
+       inkscape:connector-curvature="0"
+       id="path4789"
+       d="m 362.08392,691.68407 14.12741,34.67635 60.71968,-19.7758 -25.30942,-31.96353 -47.15252,11.37532 0.73389,2.56862 45.50125,-11.74226 21.80382,28.64793 -54.64544,16.66984 -13.21004,-28.98869 43.84999,-11.55878 16.48311,21.65633 -45.4718,12.4696 -9.17364,-19.99853 36.14413,-9.17365 9.35711,14.12742 -35.59372,10.82489 1.10084,2.0182 38.34581,-11.19184 -12.65961,-18.53075 -39.44666,10.45795 10.8249,24.76881 50.60249,-14.48125 -19.5956,-25.14886 z"
+       style="fill:#000000;fill-opacity:0.11415525;stroke:none" />
+    <rect
+       inkscape:export-ydpi="68.210526"
+       inkscape:export-xdpi="68.210526"
+       inkscape:export-filename="/home/alump/Development/bttagwriter/res/drawable-hdpi/ic_launcher.png"
+       transform="matrix(0.91358544,-0.40664682,0.40664682,0.91358544,0,0)"
+       ry="0"
+       y="792.17505"
+       x="59.431744"
+       height="10.091002"
+       width="5.8711286"
+       id="rect4791"
+       style="opacity:0.55967078;fill:#000000;fill-opacity:0.21004567;stroke:none" />
+    <path
+       inkscape:export-ydpi="68.210526"
+       inkscape:export-xdpi="68.210526"
+       inkscape:export-filename="/home/alump/Development/bttagwriter/res/drawable-hdpi/ic_launcher.png"
+       inkscape:connector-curvature="0"
+       id="path4795"
+       d="m 604.07852,689.42172 c -15.57266,-0.2127 -25.79224,20.0584 -16.40625,32.53125 7.83277,12.63819 29.30753,11.76331 35.75,-1.8125 7.71686,-13.32907 -3.62726,-32.28242 -19.34375,-30.71875 z"
+       style="fill:#008bda;fill-opacity:0.64840178;stroke:none;filter:url(#filter4376)"
+       transform="matrix(0.87110123,0,0,0.87110123,-108.91386,95.707676)" />
+    <path
+       inkscape:export-ydpi="68.210526"
+       inkscape:export-xdpi="68.210526"
+       inkscape:export-filename="/home/alump/Development/bttagwriter/res/drawable-hdpi/ic_launcher.png"
+       transform="matrix(0.87110123,0,0,0.87110123,18.122918,113.88441)"
+       d="m 476.00495,689.25043 a 16.849733,16.849733 0 1 1 -33.69947,0 16.849733,16.849733 0 1 1 33.69947,0 z"
+       sodipodi:ry="16.849733"
+       sodipodi:rx="16.849733"
+       sodipodi:cy="689.25043"
+       sodipodi:cx="459.15521"
+       id="path4797"
+       style="fill:#ffffff;fill-opacity:0.2283105;stroke:none;filter:url(#filter4384)"
+       sodipodi:type="arc" />
+    <path
+       inkscape:export-ydpi="68.210526"
+       inkscape:export-xdpi="68.210526"
+       inkscape:export-filename="/home/alump/Development/bttagwriter/res/drawable-hdpi/ic_launcher.png"
+       transform="matrix(0.87110123,0,0,0.87110123,18.122918,113.88441)"
+       d="m 476.00495,689.25043 a 16.849733,16.849733 0 1 1 -33.69947,0 16.849733,16.849733 0 1 1 33.69947,0 z"
+       sodipodi:ry="16.849733"
+       sodipodi:rx="16.849733"
+       sodipodi:cy="689.25043"
+       sodipodi:cx="459.15521"
+       id="path4799"
+       style="fill:#000000;fill-opacity:0.57990866;stroke:none"
+       sodipodi:type="arc" />
+    <path
+       inkscape:export-ydpi="68.210526"
+       inkscape:export-xdpi="68.210526"
+       inkscape:export-filename="/home/alump/Development/bttagwriter/res/drawable-hdpi/ic_launcher.png"
+       transform="matrix(0.80247492,0,0,0.80247492,77.432148,427.17125)"
+       inkscape:connector-curvature="0"
+       id="path4801"
+       d="m 417.42124,344.765 c 2.85489,8.33665 -0.1303,1.42741 0.3643,9.43405 -2.77568,6.00702 3.43657,9.58588 0.33709,10.98802 -1.84361,5.75355 0.44907,7.84353 6.11111,7.20293 1.85639,-3.29376 7.66545,-6.12289 13.50921,-7.5769 2.84575,-2.41603 -12.70581,-7.23033 -0.28125,-8.4375 2.89145,-2.74223 -9.69842,-6.3044 -11.22796,-10.3606 -0.95946,-1.97324 -12.02456,-8.24214 -8.82655,-1.41986 l 0.014,0.16986 z m 9.21875,9.21875 c -0.64513,0.80397 -0.53908,-1.0478 0,0 z m 0.21875,8.4375 c -0.9823,1.29369 -0.84679,-1.6009 0,0 z"
+       style="fill:#008bda;fill-opacity:0.64705882;stroke:#000000;stroke-width:0.445086px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;filter:url(#filter4473)" />
+    <path
+       inkscape:export-ydpi="68.210526"
+       inkscape:export-xdpi="68.210526"
+       inkscape:export-filename="/home/alump/Development/bttagwriter/res/drawable-hdpi/ic_launcher.png"
+       inkscape:connector-curvature="0"
+       style="fill:#ffffff;fill-opacity:0.8310502;stroke:none"
+       d="m 413.22605,702.9582 0.16963,2.27783 2.03551,1.28431 0,5.12511 -1.96281,-1.34489 0.16962,2.28995 1.79319,1.12679 0,0.50887 -2.24148,0.71485 0,2.05974 2.24148,-0.79966 0,5.45223 -1.99917,0.63005 0,2.07185 1.99917,-0.71485 0,1.76895 1.9628,0 0,-2.4838 9.53536,-3.42885 -7.12426,-4.87067 6.88194,-2.47168 -9.29304,-6.34885 0,-1.62355 -1.9628,-0.65426 0,0.93294 -2.20514,-1.50241 z m 4.16794,4.79798 6.17921,3.90139 -5.54917,1.75683 -0.63004,-0.43619 0,-5.22203 z m 0.5331,7.54833 5.88842,3.70752 -6.42152,2.02339 0,-5.53705 0.5331,-0.19386 z"
+       id="path4803" />
+    <rect
+       style="fill:#ffffff;fill-opacity:0;stroke:none"
+       id="rect4829"
+       width="95"
+       height="95"
+       x="351.67172"
+       y="653.68323"
+       inkscape:export-filename="/home/alump/Development/bttagwriter/res/drawable-hdpi/ic_launcher.png"
+       inkscape:export-xdpi="68.210526"
+       inkscape:export-ydpi="68.210526" />
   </g>
 </svg>
