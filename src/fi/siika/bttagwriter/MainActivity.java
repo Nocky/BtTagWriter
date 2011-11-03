@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
 		private Vector<Row> mList;
 		
 		public StepRowAdapter(Context context) {
-			super(context, R.layout.writer_step_layout, R.id.stepNameTextView);
+			super(context, R.layout.step_layout, R.id.stepNameTextView);
 			
 			mList = new Vector<Row> ();
 		}
@@ -109,30 +109,41 @@ public class MainActivity extends Activity {
 			View row = convertView;
 			if (row == null) {
 				LayoutInflater inflater = getLayoutInflater();
-				row = inflater.inflate(R.layout.writer_step_layout, null);
+				row = inflater.inflate(R.layout.step_layout, null);
 			}
 			
 			Row rowData = mList.elementAt(position);
 			TextView line =(TextView)row.findViewById (R.id.stepNameTextView);
 			line.setText (rowData.name);
+			
 			line =(TextView)row.findViewById (R.id.stepInfoTextView);
 			line.setText (rowData.info);
 			
 			if (rowData.done) {
 				ImageView image = (ImageView)row.findViewById(R.id.stepImageView);
 				image.setImageDrawable(getResources().getDrawable(R.drawable.done));
+				
 			}
 			
 			return(row);                         
 		}
 		
-		public void addStep(String name, String info, boolean done) {
+		public void addStep(String name, String info) {
 			Row row = new Row();
 			row.name = name;
 			row.info = info;
-			row.done = done;
+			row.done = false;
 			
 			mList.add(row);
+		}
+		
+		public void setActiveStep (int index) {
+			for (int i = 0; i <= index; ++i) {
+				mList.elementAt(i).done = true;
+			}
+			for (int i = index + 1; i < mList.size(); ++i) {
+				mList.elementAt(i).done = false;
+			}
 		}
 	
 	};
@@ -176,15 +187,14 @@ public class MainActivity extends Activity {
         list.setAdapter (mStepListAdapter);
         mStepListAdapter.addStep(
         	getResources().getString(R.string.step_bt_device_str),
-        	"00:00:00:00:00:00", true);
+        	"00:00:00:00:00:00");
         mStepListAdapter.addStep(
         	getResources().getString(R.string.step_tag_str),
-        	getResources().getString(R.string.step_tag_info_str),
-        	false);
+        	getResources().getString(R.string.step_tag_info_str));
         mStepListAdapter.addStep(
             	getResources().getString(R.string.step_write_str),
-            	getResources().getString(R.string.step_write_info_wait_str),
-            	false);
+            	getResources().getString(R.string.step_write_info_wait_str));
+        mStepListAdapter.setActiveStep(0);
         
         list.setOnItemClickListener(new OnItemClickListener() {
         	public void onItemClick(AdapterView<?> parent, View view,

@@ -6,6 +6,8 @@
     <color name="nfc_writer_caption_fgcolor">#FFFFFF</color>
     <color name="bt_devices_caption_shadowcolor">#C0000000</color>
     <color name="nfc_writer_caption_shadowcolor">#C0000000</color>
+    <color name="step_done_fgcolor">#FFFFFF</color>
+    <color name="step_undone_fgcolor">#C0FFFFFF</color>
 
     
 </resources>
