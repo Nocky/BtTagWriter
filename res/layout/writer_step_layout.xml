@@ -7,8 +7,10 @@
         android:id="@+id/stepImageView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="3pt"
         android:layout_marginRight="3pt"
-        android:src="@drawable/done" />
+        android:layout_marginTop="3pt"
+        android:src="@drawable/not_done" />
 
     <LinearLayout
         android:id="@+id/linearLayout1"

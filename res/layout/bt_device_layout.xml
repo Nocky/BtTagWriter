@@ -5,14 +5,14 @@
     android:orientation="vertical" >
 
     <TextView
-        android:id="@+id/textView1"
+        android:id="@+id/btDeviceNameTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/bt_device_name_str"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/btDeviceAddressTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/bt_device_address_str" />

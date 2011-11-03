@@ -40,6 +40,126 @@
 		        android:text="@string/start_button_str" />
 		
 		</LinearLayout>
+		
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		    android:layout_width="match_parent"
+		    android:layout_height="match_parent"
+		    android:orientation="vertical" >
+
+		    <LinearLayout
+		        android:id="@+id/linearLayout1"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:background="@color/bt_devices_caption_bgcolor" >
+		
+		        <TextView
+		            android:id="@+id/bt_devices_caption"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_margin="3pt"
+		            android:layout_marginBottom="3pt"
+		            android:layout_weight="2"
+		            android:paddingLeft="6pt"
+		            android:text="@string/bt_devices_caption_str"
+		            android:textAppearance="?android:attr/textAppearanceLarge"
+		            android:textColor="@color/bt_devices_caption_fgcolor"
+		            android:shadowColor="@color/bt_devices_caption_shadowcolor" />
+		
+		        <ProgressBar
+		            android:id="@+id/btScanProgressBar"
+		            style="?android:attr/progressBarStyleSmall"
+		            android:layout_width="wrap_content"
+		            android:layout_height="match_parent"
+		            android:layout_marginBottom="3pt"
+		            android:layout_marginRight="6pt"
+		            android:layout_marginTop="3pt"
+		            android:layout_weight="1" />
+		
+		    </LinearLayout>
+		    
+		    <ListView
+		        android:layout_height="wrap_content" 
+		        android:layout_width="fill_parent"
+		        android:id="@+id/btDevicesList"/>
+		
+		</LinearLayout>
+		
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		    android:layout_width="match_parent"
+		    android:layout_height="match_parent"
+		    android:orientation="vertical" >
+		
+		    <LinearLayout
+		        android:id="@+id/nfcWriterYTopHlinearLayout"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:background="@color/nfc_writer_caption_bgcolor"
+		        android:orientation="horizontal">
+		
+			        <TextView
+			            android:id="@+id/nfcWriterCaption"
+			            android:layout_width="wrap_content"
+			            android:layout_height="wrap_content"
+			            android:layout_margin="3pt"
+			            android:layout_marginBottom="3pt"
+			            android:layout_weight="2"
+			            android:paddingLeft="6pt"
+			            android:text="@string/nfc_writer_caption_str"
+			            android:textAppearance="?android:attr/textAppearanceLarge"
+			            android:textColor="@color/nfc_writer_caption_fgcolor"
+			            android:shadowColor="@color/nfc_writer_caption_shadowcolor" />
+			
+			        <ProgressBar
+			            android:id="@+id/nfcWriterProgressBar"
+			            style="?android:attr/progressBarStyleSmall"
+			            android:layout_width="wrap_content"
+			            android:layout_height="match_parent"
+			            android:layout_marginBottom="3pt"
+			            android:layout_marginRight="6pt"
+			            android:layout_marginTop="3pt"
+			            android:layout_weight="1" />
+		
+		    </LinearLayout>
+		    
+		    <ListView
+		        android:layout_height="wrap_content" 
+		        android:layout_width="fill_parent"
+		        android:id="@+id/stepsList"/>
+		    
+		</LinearLayout>
+		
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		    android:layout_width="match_parent"
+		    android:layout_height="match_parent"
+		    android:orientation="vertical" >
+		
+		    <ImageView
+		        android:id="@+id/imageView1"
+		        android:layout_width="wrap_content"
+		        android:layout_height="wrap_content"
+		        android:layout_marginLeft="12pt"
+		        android:layout_marginRight="12pt"
+		        android:src="@drawable/success" />
+		
+		    <TextView
+		        android:id="@+id/textView1"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:gravity="center"
+		        android:text="@string/end_success_str"
+		        android:textAppearance="?android:attr/textAppearanceLarge" />
+		
+		    <Button
+		        android:id="@+id/restartButton"
+		        android:layout_width="match_parent"
+		        android:layout_height="wrap_content"
+		        android:layout_marginLeft="6pt"
+		        android:layout_marginRight="6pt"
+		        android:layout_marginTop="12pt"
+		        android:text="@string/end_write_another_str" />
+		
+		</LinearLayout>
+		
     </ViewFlipper>
 
 </LinearLayout>
