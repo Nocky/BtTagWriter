@@ -18,8 +18,8 @@
 		        android:id="@+id/startImageView"
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:layout_marginLeft="6pt"
-		        android:layout_marginRight="6pt"
+		        android:layout_marginLeft="24pt"
+		        android:layout_marginRight="24pt"
 		        android:src="@drawable/start" />
 		
 		    <TextView
@@ -139,12 +139,12 @@
 		        android:id="@+id/imageView1"
 		        android:layout_width="wrap_content"
 		        android:layout_height="wrap_content"
-		        android:layout_marginLeft="12pt"
-		        android:layout_marginRight="12pt"
+		        android:layout_marginLeft="24pt"
+		        android:layout_marginRight="24pt"
 		        android:src="@drawable/success" />
 		
 		    <TextView
-		        android:id="@+id/textView1"
+		        android:id="@+id/successTextView"
 		        android:layout_width="match_parent"
 		        android:layout_height="wrap_content"
 		        android:gravity="center"
@@ -159,6 +159,14 @@
 		        android:layout_marginRight="6pt"
 		        android:layout_marginTop="12pt"
 		        android:text="@string/end_write_another_str" />
+		    
+		    <Button
+                android:id="@+id/exitButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="6pt"
+                android:layout_marginRight="6pt"
+                android:text="@string/end_exit_str" />
 		
 		</LinearLayout>
 		

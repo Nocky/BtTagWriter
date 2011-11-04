@@ -162,12 +162,21 @@ public class MainActivity extends Activity {
 	
 	private OnClickListener mStartButtonListener = new OnClickListener() {
 		public void onClick(View v) {
-				
-			mBtListAdapter.addDevice("My fake device",
-				"00:00:00:00:00:00:00:00");
+			
+			if (mBtListAdapter.getCount() == 0) {
+				mBtListAdapter.addDevice("My fake device",
+					"00:00:00:00:00:00:00:00");
+			}
 			showFlipChild (1);
 			
 			startBluetoothDiscovery();
+		}
+	};
+	
+	private OnClickListener mExitButtonListener = new OnClickListener() {
+		public void onClick(View v) {
+			
+			finish();
 		}
 	};
 	
@@ -213,10 +222,15 @@ public class MainActivity extends Activity {
 			row.name = name;
 			row.address = address;
 			mList.add(row);
+			notifyDataSetChanged();
 		}
 		
 		public void addDevice(BluetoothDevice device) {
 			addDevice (device.getName(), device.getAddress());
+		}
+		
+		public Row getRow (int index) {
+			return mList.elementAt(index);
 		}
 	}
 	private BluetoothRowAdapter mBtListAdapter = null;
@@ -227,7 +241,8 @@ public class MainActivity extends Activity {
 	 */
 	public class StepRowAdapter extends ArrayAdapter<Object> {
 		public class Row {
-			public boolean done = false;
+			
+			public int state = -1;
 			public String name;
 			public String info;
 		};
@@ -260,10 +275,12 @@ public class MainActivity extends Activity {
 			line =(TextView)row.findViewById (R.id.stepInfoTextView);
 			line.setText (rowData.info);
 			
-			if (rowData.done) {
+			if (rowData.state == 1) {
 				ImageView image = (ImageView)row.findViewById(R.id.stepImageView);
 				image.setImageDrawable(getResources().getDrawable(R.drawable.done));
-				
+			} else if (rowData.state == 0) {
+				ImageView image = (ImageView)row.findViewById(R.id.stepImageView);
+				image.setImageDrawable(getResources().getDrawable(R.drawable.current));
 			}
 			
 			return(row);                         
@@ -274,18 +291,26 @@ public class MainActivity extends Activity {
 			Row row = new Row();
 			row.name = name;
 			row.info = info;
-			row.done = false;
+			row.state = -1;
 			
 			mSteps.add(row);
+			notifyDataSetChanged();
+		}
+		
+		public void setStepInfo (int index, String info) {
+			mSteps.elementAt(index).info = info;
+			notifyDataSetChanged();
 		}
 		
 		public void setActiveStep (int index) {
-			for (int i = 0; i <= index; ++i) {
-				mSteps.elementAt(i).done = true;
+			for (int i = 0; i < index; ++i) {
+				mSteps.elementAt(i).state = 1;
 			}
+			mSteps.elementAt(index).state = 0;
 			for (int i = index + 1; i < mSteps.size(); ++i) {
-				mSteps.elementAt(i).done = false;
+				mSteps.elementAt(i).state = -1;
 			}
+			notifyDataSetChanged();
 		}
 	
 	};
@@ -297,6 +322,9 @@ public class MainActivity extends Activity {
 		
 		button = (Button)findViewById (R.id.restartButton);
 		button.setOnClickListener (mStartButtonListener);
+		
+		button = (Button)findViewById (R.id.exitButton);
+		button.setOnClickListener(mExitButtonListener);
 	}
 	
 	@Override
@@ -321,6 +349,15 @@ public class MainActivity extends Activity {
         	public void onItemClick(AdapterView<?> parent, View view,
         		int position, long id) {
         		
+        		StringBuilder sbuilder = new StringBuilder();
+        		sbuilder.append(mBtListAdapter.getRow(position).name);
+        		sbuilder.append(" (");
+        		sbuilder.append(mBtListAdapter.getRow(position).address);
+        		sbuilder.append(")");
+        		
+        		mStepListAdapter.setStepInfo (0, sbuilder.toString());
+        		
+        		mStepListAdapter.setActiveStep(1);
         		showFlipChild (2);
 
         	}

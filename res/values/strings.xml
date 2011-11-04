@@ -5,7 +5,7 @@
     <string name="nfc_writer_caption_str">Write to NFC Tag</string>
     <string name="nfc_writer_guide_str">Move the writable tag and your phone close each other.</string>
     <string name="start_button_str">Start Wizard</string>
-    <string name="start_guide_str">This application allows you to write Bluetooth connectivity information to NFC tags. These tag can be then be used to connect to Bluetooth devices with just tapping the tag with a phone.</string>
+    <string name="start_guide_str">This application allows you to write Bluetooth connectivity information to NFC tags. These tags can be then used to connect to Bluetooth devices by just tapping the tag with your phone.</string>
     <string name="end_success_str">Success!</string>
     <string name="end_write_another_str">Write another tag</string>
     <string name="nfc_writer_selected_str">Selected Bluetooth device:</string>
@@ -17,5 +17,6 @@
     <string name="step_tag_info_str">Move phone close to tag</string>
     <string name="step_write_str">Write information to tag</string>
     <string name="step_write_info_wait_str">Waiting for tag</string>
+    <string name="end_exit_str">Exit</string>
 
 </resources>

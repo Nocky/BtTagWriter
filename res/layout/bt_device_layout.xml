@@ -9,12 +9,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/bt_device_name_str"
+        android:layout_marginLeft="6pt"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
         android:id="@+id/btDeviceAddressTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginLeft="6pt"
         android:text="@string/bt_device_address_str" />
 
 </LinearLayout>
