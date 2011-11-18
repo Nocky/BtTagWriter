@@ -1,5 +1,6 @@
 package fi.siika.bttagwriter;
 
+import java.util.Iterator;
 import java.util.Vector;
 
 import android.app.Activity;
@@ -17,6 +18,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.nfc.NfcAdapter;
 import android.nfc.tech.MifareUltralight;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -32,6 +34,7 @@ import android.widget.ViewFlipper;
 public class MainActivity extends Activity {
 	
 	private BluetoothAdapter mBtAdapter = null;
+	private boolean mBtEnabled = false;
 	
 	/*
 	 * Get Bluetooth adapter.
@@ -49,9 +52,16 @@ public class MainActivity extends Activity {
 	 */
 	private void startBluetoothDiscovery() {
 		BluetoothAdapter adapter = getBluetoothAdapter();
-		if (adapter != null && adapter.isDiscovering() == false) {
+		
+		if (adapter == null) {
+			return;
+		} else if (adapter.isEnabled() == false) {
+			mBtEnabled = true;
+			adapter.enable();
+		} else if (adapter.isDiscovering() == false) {
 			adapter.startDiscovery();
 		}
+		adapter.enable();
 	}
 	
 	/*
@@ -68,7 +78,11 @@ public class MainActivity extends Activity {
 	private NfcAdapter mNfcReader = null;
 	
 	private NfcAdapter getNfcReader() {
-		if (mNfcReader == null) {
+		
+		//TODO: Remove this
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD_MR1) {
+			return null;
+		} else if (mNfcReader == null) {
 			mNfcReader = NfcAdapter.getDefaultAdapter(this);
 		}
 		
@@ -107,7 +121,11 @@ public class MainActivity extends Activity {
 	 * Disable NFC reader parts of software
 	 */
 	private void disableNfcReader() {
-		if (mNfcReader != null && mNfcReader.isEnabled()) {
+		
+		//TODO: Remove this
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD_MR1) {
+			return;
+		} else if (mNfcReader != null && mNfcReader.isEnabled()) {
 			mNfcReader.disableForegroundDispatch (this);
 		}
 	}
@@ -121,11 +139,12 @@ public class MainActivity extends Activity {
 			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 				BluetoothDevice device = intent.getParcelableExtra (
 					BluetoothDevice.EXTRA_DEVICE);
-				mBtListAdapter.addDevice (device);
+				mBtListAdapter.addDeviceIfNotPresent (device);
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
 				ProgressBar pb = (ProgressBar)findViewById (R.id.btScanProgressBar);
 				pb.setIndeterminate (false);
 				pb.setVisibility(View.INVISIBLE);
+				getBluetoothAdapter().disable();
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
 				ProgressBar pb = (ProgressBar)findViewById (R.id.btScanProgressBar);
 				pb.setIndeterminate (true);
@@ -134,6 +153,17 @@ public class MainActivity extends Activity {
 				CharSequence text = "Hello TAG!";
 				Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
 				toast.show();
+			} else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
+				int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
+					BluetoothAdapter.STATE_OFF);
+				//TODO check if our ui is in state where it should be
+				if (state == BluetoothAdapter.STATE_ON) {
+					if (mBtEnabled) {
+						getBluetoothAdapter().startDiscovery();
+					}
+				} else if (state == BluetoothAdapter.STATE_OFF) {
+					mBtEnabled = false;
+				}
 			}
 		}        
 	};
@@ -163,12 +193,8 @@ public class MainActivity extends Activity {
 	private OnClickListener mStartButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			
-			if (mBtListAdapter.getCount() == 0) {
-				mBtListAdapter.addDevice("My fake device",
-					"00:00:00:00:00:00:00:00");
-			}
+			mBtListAdapter.clear();
 			showFlipChild (1);
-			
 			startBluetoothDiscovery();
 		}
 	};
@@ -232,13 +258,25 @@ public class MainActivity extends Activity {
 		public Row getRow (int index) {
 			return mList.elementAt(index);
 		}
+		
+		public void clear() {
+			mList.clear();
+			notifyDataSetChanged();
+		}
+		
+		public void addDeviceIfNotPresent (BluetoothDevice device) {
+			Iterator<Row> iter = mList.iterator();
+			while (iter.hasNext()) {
+				Row row = iter.next();
+				if (row.address.equals(device.getAddress())) {
+					return;
+				}
+			}
+			addDevice(device);
+		}
 	}
 	private BluetoothRowAdapter mBtListAdapter = null;
 	
-	/**
-	 * @author Sami Viitanen <sami.viitanen@gmail.com>
-	 *
-	 */
 	public class StepRowAdapter extends ArrayAdapter<Object> {
 		public class Row {
 			
@@ -330,6 +368,12 @@ public class MainActivity extends Activity {
 	@Override
 	public void onPause() {
 		super.onPause();
+		
+		if(mBtEnabled) {
+			getBluetoothAdapter().disable();
+			mBtEnabled = false;
+		}
+		
 		disableNfcReader();
 		stopBluetoothDiscovery();
 	}
@@ -338,6 +382,8 @@ public class MainActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
+        
+        mBtEnabled = false;
         
         ListView list = (ListView)findViewById (R.id.btDevicesList);
         if (mBtListAdapter == null) {
@@ -397,6 +443,7 @@ public class MainActivity extends Activity {
         filter.addAction (BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction (BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         filter.addAction (NfcAdapter.ACTION_TECH_DISCOVERED);
+        filter.addAction (BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver (mBCReceiver, filter);
     }
 }
