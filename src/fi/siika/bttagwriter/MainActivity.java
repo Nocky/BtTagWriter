@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -36,6 +37,33 @@ public class MainActivity extends Activity {
 	private BluetoothAdapter mBtAdapter = null;
 	private boolean mBtEnabled = false;
 	
+	public enum Pages {
+		START(0), ABOUT(1), BLUETOOTH(2), STEPS(3), SUCCESS(4);
+		
+		private int mValue;
+		
+		private Pages(int value) {
+			mValue = value;
+		}
+		
+		public int toInt() {
+			return mValue;
+		}
+		
+		public boolean equal(int value) {
+			return toInt() == value;
+		}
+	};
+	
+	private void changeToPage (Pages page) {
+		showFlipChild (page.toInt());
+	}
+	
+	private int currentPage() {
+		ViewFlipper flip = (ViewFlipper)findViewById (R.id.mainFlipper);
+		return flip.getDisplayedChild();
+	}
+	
 	/*
 	 * Get Bluetooth adapter.
 	 */
@@ -54,6 +82,7 @@ public class MainActivity extends Activity {
 		BluetoothAdapter adapter = getBluetoothAdapter();
 		
 		if (adapter == null) {
+			mBtListAdapter.addDevice("FAIL!", "00:00:00:00:00:00");
 			return;
 		} else if (adapter.isEnabled() == false) {
 			mBtEnabled = true;
@@ -61,7 +90,6 @@ public class MainActivity extends Activity {
 		} else if (adapter.isDiscovering() == false) {
 			adapter.startDiscovery();
 		}
-		adapter.enable();
 	}
 	
 	/*
@@ -194,8 +222,15 @@ public class MainActivity extends Activity {
 		public void onClick(View v) {
 			
 			mBtListAdapter.clear();
-			showFlipChild (1);
+			changeToPage (Pages.BLUETOOTH);
 			startBluetoothDiscovery();
+		}
+	};
+	
+	private OnClickListener mAboutButtonListener = new OnClickListener() {
+		public void onClick(View v) {
+			
+			changeToPage (Pages.ABOUT);
 		}
 	};
 	
@@ -363,6 +398,9 @@ public class MainActivity extends Activity {
 		
 		button = (Button)findViewById (R.id.exitButton);
 		button.setOnClickListener(mExitButtonListener);
+		
+		button = (Button)findViewById (R.id.aboutButton);
+		button.setOnClickListener(mAboutButtonListener);
 	}
 	
 	@Override
@@ -404,8 +442,7 @@ public class MainActivity extends Activity {
         		mStepListAdapter.setStepInfo (0, sbuilder.toString());
         		
         		mStepListAdapter.setActiveStep(1);
-        		showFlipChild (2);
-
+        		changeToPage (Pages.STEPS);
         	}
         });
         
@@ -429,7 +466,7 @@ public class MainActivity extends Activity {
         	public void onItemClick(AdapterView<?> parent, View view,
         		int position, long id) {
         		
-        		showFlipChild (3);
+        		changeToPage (Pages.STEPS);
         		enableNfcReader();
 
         	}
@@ -446,4 +483,23 @@ public class MainActivity extends Activity {
         filter.addAction (BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver (mBCReceiver, filter);
     }
+    
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    	
+        if ((keyCode == KeyEvent.KEYCODE_BACK)) {
+        	int curPage = currentPage();
+        	
+        	if (Pages.ABOUT.equal(curPage)) {
+        		changeToPage(Pages.START);
+        		return false;
+        	} else if (Pages.STEPS.equal(curPage)) {
+        		changeToPage(Pages.BLUETOOTH);
+        		return false;
+        	}
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+
 }

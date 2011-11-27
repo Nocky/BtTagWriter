@@ -5,7 +5,11 @@
     <string name="nfc_writer_caption_str">Write to NFC Tag</string>
     <string name="nfc_writer_guide_str">Move the writable tag and your phone close each other.</string>
     <string name="start_button_str">Start Wizard</string>
-    <string name="start_guide_str">This application allows you to write Bluetooth connectivity information to NFC tags. These tags can be then used to connect to Bluetooth devices by just tapping the tag with your phone.</string>
+    <string name="about_button_str">Program info</string>
+    <string name="about_info_str">This program is still under development. Please report all issues and other wishes how to improve this software. Thanks.</string>
+    <string name="about_limitations_str">Current known limitations:\n- Only supports Mifare Ultra Light tags\n</string>
+    <string name="about_copyright_str">Copyright Sami Viitanen &lt;alump@iki.fi&gt; 2011, All rigths reserved.</string>
+    <string name="start_guide_str">This application allows you to write Bluetooth connectivity information to NFC tags. These tags can be then used for easy connecting between your Bluetooth devices and phone.</string>
     <string name="end_success_str">Success!</string>
     <string name="end_write_another_str">Write another tag</string>
     <string name="nfc_writer_selected_str">Selected Bluetooth device:</string>

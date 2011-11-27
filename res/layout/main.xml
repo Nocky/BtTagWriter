@@ -38,8 +38,53 @@
 		        android:layout_marginRight="6pt"
 		        android:layout_marginTop="6pt"
 		        android:text="@string/start_button_str" />
+		    
+		     <Button
+                android:id="@+id/aboutButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="6pt"
+                android:layout_marginRight="6pt"
+                android:layout_marginTop="6pt"
+                android:text="@string/about_button_str" />
 		
 		</LinearLayout>
+		
+		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            
+            <TextView
+                android:id="@+id/appDescriptionTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="6pt"
+                android:paddingRight="6pt"
+                android:layout_marginBottom="6pt"
+                android:text="@string/about_info_str" />
+                
+            <TextView
+                android:id="@+id/limitationsTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="6pt"
+                android:paddingRight="6pt"
+                android:layout_marginBottom="6pt"
+                android:singleLine="false"
+                android:text="@string/about_limitations_str" />
+            
+            <TextView
+                android:id="@+id/copyrightTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingLeft="6pt"
+                android:paddingRight="6pt"
+                android:layout_marginBottom="6pt"
+                android:autoLink="all"
+                android:text="@string/about_copyright_str" />
+            
+        </LinearLayout>
 		
 		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		    android:layout_width="match_parent"
