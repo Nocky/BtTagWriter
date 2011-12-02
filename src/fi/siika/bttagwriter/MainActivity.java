@@ -3,6 +3,8 @@ package fi.siika.bttagwriter;
 import java.util.Iterator;
 import java.util.Vector;
 
+import fi.siika.bttagwriter.TagWriter.TagInformation;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
@@ -18,6 +20,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.nfc.NfcAdapter;
+import android.nfc.Tag;
 import android.nfc.tech.MifareUltralight;
 import android.os.Build;
 import android.os.Bundle;
@@ -126,13 +129,15 @@ public class MainActivity extends Activity {
 			return;
 		}
 		
+		/*
 		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
 			new Intent(this,getClass()).addFlags(
 			Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+
 		
 		IntentFilter tech = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
 	    try {
-	        tech.addDataType("*/*");
+	        tech.addDataType("* / *");
 	    } catch (MalformedMimeTypeException e) {
 	        throw new RuntimeException("fail", e);
 	    }
@@ -142,6 +147,7 @@ public class MainActivity extends Activity {
 
 		nfcAdapter.enableForegroundDispatch(this, pendingIntent,
 			new IntentFilter[] { tech }, techList);
+		*/
 
 	}
 	
@@ -178,7 +184,11 @@ public class MainActivity extends Activity {
 				pb.setIndeterminate (true);
 				pb.setVisibility(View.VISIBLE);
 			} else if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
-				CharSequence text = "Hello TAG!";
+				CharSequence text = "Hello Tech!";
+				Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
+				toast.show();
+			} else if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)) {
+				CharSequence text = "Hello Tag!";
 				Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
 				toast.show();
 			} else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
@@ -480,6 +490,7 @@ public class MainActivity extends Activity {
         filter.addAction (BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction (BluetoothAdapter.ACTION_DISCOVERY_STARTED);
         filter.addAction (NfcAdapter.ACTION_TECH_DISCOVERED);
+        filter.addAction (NfcAdapter.ACTION_TAG_DISCOVERED);
         filter.addAction (BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver (mBCReceiver, filter);
     }

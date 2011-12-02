@@ -1,7 +1,11 @@
 package fi.siika.bttagwriter;
 
+import java.io.IOException;
+import java.util.Arrays;
+
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
+import android.nfc.tech.MifareUltralight;
 
 public class BtTagGenerator {
 	
