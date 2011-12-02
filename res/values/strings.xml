@@ -15,12 +15,16 @@
     <string name="nfc_writer_selected_str">Selected Bluetooth device:</string>
     <string name="nfc_writer_device_place_holder_str">Unknown device</string>
     <string name="bt_device_name_str">Unknown device</string>
-    <string name="bt_device_address_str">00:00:00:00:00:00:00</string>
+    <string name="bt_device_address_str">00:00:00:00:00:00</string>
     <string name="step_bt_device_str">Select Bluetooth device</string>
     <string name="step_tag_str">Select NFC tag</string>
     <string name="step_tag_info_str">Move phone close to tag</string>
     <string name="step_write_str">Write information to tag</string>
     <string name="step_write_info_wait_str">Waiting for tag</string>
     <string name="end_exit_str">Exit</string>
+    <string name="step_tag_success_str">Tag foind</string>
+    <string name="action_dialog_nfc_not_enabled_str">NFC does not seem to be enabled. You have to enable it manually. Tap OK to start settings. Return to this application with back after you are done.</string>
+    <string name="action_dialog_ok">OK</string>
+    <string name="action_dialog_bluetooth_failed_str">Failed to enable Bluetooth.</string>
 
 </resources>

@@ -9,82 +9,94 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" >
         
-        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    		android:layout_width="match_parent"
-		    android:layout_height="match_parent"
-		    android:orientation="vertical">
-		
-		    <ImageView
-		        android:id="@+id/startImageView"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:layout_marginLeft="24pt"
-		        android:layout_marginRight="24pt"
-		        android:src="@drawable/start" />
-		
-		    <TextView
-		        android:id="@+id/startTextView"
-		        android:layout_width="wrap_content"
-		        android:layout_height="wrap_content"
-		        android:paddingLeft="6pt"
-		        android:paddingRight="6pt"
-		        android:text="@string/start_guide_str" />
-		
-		    <Button
-		        android:id="@+id/startButton"
-		        android:layout_width="match_parent"
-		        android:layout_height="wrap_content"
-		        android:layout_marginLeft="6pt"
-		        android:layout_marginRight="6pt"
-		        android:layout_marginTop="6pt"
-		        android:text="@string/start_button_str" />
-		    
-		     <Button
-                android:id="@+id/aboutButton"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="6pt"
-                android:layout_marginRight="6pt"
-                android:layout_marginTop="6pt"
-                android:text="@string/about_button_str" />
-		
-		</LinearLayout>
-		
-		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
+        <ScrollView android:layout_width="match_parent"
+            android:id="@+id/startScrollView"
+            android:layout_height="match_parent">
             
-            <TextView
-                android:id="@+id/appDescriptionTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="6pt"
-                android:paddingRight="6pt"
-                android:layout_marginBottom="6pt"
-                android:text="@string/about_info_str" />
-                
-            <TextView
-                android:id="@+id/limitationsTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="6pt"
-                android:paddingRight="6pt"
-                android:layout_marginBottom="6pt"
-                android:singleLine="false"
-                android:text="@string/about_limitations_str" />
-            
-            <TextView
-                android:id="@+id/copyrightTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingLeft="6pt"
-                android:paddingRight="6pt"
-                android:layout_marginBottom="6pt"
-                android:autoLink="all"
-                android:text="@string/about_copyright_str" />
-            
-        </LinearLayout>
+	        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	    		android:layout_width="match_parent"
+			    android:layout_height="match_parent"
+			    android:orientation="vertical">
+			
+			    <ImageView
+			        android:id="@+id/startImageView"
+			        android:layout_width="wrap_content"
+			        android:layout_height="wrap_content"
+			        android:layout_marginLeft="24pt"
+			        android:layout_marginRight="24pt"
+			        android:src="@drawable/start" />
+			
+			    <TextView
+			        android:id="@+id/startTextView"
+			        android:layout_width="wrap_content"
+			        android:layout_height="wrap_content"
+			        android:paddingLeft="6pt"
+			        android:paddingRight="6pt"
+			        android:text="@string/start_guide_str" />
+			
+			    <Button
+			        android:id="@+id/startButton"
+			        android:layout_width="match_parent"
+			        android:layout_height="wrap_content"
+			        android:layout_marginLeft="6pt"
+			        android:layout_marginRight="6pt"
+			        android:layout_marginTop="6pt"
+			        android:text="@string/start_button_str" />
+			    
+			     <Button
+	                android:id="@+id/aboutButton"
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content"
+	                android:layout_marginLeft="6pt"
+	                android:layout_marginRight="6pt"
+	                android:layout_marginTop="6pt"
+	                android:text="@string/about_button_str" />
+			
+			</LinearLayout>
+		
+        </ScrollView>
+		
+        <ScrollView android:layout_width="match_parent"
+            android:id="@+id/aboutScrollView"
+            android:layout_height="match_parent">
+		
+			<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	            android:layout_width="match_parent"
+	            android:layout_height="match_parent"
+	            android:orientation="vertical">
+	            
+	            <TextView
+	                android:id="@+id/appDescriptionTextView"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:paddingLeft="6pt"
+	                android:paddingRight="6pt"
+	                android:layout_marginBottom="6pt"
+	                android:text="@string/about_info_str" />
+	                
+	            <TextView
+	                android:id="@+id/limitationsTextView"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:paddingLeft="6pt"
+	                android:paddingRight="6pt"
+	                android:layout_marginBottom="6pt"
+	                android:singleLine="false"
+	                android:text="@string/about_limitations_str" />
+	            
+	            <TextView
+	                android:id="@+id/copyrightTextView"
+	                android:layout_width="wrap_content"
+	                android:layout_height="wrap_content"
+	                android:paddingLeft="6pt"
+	                android:paddingRight="6pt"
+	                android:layout_marginBottom="6pt"
+	                android:autoLink="all"
+	                android:text="@string/about_copyright_str" />
+	            
+	        </LinearLayout>
+        
+		</ScrollView>
 		
 		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		    android:layout_width="match_parent"
@@ -168,7 +180,7 @@
 			            android:layout_weight="1" />
 		
 		    </LinearLayout>
-		    
+			    
 		    <ListView
 		        android:layout_height="wrap_content" 
 		        android:layout_width="fill_parent"

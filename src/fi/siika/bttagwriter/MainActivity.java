@@ -6,11 +6,13 @@ import java.util.Vector;
 import fi.siika.bttagwriter.TagWriter.TagInformation;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
@@ -85,7 +87,15 @@ public class MainActivity extends Activity {
 		BluetoothAdapter adapter = getBluetoothAdapter();
 		
 		if (adapter == null) {
-			mBtListAdapter.addDevice("FAIL!", "00:00:00:00:00:00");
+			showActionDialog(R.string.action_dialog_bluetooth_failed_str,
+				new DialogInterface.OnClickListener() {
+
+					public void onClick(DialogInterface dialog, int which) {
+						changeToPage(Pages.START);
+					}
+				
+				});
+			//mBtListAdapter.addDevice("Fake device", "00:00:00:00:00:00");
 			return;
 		} else if (adapter.isEnabled() == false) {
 			mBtEnabled = true;
@@ -129,6 +139,20 @@ public class MainActivity extends Activity {
 			return;
 		}
 		
+		if (nfcAdapter.isEnabled() == false) {
+			showActionDialog(R.string.action_dialog_nfc_not_enabled_str,
+				new DialogInterface.OnClickListener() {
+
+					public void onClick(DialogInterface dialog, int which) {
+						startActivityForResult(new Intent (
+							android.provider.Settings.ACTION_WIRELESS_SETTINGS),
+							0);
+					}
+				
+				});
+			return;
+		}
+		
 		/*
 		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
 			new Intent(this,getClass()).addFlags(
@@ -160,7 +184,7 @@ public class MainActivity extends Activity {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD_MR1) {
 			return;
 		} else if (mNfcReader != null && mNfcReader.isEnabled()) {
-			mNfcReader.disableForegroundDispatch (this);
+			//mNfcReader.disableForegroundDispatch (this);
 		}
 	}
 	
@@ -169,6 +193,7 @@ public class MainActivity extends Activity {
 	 */
 	private final BroadcastReceiver mBCReceiver = new BroadcastReceiver() {
 		public void onReceive(Context context, Intent intent) {
+			
 			String action = intent.getAction();
 			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
 				BluetoothDevice device = intent.getParcelableExtra (
@@ -510,6 +535,40 @@ public class MainActivity extends Activity {
         	}
         }
         return super.onKeyDown(keyCode, event);
+    }
+    
+    private void showActionDialog (int textResId, 
+        DialogInterface.OnClickListener clickListener) {
+    	
+    	showActionDialog(textResId, clickListener, false, null);
+    }
+    
+    private void showActionDialog (int textResId, 
+        DialogInterface.OnClickListener clickListener,
+        DialogInterface.OnCancelListener cancelListener) {
+    	
+    	showActionDialog(textResId, clickListener, true, cancelListener);
+    }
+    
+    private void showActionDialog (int textResId, 
+    	DialogInterface.OnClickListener clickListener,
+    	boolean cancelable,
+    	DialogInterface.OnCancelListener cancelListener) {
+    	
+    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	builder.setMessage(textResId);
+    	
+    	AlertDialog dialog = builder.create();
+    	
+    	dialog.setCancelable(cancelable);
+    	
+    	if (clickListener != null) {
+    		dialog.setButton(getResources().getText(R.string.action_dialog_ok),
+    			clickListener);
+    	}
+    	
+    	dialog.show();
+    	
     }
 
 
