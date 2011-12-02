@@ -1,3 +1,10 @@
+/**
+ * BtTagCreator.java (bttagwriter)
+ *
+ * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
+ * All rights reserved.
+ */
+
 package fi.siika.bttagwriter;
 
 import java.io.IOException;
@@ -7,9 +14,19 @@ import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.tech.MifareUltralight;
 
+/**
+ * BtTagCreator is used to construct NdefMessages written to the tags
+ * @author Sami Viitanen <sami.viitanen@gmail.com>
+ */
 public class BtTagGenerator {
 	
-	static NdefMessage generateNdefMessageForBtTag (String name, 
+	/**
+	 * Will construct NdefMessage for given Bluetooth name and address
+	 * @param name Name of Bluetooth device
+	 * @param address Address of Bluetooth device ("00:00:00:00:00:00" format)
+	 * @return NdefMessage with asked information
+	 */
+	public static NdefMessage generateNdefMessageForBtTag (String name, 
 		String address) {
 		
 		byte[] emptyByteArray = new byte[0];
@@ -26,7 +43,8 @@ public class BtTagGenerator {
 		return ret;
 	}
 	
-	static byte[] generateAlternativeCarrierData (String name, String address) {
+	private static byte[] generateAlternativeCarrierData (String name,
+		String address) {
 		
 		short len = (short)(2 + 6 + 1 + 1 + name.length() + 1 + 1 + 3);
 		byte data[] = new byte[len];

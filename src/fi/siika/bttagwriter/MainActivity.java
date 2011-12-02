@@ -1,3 +1,10 @@
+/**
+ * MainActivity.java (bttagwriter)
+ *
+ * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
+ * All rights reserved.
+ */
+
 package fi.siika.bttagwriter;
 
 import java.util.Iterator;
@@ -37,6 +44,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
+/**
+ * Main activity of BtTagWriter application
+ * @author Sami Viitanen <sami.viitanen@gmail.com>
+ */
 public class MainActivity extends Activity {
 	
 	private BluetoothAdapter mBtAdapter = null;
@@ -231,7 +242,7 @@ public class MainActivity extends Activity {
 		}        
 	};
 	
-	/*
+	/***
 	 * Call this when changing the shown child of flip page. Will selected
 	 * the correct animation depending on current and selected child.
 	 * @param index Index of child shown next

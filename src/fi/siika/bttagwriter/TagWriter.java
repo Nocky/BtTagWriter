@@ -1,3 +1,10 @@
+/**
+ * TagWriter.java (bttagwriter)
+ *
+ * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
+ * All rights reserved.
+ */
+
 package fi.siika.bttagwriter;
 
 import java.io.IOException;
@@ -11,10 +18,24 @@ import android.nfc.tech.TagTechnology;
 import android.os.Handler;
 import android.os.Message;
 
+/**
+ * TagWriter provides thread and code that will take care of the tag write
+ * process.
+ * @author Sami Viitanen <sami.viitanen@gmail.com>
+ */
 public class TagWriter extends Thread {
 	
+	/**
+	 * Class containing information written to NFC tags
+	 */
 	public class TagInformation implements Cloneable {
+		/**
+		 * Bluetooth address of device ("00:00:00:00:00:00" format)
+		 */
 		public String address;
+		/**
+		 * Bluetooth name of device
+		 */
 		public String name;
 		
 		@Override
@@ -47,11 +68,21 @@ public class TagWriter extends Thread {
 	private final static byte CC_NO_SECURITY_BYTE = (byte)0x00;
 	*/
 	
-	
+	/**
+	 * Construct new TagWriter
+	 * @param handler Handler used to send messages
+	 */
 	public TagWriter (Handler handler) {
 		mHandler = handler;
 	}
 	
+	/**
+	 * Start write process to given tag. Will call run if initialization was
+	 * success.
+	 * @param tag Tag now connected with device
+	 * @param information Information written to tag
+	 * @return true if write process and thread was started
+	 */
 	public boolean writeToTag (Tag tag, TagInformation information) {
 
 		mInfo = (TagInformation)(information.clone());		
@@ -70,6 +101,9 @@ public class TagWriter extends Thread {
 		}
 	}
 	
+	/**
+	 * Implementation of Thread run.
+	 */
 	@Override
 	public void run() {
 		int message = HANDLER_MSG_SUCCESS;
@@ -128,6 +162,9 @@ public class TagWriter extends Thread {
 	}
 	*/
 	
+	/**
+	 * Cancel current write process if started
+	 */
 	public void cancel() {
 		if (mTag != null) {
 			try {
