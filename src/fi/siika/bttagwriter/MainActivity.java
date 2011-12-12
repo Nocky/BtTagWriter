@@ -54,7 +54,7 @@ public class MainActivity extends Activity {
 	private boolean mBtEnabled = false;
 	
 	public enum Pages {
-		START(0), ABOUT(1), BLUETOOTH(2), STEPS(3), SUCCESS(4);
+		START(0), ABOUT(1), BT_SELECT(2), EXTRA_OPTIONS(3), TAG(4), SUCCESS(5);
 		
 		private int mValue;
 		
@@ -72,7 +72,11 @@ public class MainActivity extends Activity {
 	};
 	
 	private void changeToPage (Pages page) {
-		showFlipChild (page.toInt());
+		if (showFlipChild (page.toInt())) {
+			if (page == Pages.BT_SELECT) {
+				startBluetoothDiscovery();
+			}
+		}
 	}
 	
 	private int currentPage() {
@@ -105,7 +109,7 @@ public class MainActivity extends Activity {
 						changeToPage(Pages.START);
 					}
 				
-				});
+				}, false, null);
 			//mBtListAdapter.addDevice("Fake device", "00:00:00:00:00:00");
 			return;
 		} else if (adapter.isEnabled() == false) {
@@ -160,7 +164,7 @@ public class MainActivity extends Activity {
 							0);
 					}
 				
-				});
+				}, false, null);
 			return;
 		}
 		
@@ -242,17 +246,29 @@ public class MainActivity extends Activity {
 		}        
 	};
 	
+	/**
+	 * Function that will handle things that should be done after user moves
+	 * away from different child views of flip. Called by showFlipChild.
+	 * @param index Index of child that was replaced with something else
+	 */
+	private void flipChildHidden (int index) {
+		if (Pages.BT_SELECT.equal(index)) {
+			stopBluetoothDiscovery();
+		}
+	}
+	
 	/***
 	 * Call this when changing the shown child of flip page. Will selected
 	 * the correct animation depending on current and selected child.
 	 * @param index Index of child shown next
+	 * @return true if shown child was changed
 	 */
-	private void showFlipChild (int index) {
+	private boolean showFlipChild (int index) {
 		ViewFlipper flip = (ViewFlipper)findViewById (R.id.mainFlipper);
 		int current = flip.getDisplayedChild();
 		
 		if (current == index) {
-			return;
+			return false;
 		} else if (current < index) {
 			flip.setInAnimation (this, R.animator.in_left_anim);
 			flip.setOutAnimation (this, R.animator.out_right_anim);
@@ -261,15 +277,16 @@ public class MainActivity extends Activity {
 			flip.setOutAnimation (this, R.animator.out_left_anim);
 		}
 		
+		flipChildHidden (current);
 		flip.setDisplayedChild (index);
+		return true;
 	}
 	
 	private OnClickListener mStartButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			
 			mBtListAdapter.clear();
-			changeToPage (Pages.BLUETOOTH);
-			startBluetoothDiscovery();
+			changeToPage (Pages.BT_SELECT);
 		}
 	};
 	
@@ -277,6 +294,15 @@ public class MainActivity extends Activity {
 		public void onClick(View v) {
 			
 			changeToPage (Pages.ABOUT);
+		}
+	};
+	
+	private OnClickListener mExtraoptsReadyButtonListener =
+		new OnClickListener() {
+		
+		public void onClick(View v) {
+			
+			changeToPage (Pages.TAG);
 		}
 	};
 	
@@ -357,83 +383,6 @@ public class MainActivity extends Activity {
 		}
 	}
 	private BluetoothRowAdapter mBtListAdapter = null;
-	
-	public class StepRowAdapter extends ArrayAdapter<Object> {
-		public class Row {
-			
-			public int state = -1;
-			public String name;
-			public String info;
-		};
-		
-		private Vector<Row> mSteps;
-		
-		public StepRowAdapter(Context context) {
-			super(context, R.layout.step_layout, R.id.stepNameTextView);
-			
-			mSteps = new Vector<Row> ();
-		}
-		
-		@Override
-		public int getCount() {
-			return mSteps.size();
-		}
-		
-		@Override
-		public View getView (int position, View convertView, ViewGroup parent) {
-			View row = convertView;
-			if (row == null) {
-				LayoutInflater inflater = getLayoutInflater();
-				row = inflater.inflate(R.layout.step_layout, null);
-			}
-			
-			Row rowData = mSteps.elementAt(position);
-			TextView line =(TextView)row.findViewById (R.id.stepNameTextView);
-			line.setText (rowData.name);
-			
-			line =(TextView)row.findViewById (R.id.stepInfoTextView);
-			line.setText (rowData.info);
-			
-			if (rowData.state == 1) {
-				ImageView image = (ImageView)row.findViewById(R.id.stepImageView);
-				image.setImageDrawable(getResources().getDrawable(R.drawable.done));
-			} else if (rowData.state == 0) {
-				ImageView image = (ImageView)row.findViewById(R.id.stepImageView);
-				image.setImageDrawable(getResources().getDrawable(R.drawable.current));
-			}
-			
-			return(row);                         
-		}
-		
-		
-		public void addStep(String name, String info) {
-			Row row = new Row();
-			row.name = name;
-			row.info = info;
-			row.state = -1;
-			
-			mSteps.add(row);
-			notifyDataSetChanged();
-		}
-		
-		public void setStepInfo (int index, String info) {
-			mSteps.elementAt(index).info = info;
-			notifyDataSetChanged();
-		}
-		
-		public void setActiveStep (int index) {
-			for (int i = 0; i < index; ++i) {
-				mSteps.elementAt(i).state = 1;
-			}
-			mSteps.elementAt(index).state = 0;
-			for (int i = index + 1; i < mSteps.size(); ++i) {
-				mSteps.elementAt(i).state = -1;
-			}
-			notifyDataSetChanged();
-		}
-	
-	};
-	private StepRowAdapter mStepListAdapter = null;
    
 	protected void connectSignals() {
 		Button button = (Button)findViewById (R.id.startButton);
@@ -441,6 +390,9 @@ public class MainActivity extends Activity {
 		
 		button = (Button)findViewById (R.id.restartButton);
 		button.setOnClickListener (mStartButtonListener);
+		
+		button = (Button)findViewById (R.id.extraoptsReadyButton);
+		button.setOnClickListener (mExtraoptsReadyButtonListener);
 		
 		button = (Button)findViewById (R.id.exitButton);
 		button.setOnClickListener(mExitButtonListener);
@@ -469,10 +421,10 @@ public class MainActivity extends Activity {
         
         mBtEnabled = false;
         
-        ListView list = (ListView)findViewById (R.id.btDevicesList);
         if (mBtListAdapter == null) {
         	mBtListAdapter = new BluetoothRowAdapter(this);
         }
+        ListView list = (ListView)findViewById (R.id.btDevicesList);
         list.setAdapter (mBtListAdapter);
         
         list.setOnItemClickListener(new OnItemClickListener() {
@@ -485,36 +437,10 @@ public class MainActivity extends Activity {
         		sbuilder.append(mBtListAdapter.getRow(position).address);
         		sbuilder.append(")");
         		
-        		mStepListAdapter.setStepInfo (0, sbuilder.toString());
+        		TextView tview = (TextView)findViewById (R.id.extraoptsSelectedDeviceValue);
+        		tview.setText(sbuilder.toString());
         		
-        		mStepListAdapter.setActiveStep(1);
-        		changeToPage (Pages.STEPS);
-        	}
-        });
-        
-        list = (ListView)findViewById (R.id.stepsList);
-        if (mStepListAdapter == null) {
-        	mStepListAdapter = new StepRowAdapter(this);
-        }
-        list.setAdapter (mStepListAdapter);
-        mStepListAdapter.addStep(
-        	getResources().getString(R.string.step_bt_device_str),
-        	"00:00:00:00:00:00");
-        mStepListAdapter.addStep(
-        	getResources().getString(R.string.step_tag_str),
-        	getResources().getString(R.string.step_tag_info_str));
-        mStepListAdapter.addStep(
-            	getResources().getString(R.string.step_write_str),
-            	getResources().getString(R.string.step_write_info_wait_str));
-        mStepListAdapter.setActiveStep(0);
-        
-        list.setOnItemClickListener(new OnItemClickListener() {
-        	public void onItemClick(AdapterView<?> parent, View view,
-        		int position, long id) {
-        		
-        		changeToPage (Pages.STEPS);
-        		enableNfcReader();
-
+        		changeToPage (Pages.EXTRA_OPTIONS);
         	}
         });
         
@@ -534,31 +460,26 @@ public class MainActivity extends Activity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
     	
+    	boolean ret = false;
+    	
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
         	int curPage = currentPage();
         	
         	if (Pages.ABOUT.equal(curPage)) {
         		changeToPage(Pages.START);
-        		return false;
-        	} else if (Pages.STEPS.equal(curPage)) {
-        		changeToPage(Pages.BLUETOOTH);
-        		return false;
+        	} else if (Pages.BT_SELECT.equal(curPage)) {
+        		changeToPage(Pages.START);
+        	} else if (Pages.EXTRA_OPTIONS.equal(curPage)) {
+        		changeToPage(Pages.BT_SELECT);
+        	} else if (Pages.TAG.equal(curPage)) {
+        		changeToPage(Pages.EXTRA_OPTIONS);
+        	} else {
+        		ret = super.onKeyDown(keyCode, event);
         	}
+        } else {
+        	ret = super.onKeyDown(keyCode, event);
         }
-        return super.onKeyDown(keyCode, event);
-    }
-    
-    private void showActionDialog (int textResId, 
-        DialogInterface.OnClickListener clickListener) {
-    	
-    	showActionDialog(textResId, clickListener, false, null);
-    }
-    
-    private void showActionDialog (int textResId, 
-        DialogInterface.OnClickListener clickListener,
-        DialogInterface.OnCancelListener cancelListener) {
-    	
-    	showActionDialog(textResId, clickListener, true, cancelListener);
+        return ret;
     }
     
     private void showActionDialog (int textResId, 

@@ -16,15 +16,16 @@
     <string name="nfc_writer_device_place_holder_str">Unknown device</string>
     <string name="bt_device_name_str">Unknown device</string>
     <string name="bt_device_address_str">00:00:00:00:00:00</string>
-    <string name="step_bt_device_str">Select Bluetooth device</string>
-    <string name="step_tag_str">Select NFC tag</string>
-    <string name="step_tag_info_str">Move phone close to tag</string>
-    <string name="step_write_str">Write information to tag</string>
-    <string name="step_write_info_wait_str">Waiting for tag</string>
     <string name="end_exit_str">Exit</string>
-    <string name="step_tag_success_str">Tag foind</string>
     <string name="action_dialog_nfc_not_enabled_str">NFC does not seem to be enabled. You have to enable it manually. Tap OK to start settings. Return to this application with back after you are done.</string>
     <string name="action_dialog_ok">OK</string>
     <string name="action_dialog_bluetooth_failed_str">Failed to enable Bluetooth.</string>
+    <string name="tap_guide_str">Now please touch writable tag with your device.</string>
+    <string name="extraopts_caption_str">Options</string>
+    <string name="extraopts_ready_str">Ready</string>
+    <string name="extraopts_selected_device_caption_str">Selected device:</string>
+    <string name="extraopts_selected_device_default_str">-</string>
+    <string name="extraopts_pin_caption_str">Pin code:</string>
+    <string name="extraopts_make_readonly_str">Enable write protection of the tag</string>
 
 </resources>

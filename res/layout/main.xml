@@ -101,10 +101,11 @@
 		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 		    android:layout_width="match_parent"
 		    android:layout_height="match_parent"
-		    android:orientation="vertical" >
+		    android:orientation="vertical"
+		    android:id="@+id/btDeviceLayout">
 
 		    <LinearLayout
-		        android:id="@+id/linearLayout1"
+		        android:id="@+id/btDeviceTopLayout"
 		        android:layout_width="match_parent"
 		        android:layout_height="wrap_content"
 		        android:background="@color/bt_devices_caption_bgcolor" >
@@ -143,56 +144,136 @@
 		
 		</LinearLayout>
 		
-		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-		    android:layout_width="match_parent"
-		    android:layout_height="match_parent"
-		    android:orientation="vertical" >
-		
-		    <LinearLayout
-		        android:id="@+id/nfcWriterYTopHlinearLayout"
-		        android:layout_width="match_parent"
-		        android:layout_height="wrap_content"
-		        android:background="@color/nfc_writer_caption_bgcolor"
-		        android:orientation="horizontal">
-		
-			        <TextView
-			            android:id="@+id/nfcWriterCaption"
-			            android:layout_width="wrap_content"
-			            android:layout_height="wrap_content"
-			            android:layout_margin="3pt"
-			            android:layout_marginBottom="3pt"
-			            android:layout_weight="2"
-			            android:paddingLeft="6pt"
-			            android:text="@string/nfc_writer_caption_str"
-			            android:textAppearance="?android:attr/textAppearanceLarge"
-			            android:textColor="@color/nfc_writer_caption_fgcolor"
-			            android:shadowColor="@color/nfc_writer_caption_shadowcolor" />
-			
-			        <ProgressBar
-			            android:id="@+id/nfcWriterProgressBar"
-			            style="?android:attr/progressBarStyleSmall"
-			            android:layout_width="wrap_content"
-			            android:layout_height="match_parent"
-			            android:layout_marginBottom="3pt"
-			            android:layout_marginRight="6pt"
-			            android:layout_marginTop="3pt"
-                        android:indeterminate="false"
-			            android:layout_weight="1" />
-		
-		    </LinearLayout>
-			    
-		    <ListView
-		        android:layout_height="wrap_content" 
-		        android:layout_width="fill_parent"
-		        android:id="@+id/stepsList"/>
+		<LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:id="@+id/extraOptionsLayout">
+        
+            <LinearLayout
+                android:id="@+id/extraOptionsTopHlinearLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/bt_devices_caption_bgcolor"
+                android:orientation="horizontal">
+        
+                <TextView
+                    android:id="@+id/extraOptionsCaption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="3pt"
+                    android:layout_marginBottom="3pt"
+                    android:layout_weight="2"
+                    android:paddingLeft="6pt"
+                    android:text="@string/extraopts_caption_str"
+                    android:textAppearance="?android:attr/textAppearanceLarge"
+                    android:textColor="@color/bt_devices_caption_fgcolor"
+                    android:shadowColor="@color/bt_devices_caption_shadowcolor" />
+        
+            </LinearLayout>
+            
+            <ScrollView
+                android:id="@+id/extraoptsScrollView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" >
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical"
+                    android:id="@+id/extraOptionsScrollLayout"
+                    android:paddingLeft="3pt"
+                    android:paddingRight="3pt">
+            
+		            <TextView
+		                android:id="@+id/extraoptsSelectedDeviceCaption"
+		                android:text="@string/extraopts_selected_device_caption_str"
+		                android:layout_width="wrap_content"
+		                android:layout_height="wrap_content"
+		                android:textAppearance="?android:attr/textAppearanceMedium"
+		                />
+		            <TextView
+		                android:id="@+id/extraoptsSelectedDeviceValue"
+		                android:text="@string/extraopts_selected_device_default_str"
+		                android:layout_width="wrap_content"
+		                android:layout_height="wrap_content"
+		                android:textAppearance="?android:attr/textAppearanceSmall"
+		                />
+		            
+		            <TextView
+                        android:id="@+id/extraoptsPinCaption"
+                        android:text="@string/extraopts_pin_caption_str"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6pt"
+                        android:textAppearance="?android:attr/textAppearanceMedium"
+                        />
+
+		            <EditText
+		                android:id="@+id/extraoptsPinEdit"
+		                android:layout_width="match_parent"
+		                android:layout_height="wrap_content"
+		                android:inputType="number">
+		            </EditText>
+
+		            <CheckBox
+		                android:id="@+id/readOnlycheckBox"
+		                android:layout_width="wrap_content"
+		                android:layout_height="wrap_content"
+		                android:text="@string/extraopts_make_readonly_str" />
+		          
+                </LinearLayout>
+	            
+	        </ScrollView>
+            
+            <Button
+	            android:id="@+id/extraoptsReadyButton"
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content"
+	            android:layout_marginLeft="6pt"
+	            android:layout_marginRight="6pt"
+	            android:layout_marginTop="6pt"
+	            android:text="@string/extraopts_ready_str" />
+            
+        </LinearLayout>
 		    
-		</LinearLayout>
+		<ScrollView android:layout_width="match_parent"
+            android:id="@+id/tagScrollView"
+            android:layout_height="match_parent">
+            
+            <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:id="@+id/tagLayout">
+            
+                <ImageView
+                    android:id="@+id/tapImageView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="24pt"
+                    android:layout_marginRight="24pt"
+                    android:layout_marginBottom="6pt"
+                    android:src="@drawable/tap" />
+            
+                <TextView
+                    android:id="@+id/tapTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingLeft="6pt"
+                    android:paddingRight="6pt"
+                    android:text="@string/tap_guide_str" />
+            
+            </LinearLayout>
+        
+        </ScrollView>
 		
-		<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+		<LinearLayout
 		    android:layout_width="match_parent"
 		    android:layout_height="match_parent"
-		    android:orientation="vertical" >
-		
+		    android:orientation="vertical"
+            android:id="@+id/successLayout">
+            		
 		    <ImageView
 		        android:id="@+id/imageView1"
 		        android:layout_width="wrap_content"
