@@ -27,5 +27,6 @@
     <string name="extraopts_selected_device_default_str">-</string>
     <string name="extraopts_pin_caption_str">Pin code:</string>
     <string name="extraopts_make_readonly_str">Enable write protection of the tag</string>
+    <string name="toast_bluetooth_enabled_str">Bluetooth is now enabled by application to locate the bluetooth device. Bluetooth will be automatically disabled after query is done.</string>
 
 </resources>

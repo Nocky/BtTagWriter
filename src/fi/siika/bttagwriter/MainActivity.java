@@ -115,6 +115,9 @@ public class MainActivity extends Activity {
 		} else if (adapter.isEnabled() == false) {
 			mBtEnabled = true;
 			adapter.enable();
+			Toast toast = Toast.makeText(this,
+				R.string.toast_bluetooth_enabled_str, Toast.LENGTH_LONG);
+			toast.show();
 		} else if (adapter.isDiscovering() == false) {
 			adapter.startDiscovery();
 		}
