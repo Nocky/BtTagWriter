@@ -37,16 +37,32 @@ public class BtTagGenerator {
 		
 		NdefRecord ac = new NdefRecord (NdefRecord.TNF_WELL_KNOWN,
 			NdefRecord.RTD_ALTERNATIVE_CARRIER, emptyByteArray,
-			generateAlternativeCarrierData (name, address));
+			generateAlternativeCarrierData (name, address, false));
 				
 		NdefMessage ret = new NdefMessage(new NdefRecord[] {hs, ac});
 		return ret;
 	}
 	
+	//https://www.bluetooth.org/Technical/AssignedNumbers/generic_access_profile.htm
+	private final static byte BTAN_SHORTENED_LOCAL_NAME = 0x08;
+	private final static byte BTAN_COMPLETE_LOCAL_NAME = 0x09; 
+	private final static byte BTAN_CLASS_OF_DEVICE = 0x0D;
+	
 	private static byte[] generateAlternativeCarrierData (String name,
-		String address) {
+		String address, boolean makeSort) {
 		
-		short len = (short)(2 + 6 + 1 + 1 + name.length() + 1 + 1 + 3);
+		//Magic values from...
+		//https://www.bluetooth.org/Technical/AssignedNumbers/generic_access_profile.htm
+		
+		byte[] nameBytes = new byte[0];
+		if (makeSort == false) {
+			try {
+				nameBytes = name.getBytes("UTF-8");
+			} catch (Exception e) {
+			}
+		}
+		
+		short len = (short)(2 + 6 + 1 + 1 + nameBytes.length + 1 + 1 + 3);
 		byte data[] = new byte[len];
 		
 		int index = -1;
@@ -64,33 +80,26 @@ public class BtTagGenerator {
 		data[++index] = Byte.parseByte(parts[1], 16);
 		data[++index] = Byte.parseByte(parts[0], 16);
 		
-		// name len (index + name) (1 byte)
-		byte[] nameBytes = new byte[0];
-		try {
-			nameBytes = name.getBytes("UTF-8");
+		if (makeSort == false && nameBytes.length > 0) {
+		
+			// name len (index + name) (1 byte)
 			data[++index] = (byte)(nameBytes.length + 0x01);
-		} catch (Exception e) {
-			data[++index] = 0x01;
+			data[++index] = BTAN_COMPLETE_LOCAL_NAME;
+			// name (n bytes)
+			for (int i = 0; i < nameBytes.length; ++i) {
+				data[++index] = (byte)nameBytes[i];
+			}
+			
 		}
 		
-		// name index 0x09 (1 byte)
-		data[++index] = 0x09;
-		
-		// name (n bytes)
-		for (int i = 0; i < nameBytes.length; ++i) {
-			data[++index] = (byte)nameBytes[i];
-		}
-		
-		// class len (1 byte)
+		// Define class of device (TODO: change this so that it will support
+		// other values)
 		data[++index] = 0x04;
-		
-		// class index 0x0D (1 byte)
-		data[++index] = 0x0D;
-		
-		//TODO: Support something else too
-		//BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO = 0x0402
-		// class eg. 0x140420 (3 bytes)
+		data[++index] = BTAN_CLASS_OF_DEVICE;
+		// Class of Device (3 bytes)
+		// https://www.bluetooth.org/apps/content/?doc_id=49706
 		data[++index] = 0x14;
+		// 0x0402 = BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO
 		data[++index] = 0x04;
 		data[++index] = 0x20;
 
