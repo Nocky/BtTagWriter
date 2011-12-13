@@ -54,15 +54,17 @@ public class BtTagGenerator {
 		//Magic values from...
 		//https://www.bluetooth.org/Technical/AssignedNumbers/generic_access_profile.htm
 		
+		short spaceTakenByName = 0;
 		byte[] nameBytes = new byte[0];
 		if (makeSort == false) {
 			try {
 				nameBytes = name.getBytes("UTF-8");
+				spaceTakenByName = (short)(2 + nameBytes.length);
 			} catch (Exception e) {
 			}
 		}
 		
-		short len = (short)(2 + 6 + 1 + 1 + nameBytes.length + 1 + 1 + 3);
+		short len = (short)(2 + 6 + spaceTakenByName + 1 + 1 + 3);
 		byte data[] = new byte[len];
 		
 		int index = -1;
@@ -80,7 +82,7 @@ public class BtTagGenerator {
 		data[++index] = Byte.parseByte(parts[1], 16);
 		data[++index] = Byte.parseByte(parts[0], 16);
 		
-		if (makeSort == false && nameBytes.length > 0) {
+		if (spaceTakenByName > 0) {
 		
 			// name len (index + name) (1 byte)
 			data[++index] = (byte)(nameBytes.length + 0x01);
