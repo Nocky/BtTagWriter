@@ -20,10 +20,10 @@
 			
 			    <ImageView
 			        android:id="@+id/startImageView"
-			        android:layout_width="wrap_content"
+			        android:layout_width="match_parent"
 			        android:layout_height="wrap_content"
-			        android:layout_marginLeft="24pt"
-			        android:layout_marginRight="24pt"
+			        android:layout_marginLeft="6pt"
+			        android:layout_marginRight="6pt"
 			        android:src="@drawable/start" />
 			
 			    <TextView
@@ -178,12 +178,12 @@
                 android:layout_height="wrap_content" >
                 
                 <LinearLayout
+                    android:id="@+id/extraOptionsScrollLayout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:orientation="vertical"
-                    android:id="@+id/extraOptionsScrollLayout"
                     android:paddingLeft="3pt"
-                    android:paddingRight="3pt">
+                    android:paddingRight="3pt" >
             
 		            <TextView
 		                android:id="@+id/extraoptsSelectedDeviceCaption"
@@ -200,12 +200,21 @@
 		                android:textAppearance="?android:attr/textAppearanceSmall"
 		                />
 		            
+		            <ImageView
+                        xmlns:android="http://schemas.android.com/apk/res/android"
+                        android:src="@android:drawable/divider_horizontal_dark"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:scaleType="fitXY"
+                        android:paddingBottom="3pt"
+                        android:paddingTop="3pt"
+                        />
+		            
 		            <TextView
                         android:id="@+id/extraoptsPinCaption"
                         android:text="@string/extraopts_pin_caption_str"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6pt"
                         android:textAppearance="?android:attr/textAppearanceMedium"
                         />
 
@@ -215,6 +224,16 @@
 		                android:layout_height="wrap_content"
 		                android:inputType="number">
 		            </EditText>
+		            
+		            <ImageView
+                        xmlns:android="http://schemas.android.com/apk/res/android"
+                        android:src="@android:drawable/divider_horizontal_dark"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:scaleType="fitXY"
+                        android:paddingBottom="3pt"
+                        android:paddingTop="3pt"
+                        />
 
 		            <CheckBox
 		                android:id="@+id/readOnlycheckBox"

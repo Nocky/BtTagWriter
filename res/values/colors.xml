@@ -8,6 +8,7 @@
     <color name="nfc_writer_caption_shadowcolor">#C0000000</color>
     <color name="step_done_fgcolor">#FFFFFF</color>
     <color name="step_undone_fgcolor">#C0FFFFFF</color>
+    <color name="extraopts_divider_color">#C0C0C0</color>
 
     
 </resources>
