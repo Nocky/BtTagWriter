@@ -39,9 +39,12 @@ public class BtTagGenerator {
 		} catch (Exception e) {
 			Log.d("BtTagGenerator", e.getMessage());
 		}
-				
+		
+		/*
 		NdefMessage ret = new NdefMessage(new NdefRecord[] {
 			generateHandoverSelectRecord(), media});
+		*/
+		NdefMessage ret = new NdefMessage(new NdefRecord[] {media});
 		return ret;
 	}
 	

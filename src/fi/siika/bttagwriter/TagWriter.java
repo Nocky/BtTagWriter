@@ -152,8 +152,15 @@ public class TagWriter extends Thread {
 		byte[] ndefMessage = BtTagGenerator.generateNdefMessageForBtTag(
 			mInfo.name, mInfo.address).toByteArray();
 		
-		int pages = ndefMessage.length / MifareUltralight.PAGE_SIZE;
-		if (ndefMessage.length % MifareUltralight.PAGE_SIZE != 0) {
+		byte[] data = new byte[ndefMessage.length + 2];
+		data[0] = 0x03;
+		data[1] = (byte)(ndefMessage.length);
+		for (int i = 0; i < ndefMessage.length; ++i) {
+			data[2+i] = ndefMessage[i];
+		}
+		
+		int pages = data.length / MifareUltralight.PAGE_SIZE;
+		if (data.length % MifareUltralight.PAGE_SIZE != 0) {
 			pages += 1;
 		}
 		
@@ -164,10 +171,10 @@ public class TagWriter extends Thread {
 		for (int i = 0; i < pages; ++i) {
 			int index = 4*i;
 			//This will auto fill with 0x00s if we index out
-			byte[] page = Arrays.copyOfRange(ndefMessage, index, index + 4);
+			byte[] page = Arrays.copyOfRange(data, index, index + 4);
 			StringBuilder sb = new StringBuilder();
-			sb.append("Write page ").append(START_NDEF_MIFARE_UL_PAGE + i);
-			Log.d(getClass().getSimpleName(),sb.toString());
+			//sb.append("Write page ").append(START_NDEF_MIFARE_UL_PAGE + i);
+			//Log.d(getClass().getSimpleName(),sb.toString());
 			tag.writePage (START_NDEF_MIFARE_UL_PAGE + i, page);
 		}
 		
