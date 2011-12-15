@@ -12,8 +12,6 @@
     <string name="start_guide_str">This application allows you to write Bluetooth connectivity information to NFC tags. These tags can be then used for easy connecting between your Bluetooth devices and phone.</string>
     <string name="end_success_str">Success!</string>
     <string name="end_write_another_str">Write another tag</string>
-    <string name="nfc_writer_selected_str">Selected Bluetooth device:</string>
-    <string name="nfc_writer_device_place_holder_str">Unknown device</string>
     <string name="bt_device_name_str">Unknown device</string>
     <string name="bt_device_address_str">00:00:00:00:00:00</string>
     <string name="end_exit_str">Exit</string>
@@ -28,5 +26,7 @@
     <string name="extraopts_pin_caption_str">Pin code:</string>
     <string name="extraopts_make_readonly_str">Enable write protection of the tag</string>
     <string name="toast_bluetooth_enabled_str">Bluetooth is now enabled by application to locate the bluetooth device. Bluetooth will be automatically disabled after query is done.</string>
+    <string name="tag_no_nfc_support_str">Your device does not support NFC</string>
+    <string name="tag_no_accepted_str">Me no likely this tag</string>
 
 </resources>

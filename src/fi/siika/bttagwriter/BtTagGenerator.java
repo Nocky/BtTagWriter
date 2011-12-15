@@ -8,11 +8,13 @@
 package fi.siika.bttagwriter;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.tech.MifareUltralight;
+import android.util.Log;
 
 /**
  * BtTagCreator is used to construct NdefMessages written to the tags
@@ -33,13 +35,22 @@ public class BtTagGenerator {
 		
 		byte[] hsData = new byte[] {0x12}; // HS version 1.2 
 		NdefRecord hs = new NdefRecord (NdefRecord.TNF_WELL_KNOWN,
-				NdefRecord.RTD_HANDOVER_SELECT, emptyByteArray, hsData);
+			NdefRecord.RTD_HANDOVER_SELECT, emptyByteArray, hsData);
 		
 		NdefRecord ac = new NdefRecord (NdefRecord.TNF_WELL_KNOWN,
 			NdefRecord.RTD_ALTERNATIVE_CARRIER, emptyByteArray,
-			generateAlternativeCarrierData (name, address, false));
+			generateAlternativeCarrierData ());
+		
+		NdefRecord media = null;
+		try {
+			media = new NdefRecord (NdefRecord.TNF_MIME_MEDIA,
+				BT_EP_OOB_MIME_TYPE.getBytes("UTF-8"), new byte[] {(byte)0x01},
+				generateBluetoothMedia (name, address, false));
+		} catch (Exception e) {
+			Log.d("BtTagGenerator", e.getMessage());
+		}
 				
-		NdefMessage ret = new NdefMessage(new NdefRecord[] {hs, ac});
+		NdefMessage ret = new NdefMessage(new NdefRecord[] {hs, ac, media});
 		return ret;
 	}
 	
@@ -48,7 +59,16 @@ public class BtTagGenerator {
 	private final static byte BTAN_COMPLETE_LOCAL_NAME = 0x09; 
 	private final static byte BTAN_CLASS_OF_DEVICE = 0x0D;
 	
-	private static byte[] generateAlternativeCarrierData (String name,
+	private final static String BT_EP_OOB_MIME_TYPE =
+		"application/vnd.bluetooth.ep.oob";
+	
+	
+	private static byte[] generateAlternativeCarrierData () {
+		byte[] data = {0x01, 0x01, 0x30, 0x00};
+		return data;
+	}
+		
+	private static byte[] generateBluetoothMedia (String name,
 		String address, boolean makeSort) {
 		
 		//Magic values from...
@@ -69,18 +89,24 @@ public class BtTagGenerator {
 		
 		int index = -1;
 		
-		// total len (2 bytes)
-		data[++index] = (byte)((len >> 8) & 0xFF);
-		data[++index] = (byte)(len & 0xFF);
+		// total length (2 bytes)
+		ByteBuffer buffer = ByteBuffer.allocate(2);
+		buffer.putShort(len);
+		data[++index] = buffer.get(0);
+		data[++index] = buffer.get(1);
 		
 		// address (6 bytes) TODO!
+		Log.d("BtTagGenerator", address);
 		String[] parts = address.split(":");
-		data[++index] = Byte.parseByte(parts[5], 16);
-		data[++index] = Byte.parseByte(parts[4], 16);
-		data[++index] = Byte.parseByte(parts[3], 16);
-		data[++index] = Byte.parseByte(parts[2], 16);
-		data[++index] = Byte.parseByte(parts[1], 16);
-		data[++index] = Byte.parseByte(parts[0], 16);
+		Log.d("BtTagGenerator", String.valueOf(parts.length));
+		Log.d("BtTagGenerator", parts[5]);
+		data[++index] = (byte)Short.parseShort(parts[5], 16);
+		Log.d("BtTagGenerator", new StringBuilder().append(data[index]).toString());
+		data[++index] = (byte)Short.parseShort(parts[4], 16);
+		data[++index] = (byte)Short.parseShort(parts[3], 16);
+		data[++index] = (byte)Short.parseShort(parts[2], 16);
+		data[++index] = (byte)Short.parseShort(parts[1], 16);
+		data[++index] = (byte)Short.parseShort(parts[0], 16);
 		
 		if (spaceTakenByName > 0) {
 		

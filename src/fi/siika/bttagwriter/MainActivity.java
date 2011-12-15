@@ -33,6 +33,8 @@ import android.nfc.Tag;
 import android.nfc.tech.MifareUltralight;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -52,6 +54,10 @@ public class MainActivity extends Activity {
 	
 	private BluetoothAdapter mBtAdapter = null;
 	private boolean mBtEnabled = false;
+	private PendingIntent mNfcPendingIntent = null;
+	private TagWriter mTagWriter = null;
+	private Handler mTagWriterHandler = null; 
+	private TagWriter.TagInformation mTagInfo = new TagWriter.TagInformation();
 	
 	public enum Pages {
 		START(0), ABOUT(1), BT_SELECT(2), EXTRA_OPTIONS(3), TAG(4), SUCCESS(5);
@@ -75,6 +81,8 @@ public class MainActivity extends Activity {
 		if (showFlipChild (page.toInt())) {
 			if (page == Pages.BT_SELECT) {
 				startBluetoothDiscovery();
+			} else if (page == Pages.TAG) {
+				enableNfcReader();
 			}
 		}
 	}
@@ -154,6 +162,12 @@ public class MainActivity extends Activity {
 	private void enableNfcReader() {
 		NfcAdapter nfcAdapter = getNfcReader();
 		if (nfcAdapter == null) {
+			showActionDialog(R.string.tag_no_nfc_support_str,
+				new DialogInterface.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						changeToPage(Pages.START);
+					}
+				}, false, null);
 			return;
 		}
 		
@@ -171,15 +185,13 @@ public class MainActivity extends Activity {
 			return;
 		}
 		
-		/*
-		PendingIntent pendingIntent = PendingIntent.getActivity(this, 0,
+		mNfcPendingIntent = PendingIntent.getActivity(this, 0,
 			new Intent(this,getClass()).addFlags(
 			Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-
 		
 		IntentFilter tech = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
 	    try {
-	        tech.addDataType("* / *");
+	        tech.addDataType("*/*");
 	    } catch (MalformedMimeTypeException e) {
 	        throw new RuntimeException("fail", e);
 	    }
@@ -187,10 +199,8 @@ public class MainActivity extends Activity {
 		String[][] techList = new String[][] { new String[] {
 			MifareUltralight.class.getName() } };
 
-		nfcAdapter.enableForegroundDispatch(this, pendingIntent,
+		nfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent,
 			new IntentFilter[] { tech }, techList);
-		*/
-
 	}
 	
 	/*
@@ -202,7 +212,8 @@ public class MainActivity extends Activity {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD_MR1) {
 			return;
 		} else if (mNfcReader != null && mNfcReader.isEnabled()) {
-			//mNfcReader.disableForegroundDispatch (this);
+			mNfcReader.disableForegroundDispatch (this);
+			mNfcPendingIntent = null;
 		}
 	}
 	
@@ -221,11 +232,15 @@ public class MainActivity extends Activity {
 				ProgressBar pb = (ProgressBar)findViewById (R.id.btScanProgressBar);
 				pb.setIndeterminate (false);
 				pb.setVisibility(View.INVISIBLE);
-				getBluetoothAdapter().disable();
+				if (mBtEnabled) {
+					getBluetoothAdapter().disable();
+					mBtEnabled = false;
+				}
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
 				ProgressBar pb = (ProgressBar)findViewById (R.id.btScanProgressBar);
 				pb.setIndeterminate (true);
 				pb.setVisibility(View.VISIBLE);
+			/*
 			} else if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
 				CharSequence text = "Hello Tech!";
 				Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
@@ -234,6 +249,7 @@ public class MainActivity extends Activity {
 				CharSequence text = "Hello Tag!";
 				Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
 				toast.show();
+			*/
 			} else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
 				int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
 					BluetoothAdapter.STATE_OFF);
@@ -257,6 +273,8 @@ public class MainActivity extends Activity {
 	private void flipChildHidden (int index) {
 		if (Pages.BT_SELECT.equal(index)) {
 			stopBluetoothDiscovery();
+		} else if (Pages.TAG.equal(index)) {
+			disableNfcReader();
 		}
 	}
 	
@@ -405,16 +423,29 @@ public class MainActivity extends Activity {
 	}
 	
 	@Override
+	public void onResume() {
+		super.onResume();
+		
+		mTagWriterHandler = new Handler() {
+			@Override
+			public void handleMessage (Message msg) {
+				switch (msg.what) {
+				case TagWriter.HANDLER_MSG_SUCCESS:
+					changeToPage(Pages.SUCCESS);
+					break;
+				default:
+					showActionDialog(R.string.tag_no_accepted_str, null,
+						false, null);
+				}
+			}
+		};
+		
+		mTagWriter = new TagWriter (mTagWriterHandler);
+	}
+	
+	@Override
 	public void onPause() {
 		super.onPause();
-		
-		if(mBtEnabled) {
-			getBluetoothAdapter().disable();
-			mBtEnabled = false;
-		}
-		
-		disableNfcReader();
-		stopBluetoothDiscovery();
 	}
 	
     @Override
@@ -434,13 +465,17 @@ public class MainActivity extends Activity {
         	public void onItemClick(AdapterView<?> parent, View view,
         		int position, long id) {
         		
+        		mTagInfo.name = mBtListAdapter.getRow(position).name;
+        		mTagInfo.address = mBtListAdapter.getRow(position).address;
+        		
         		StringBuilder sbuilder = new StringBuilder();
         		sbuilder.append(mBtListAdapter.getRow(position).name);
         		sbuilder.append(" (");
         		sbuilder.append(mBtListAdapter.getRow(position).address);
         		sbuilder.append(")");
         		
-        		TextView tview = (TextView)findViewById (R.id.extraoptsSelectedDeviceValue);
+        		TextView tview = (TextView)findViewById (
+        			R.id.extraoptsSelectedDeviceValue);
         		tview.setText(sbuilder.toString());
         		
         		changeToPage (Pages.EXTRA_OPTIONS);
@@ -454,8 +489,8 @@ public class MainActivity extends Activity {
         filter.addAction (BluetoothDevice.ACTION_FOUND);
         filter.addAction (BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
         filter.addAction (BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        filter.addAction (NfcAdapter.ACTION_TECH_DISCOVERED);
-        filter.addAction (NfcAdapter.ACTION_TAG_DISCOVERED);
+        //filter.addAction (NfcAdapter.ACTION_TECH_DISCOVERED);
+        //filter.addAction (NfcAdapter.ACTION_TAG_DISCOVERED);
         filter.addAction (BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver (mBCReceiver, filter);
     }
@@ -485,6 +520,25 @@ public class MainActivity extends Activity {
         return ret;
     }
     
+    @Override
+    public void onNewIntent(Intent intent) {
+    	setIntent(intent);
+    	String action = intent.getAction();
+    	
+    	if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
+    		Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);    		
+    		if (mTagWriter.writeToTag(tag, mTagInfo) == false) {
+    			showActionDialog(R.string.tag_no_accepted_str, null, false,
+    				null);
+    		}
+
+    	} else {
+        	Toast toast = Toast.makeText(this, action, 
+        		Toast.LENGTH_SHORT);
+        	toast.show();
+    	}
+    }
+    
     private void showActionDialog (int textResId, 
     	DialogInterface.OnClickListener clickListener,
     	boolean cancelable,
@@ -495,11 +549,17 @@ public class MainActivity extends Activity {
     	
     	AlertDialog dialog = builder.create();
     	
-    	dialog.setCancelable(cancelable);
-    	
     	if (clickListener != null) {
+    		dialog.setCancelable(cancelable);
     		dialog.setButton(getResources().getText(R.string.action_dialog_ok),
     			clickListener);
+    		
+    	} else {
+    		dialog.setCancelable(true);
+    	}
+    	
+    	if (cancelListener != null) {
+    		dialog.setOnCancelListener(cancelListener);
     	}
     	
     	dialog.show();

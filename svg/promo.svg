@@ -39,11 +39,11 @@
     <linearGradient
        id="linearGradient8150">
       <stop
-         style="stop-color:#7d7d7d;stop-opacity:1;"
+         style="stop-color:#a3a3a3;stop-opacity:1;"
          offset="0"
          id="stop8152" />
       <stop
-         style="stop-color:#adadad;stop-opacity:1;"
+         style="stop-color:#8d8d8d;stop-opacity:1;"
          offset="1"
          id="stop8154" />
     </linearGradient>
@@ -430,6 +430,17 @@
          stdDeviation="1.4536372"
          id="feGaussianBlur8830" />
     </filter>
+    <radialGradient
+       inkscape:collect="always"
+       xlink:href="#linearGradient8150"
+       id="radialGradient8832"
+       cx="258.09012"
+       cy="292.00372"
+       fx="258.09012"
+       fy="292.00372"
+       r="12.185902"
+       gradientTransform="matrix(1,0,0,0.37829125,0,176.2587)"
+       gradientUnits="userSpaceOnUse" />
   </defs>
   <metadata
      id="metadata6964">
@@ -734,13 +745,13 @@
        id="text7892"
        y="287.97263"
        x="242.83154"
-       style="font-size:13.09607983px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:url(#linearGradient8156);fill-opacity:1;stroke:none;font-family:Ubuntu Mono;-inkscape-font-specification:Ubuntu Mono"
+       style="font-size:13.09607983px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:url(#radialGradient8832);fill-opacity:1;stroke:none;font-family:Ubuntu Mono;-inkscape-font-specification:Ubuntu Mono"
        xml:space="preserve"><tspan
          y="287.97263"
          x="242.83154"
          id="tspan7894"
          sodipodi:role="line"
-         style="fill:url(#linearGradient8156);fill-opacity:1">beta</tspan></text>
+         style="fill:url(#radialGradient8832);fill-opacity:1">beta</tspan></text>
     <path
        transform="matrix(0.24075024,-0.03576085,0.10676651,0.33585205,147.58584,181.54503)"
        d="m -25.142856,237.85715 a 9.1428576,15.285714 0 1 1 -18.285715,0 9.1428576,15.285714 0 1 1 18.285715,0 z"
