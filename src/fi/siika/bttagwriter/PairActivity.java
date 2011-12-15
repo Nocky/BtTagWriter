@@ -8,6 +8,7 @@ package fi.siika.bttagwriter;
 
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 
 import android.app.Activity;
@@ -24,52 +25,66 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.bluetooth.IBluetoothA2dp;
 import android.bluetooth.IBluetooth;
-import android.bluetooth.IBluetoothHeadset;
 
 /**
  * 
  */
-public class PairActivity extends Activity {
+public class PairActivity extends Activity
+	implements BluetoothProfile.ServiceListener {
 	
 	private BluetoothManager mBtMgr = null;
 	private NfcManager mNfcMgr = null;
+	private BluetoothDevice mConnectedDevice = null;
+	private Actions mAction = Actions.IDLE;
+	
+	private enum Actions {
+		IDLE,
+		CONNECTING,
+		DISCONNECTING
+	};
+	
+	private void shutdown() {
+		mBtMgr.disableIfEnabled();
+	}
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.pair);
         
-        Log.d("hep", "created!");
+        Log.d(getClass().getSimpleName(), "created!");
         
         mBtMgr = new BluetoothManager (this, null);
         mNfcMgr = new NfcManager (this);
+        
+        onNewIntent(getIntent());
     }
     
     @Override
     public void onResume() {    
     	super.onResume();
-        mNfcMgr.enableForegroundNdefDiscovered();
+    	mNfcMgr.enableForegroundNdefDiscovered();
+    	
+    	mBtMgr.getBluetoothAdapter().getProfileProxy (this, this,
+    		BluetoothProfile.A2DP);
     }
     
     @Override
     public void onPause() {
+    	mBtMgr.releaseAdapter();
     	mNfcMgr.disableForegroundDispatch();
     	super.onPause();
     }
     
-    private UUID[] uuids = new UUID[] {
-    	UUID.fromString ("00001112-0000-1000-8000-00805F9B34FB"),
-    	UUID.fromString ("00001203-0000-1000-8000-00805F9B34FB"),
-    	UUID.fromString ("00000003-0000-1000-8000-00805F9B34FB"),
-    	UUID.fromString ("00001108-0000-1000-8000-00805F9B34FB"),
-    	UUID.fromString ("0000111F-0000-1000-8000-00805F9B34FB"),
-    	UUID.fromString ("0000111E-0000-1000-8000-00805F9B34FB"),
-    	UUID.fromString ("0000110B-0000-1000-8000-00805F9B34FB")
-    };
-    
+    /**
+     * As application APIs does not offer way to connect A2DP devices this
+     * has to be done via these interface classes.
+     * @return A2DP interface instance
+     */
     private IBluetoothA2dp getIBluetoothA2dp() {
 
     	IBluetoothA2dp ibta = null;
@@ -80,8 +95,6 @@ public class PairActivity extends Activity {
 
     	    Method m2 = c2.getDeclaredMethod("getService", String.class);
     	    IBinder b = (IBinder) m2.invoke(null, "bluetooth_a2dp");
-
-    	    Log.d(getClass().getSimpleName(), b.getInterfaceDescriptor());
 
     	    Class c3 = Class.forName("android.bluetooth.IBluetoothA2dp");
 
@@ -95,43 +108,18 @@ public class PairActivity extends Activity {
     	    ibta = (IBluetoothA2dp) m.invoke(null, b);
 
     	} catch (Exception e) {
-    	    Log.e(getClass().getSimpleName(), "Shit " + e.getMessage());
+    	    Log.e(getClass().getSimpleName(), "A2DP inteface problem: "
+    	    	+ e.getMessage());
     	}
     	
     	return ibta;
     }
     
-    private IBluetoothHeadset getIBluetoothHeadset() {
-
-    	IBluetoothHeadset hset = null;
-
-    	try {
-
-    	    Class c2 = Class.forName("android.os.ServiceManager");
-
-    	    Method m2 = c2.getDeclaredMethod("getService", String.class);
-    	    IBinder b = (IBinder) m2.invoke(null, "bluetooth_headset");
-
-    	    Log.d(getClass().getSimpleName(), b.getInterfaceDescriptor());
-
-    	    Class c3 = Class.forName("android.bluetooth.IBluetoothHeadset");
-
-    	    Class[] s2 = c3.getDeclaredClasses();
-
-    	    Class c = s2[0];
-    	    // printMethods(c);
-    	    Method m = c.getDeclaredMethod("asInterface", IBinder.class);
-
-    	    m.setAccessible(true);
-    	    hset = (IBluetoothHeadset) m.invoke(null, b);
-
-    	} catch (Exception e) {
-    	    Log.e(getClass().getSimpleName(), "Shit " + e.getMessage());
-    	}
-    	
-    	return hset;
-    }
-    
+    /**
+     * As application API does not offer direct access to pairing of new
+     * bluetooth devices this has to be done via interface class
+     * @return Bluetooth interface class
+     */
     private IBluetooth getIBluetooth() {
 
     	IBluetooth ibt = null;
@@ -142,9 +130,7 @@ public class PairActivity extends Activity {
 
     	    Method m2 = c2.getDeclaredMethod("getService", String.class);
     	    IBinder b = (IBinder) m2.invoke(null, "bluetooth");
-
-    	    Log.d(getClass().getSimpleName(), b.getInterfaceDescriptor());
-
+    	    
     	    Class c3 = Class.forName("android.bluetooth.IBluetooth");
 
     	    Class[] s2 = c3.getDeclaredClasses();
@@ -157,29 +143,40 @@ public class PairActivity extends Activity {
     	    ibt = (IBluetooth) m.invoke(null, b);
 
     	} catch (Exception e) {
-    	    Log.e(getClass().getSimpleName(), "Shit " + e.getMessage());
+    	    Log.e(getClass().getSimpleName(), "Bluetooth interface problem: "
+    	    	+ e.getMessage());
     	}
     	
     	return ibt;
     }
-
-
     
     private void connectToBluetoothDevice (BluetoothDevice device) {
     	
-    	mBtMgr.getBluetoothAdapter().getProfileProxy(this, null,
-    		BluetoothProfile.A2DP);
+    	mConnectedDevice = device;
     	
+    	// Bluetooth interface (pairing)
     	IBluetooth bt = getIBluetooth();
+    	// A2DP interface (connecting)
     	IBluetoothA2dp a2dp = getIBluetoothA2dp();
-    	//IBluetoothHeadset hset = getIBluetoothHeadset();
     	
     	try {
-    		bt.createBond(device.getAddress());
-    		Log.d(getClass().getSimpleName(),
-    			new StringBuilder().append(a2dp.getPriority(device)).toString());
-    		a2dp.connect(device);
-    		Log.d (getClass().getSimpleName(), "Hep!");
+    		List<BluetoothDevice> connected = a2dp.getConnectedDevices();
+    		if (connected.contains(device)) {
+    			mAction = Actions.DISCONNECTING;
+    			TextView view = (TextView)findViewById(R.id.pairInfoTextView);
+    			view.setText(R.string.pair_disconnecting_str);
+    			a2dp.disconnect(device);
+    		} else if (device.getBondState() == BluetoothDevice.BOND_NONE) {
+    			mAction = Actions.CONNECTING;
+    			TextView view = (TextView)findViewById(R.id.pairInfoTextView);
+    			view.setText(R.string.pair_bounding_str);
+    			bt.createBond(device.getAddress());
+    		} else {
+    			mAction = Actions.CONNECTING;
+    			TextView view = (TextView)findViewById(R.id.pairInfoTextView);
+    			view.setText(R.string.pair_connecting_str);
+    			a2dp.connect(device);
+    		}
     	} catch (Exception e) {
     		Toast toast = Toast.makeText(this, "iFail", Toast.LENGTH_LONG);
     		toast.show();
@@ -247,6 +244,7 @@ public class PairActivity extends Activity {
     			if (rec.getTnf() == NdefRecord.TNF_MIME_MEDIA &&
     				Arrays.equals(rec.getType(), getMimeType())) {
     			
+    				Log.d(getClass().getSimpleName(), "Reseived BT NDEF record");
     				handleBluetoothNdefRecord (rec);
     			}
     		}
@@ -257,7 +255,7 @@ public class PairActivity extends Activity {
     @Override
     public void onNewIntent(Intent intent) {
     	
-    	Log.d("hep", "here!");
+    	Log.d(getClass().getSimpleName(), "Intent called");
     	
     	setIntent (intent);
     	
@@ -271,15 +269,51 @@ public class PairActivity extends Activity {
     		}
     		
     		if (msgs.length > 0) {
+    			Log.d(getClass().getSimpleName(), "Reseived NDEF messages");
     			handleNdefMessages(msgs);
-    		} else {
-    			Toast toast = Toast.makeText(this, intent.getAction(), Toast.LENGTH_LONG);
-        		toast.show();
     		}
-    	} else {
-    		Toast toast = Toast.makeText(this, intent.getAction(), Toast.LENGTH_LONG);
-    		toast.show();
     	}
     }
+
+	/* (non-Javadoc)
+	 * @see android.bluetooth.BluetoothProfile.ServiceListener#onServiceConnected(int, android.bluetooth.BluetoothProfile)
+	 */
+	public void onServiceConnected(int profile, BluetoothProfile proxy) {
+		
+		Log.d(getClass().getSimpleName(), "A2DP Service connected");
+		
+		if (mConnectedDevice == null) {
+			Log.d(getClass().getSimpleName(), "condev is null");
+			return;
+		}
+		
+		int state = proxy.getConnectionState(mConnectedDevice);
+		
+		if (state == BluetoothProfile.STATE_CONNECTING ||
+			state == BluetoothProfile.STATE_CONNECTED) {
+			
+			if (mAction == Actions.CONNECTING) {
+				Log.d(getClass().getSimpleName(), "Device connected");
+				this.finish();
+			}
+		} else if (state == BluetoothProfile.STATE_DISCONNECTING ||
+			state == BluetoothProfile.STATE_DISCONNECTED) {
+			
+			if (mAction == Actions.DISCONNECTING) {
+				Log.d(getClass().getSimpleName(), "Device disconnected");
+				this.finish();
+			}
+		} else {
+			Log.d(getClass().getSimpleName(), new StringBuilder().append("state: ").append (state).toString());
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see android.bluetooth.BluetoothProfile.ServiceListener#onServiceDisconnected(int)
+	 */
+	public void onServiceDisconnected(int profile) {
+		Log.d(getClass().getSimpleName(), "A2DP Service disconnected");
+		
+	}
 
 }

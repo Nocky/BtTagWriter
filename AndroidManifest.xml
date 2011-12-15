@@ -4,7 +4,7 @@
     android:versionCode="1"
     android:versionName="0.1" >
 
-    <uses-sdk android:minSdkVersion="7" />
+    <uses-sdk android:minSdkVersion="14" />
     <uses-permission android:name="android.permission.BLUETOOTH"/>
    	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
    	<uses-permission android:name="android.permission.NFC"
@@ -26,17 +26,15 @@
         
         <activity
             android:label="@string/pair_app_name"
-            android:name=".PairActivity">
+            android:name=".PairActivity"
+            android:launchMode="singleTop">
             
-            <intent-filter >
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-            
-            <intent-filter>
-               <action android:name="ACTION_NDEF_DISCOVERED" />
+            <intent-filter 
+               android:label="@string/pair_app_name">
+                
+               <action android:name="android.nfc.action.NDEF_DISCOVERED" />
+               <data android:mimeType="application/vnd.bluetooth.ep.oob"/>
                <category android:name="android.intent.category.DEFAULT" />
-               <data android:mimeType="application/vnd.bluetooth.ep.oob" />
            </intent-filter>
             
         </activity>

@@ -39,6 +39,7 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -155,6 +156,13 @@ public class MainActivity extends Activity implements BluetoothManager.Listener 
 		}
 	};
 	
+	private OnClickListener mRescanButtonListener = new OnClickListener() {
+		public void onClick(View v) {
+			
+			mBtMgr.startDiscovery();
+		}
+	};
+	
 	private OnClickListener mAboutButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			
@@ -264,6 +272,9 @@ public class MainActivity extends Activity implements BluetoothManager.Listener 
 		
 		button = (Button)findViewById (R.id.aboutButton);
 		button.setOnClickListener(mAboutButtonListener);
+		
+		ImageButton ib = (ImageButton)findViewById (R.id.btRescanButton);
+		ib.setOnClickListener(mRescanButtonListener);
 	}
 	
 	@Override
@@ -413,11 +424,14 @@ public class MainActivity extends Activity implements BluetoothManager.Listener 
 	 */
 	public void bluetoothDiscoveryStateChanged(boolean active) {
 		ProgressBar pb = (ProgressBar)findViewById (R.id.btScanProgressBar);
+		ImageButton ib = (ImageButton)findViewById (R.id.btRescanButton);
 		pb.setIndeterminate (active);
 		if (active) {
 			pb.setVisibility(View.VISIBLE);
+			ib.setVisibility(View.INVISIBLE);
 		} else {
 			pb.setVisibility(View.INVISIBLE);
+			ib.setVisibility(View.VISIBLE);
 		}
 		
 	}

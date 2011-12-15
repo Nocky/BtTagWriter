@@ -30,10 +30,31 @@ public class BluetoothManager {
 	private BluetoothAdapter mBtAdapter = null;
 	private boolean mEnabledBt = false;
 	private Listener mListener = null;
+	private boolean mReceiverConnected = false;
 	
 	public BluetoothManager(Context context, Listener listener) {
 		mContext = context;
 		mListener = listener;
+	}
+	
+	private void connectReceiver() {
+		if (mReceiverConnected == false) {
+	        //setup broadcaster listener
+	        IntentFilter filter = new IntentFilter ();
+	        filter.addAction (BluetoothDevice.ACTION_FOUND);
+	        filter.addAction (BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+	        filter.addAction (BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+	        filter.addAction (BluetoothAdapter.ACTION_STATE_CHANGED);
+			mContext.registerReceiver (mBCReceiver, filter);
+			mReceiverConnected = true;
+		}
+	}
+	
+	public void releaseAdapter() {
+		if (mReceiverConnected) {
+			mContext.unregisterReceiver (mBCReceiver);
+			mReceiverConnected = false;
+		}
 	}
 	
 	/*
@@ -42,15 +63,10 @@ public class BluetoothManager {
 	public BluetoothAdapter getBluetoothAdapter() {
 		if (mBtAdapter == null) {
 			mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-			
-	        //setup broadcaster listener
-	        IntentFilter filter = new IntentFilter ();
-	        filter.addAction (BluetoothDevice.ACTION_FOUND);
-	        filter.addAction (BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-	        filter.addAction (BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-	        filter.addAction (BluetoothAdapter.ACTION_STATE_CHANGED);
-	        mContext.registerReceiver (mBCReceiver, filter);
 		}
+		
+		connectReceiver();
+		
 		
 		return mBtAdapter;
 	}
@@ -77,14 +93,24 @@ public class BluetoothManager {
 		return success;
 	}
 	
+	/**
+	 * Disable bluetooth if it was originally enabled by BluetoothManager
+	 */
+	public void disableIfEnabled() {
+		if (mBtAdapter != null) {
+			if (mEnabledBt == true) {
+				mBtAdapter.disable();
+				mEnabledBt = false;
+			}
+		}
+	}
+	
 	public void stopDiscovery() {
 		if (mBtAdapter != null) {
 			if (mBtAdapter.isDiscovering()) {
 				mBtAdapter.cancelDiscovery();
 			}
-			if (mEnabledBt == true) {
-				mBtAdapter.disable();
-			}
+			disableIfEnabled();
 		}
 	}
 	
@@ -106,10 +132,7 @@ public class BluetoothManager {
 				if (mListener != null) {
 					mListener.bluetoothDiscoveryStateChanged(false);
 				}
-				if (mEnabledBt == true) {
-					mEnabledBt = false;
-					mBtAdapter.disable();
-				}
+				disableIfEnabled();
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
 				if (mListener != null) {
 					mListener.bluetoothDiscoveryStateChanged(true);

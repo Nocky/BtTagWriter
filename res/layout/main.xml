@@ -134,6 +134,19 @@
 		            android:layout_weight="1"
 		            android:indeterminate="false"
 		            android:visibility="invisible" />
+
+		        <ImageButton
+		            android:id="@+id/btRescanButton"
+		            android:layout_width="wrap_content"
+		            android:layout_height="wrap_content"
+		            android:layout_weight="1"
+		            android:src="@drawable/ic_menu_refresh"
+		            android:layout_marginLeft="0pt"
+                    android:layout_marginRight="6pt"
+                    android:layout_marginBottom="6pt"
+                    android:background="@null"
+                    android:visibility="invisible"
+                    />
 		
 		    </LinearLayout>
 		    
@@ -226,7 +239,6 @@
 		            </EditText>
 		            
 		            <ImageView
-                        xmlns:android="http://schemas.android.com/apk/res/android"
                         android:src="@android:drawable/divider_horizontal_dark"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
