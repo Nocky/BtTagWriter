@@ -65,8 +65,8 @@ public class TagWriter extends Thread {
 	private final static int START_CC_MIFARE_UL_PAGE = 3;
 	private final static int START_NDEF_MIFARE_UL_PAGE = 4;
 	private final static byte CC_NDEF_BYTE = (byte)0xE1;
-	private final static byte CC_NDEF_VERSION_1_0_BYTE = (byte)0x01;
-	private final static byte CC_SIZE_48_BYTES_BYTE = (byte)0x06;
+	private final static byte CC_NDEF_VERSION_1_1_BYTE = (byte)0x11;
+	
 	private final static byte CC_NO_SECURITY_BYTE = (byte)0x00;
 	
 	/**
@@ -135,7 +135,7 @@ public class TagWriter extends Thread {
 		}
 		
 		if (mHandler != null) {
-			mHandler.obtainMessage(message);
+			mHandler.sendMessage(mHandler.obtainMessage(message));
 		}
 	}
 	
@@ -144,7 +144,6 @@ public class TagWriter extends Thread {
 		
 		tag.connect();
 		
-		byte ccSizeByte = CC_SIZE_48_BYTES_BYTE;
 		int ndefSizeLimitPages = 36;
 		if (tag.getType() == MifareUltralight.TYPE_ULTRALIGHT) {
 			//ndefSizeLimitPages = 12;
@@ -159,7 +158,6 @@ public class TagWriter extends Thread {
 		}
 		
 		if (ndefSizeLimitPages < pages) {
-			Log.d(getClass().getName(), new StringBuilder().append(ndefSizeLimitPages).append(" ").append(pages).toString());
 			throw new IOException("Too small tag");
 		}
 		
@@ -175,7 +173,8 @@ public class TagWriter extends Thread {
 		
 		//And finally write header
 		tag.writePage(START_CC_MIFARE_UL_PAGE, new byte[] {
-			CC_NDEF_BYTE, CC_NDEF_VERSION_1_0_BYTE, ccSizeByte,
+			CC_NDEF_BYTE, CC_NDEF_VERSION_1_1_BYTE,
+			(byte)(ndefSizeLimitPages * MifareUltralight.PAGE_SIZE / 8),
 			CC_NO_SECURITY_BYTE});
 		
 		tag.close();

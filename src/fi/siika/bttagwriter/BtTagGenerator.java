@@ -31,16 +31,6 @@ public class BtTagGenerator {
 	public static NdefMessage generateNdefMessageForBtTag (String name, 
 		String address) {
 		
-		byte[] emptyByteArray = new byte[0];
-		
-		byte[] hsData = new byte[] {0x12}; // HS version 1.2 
-		NdefRecord hs = new NdefRecord (NdefRecord.TNF_WELL_KNOWN,
-			NdefRecord.RTD_HANDOVER_SELECT, emptyByteArray, hsData);
-		
-		NdefRecord ac = new NdefRecord (NdefRecord.TNF_WELL_KNOWN,
-			NdefRecord.RTD_ALTERNATIVE_CARRIER, emptyByteArray,
-			generateAlternativeCarrierData ());
-		
 		NdefRecord media = null;
 		try {
 			media = new NdefRecord (NdefRecord.TNF_MIME_MEDIA,
@@ -50,7 +40,8 @@ public class BtTagGenerator {
 			Log.d("BtTagGenerator", e.getMessage());
 		}
 				
-		NdefMessage ret = new NdefMessage(new NdefRecord[] {hs, ac, media});
+		NdefMessage ret = new NdefMessage(new NdefRecord[] {
+			generateHandoverSelectRecord(), media});
 		return ret;
 	}
 	
@@ -62,6 +53,22 @@ public class BtTagGenerator {
 	private final static String BT_EP_OOB_MIME_TYPE =
 		"application/vnd.bluetooth.ep.oob";
 	
+	
+	private static NdefRecord generateHandoverSelectRecord() {
+		byte[] ac = new NdefRecord (NdefRecord.TNF_WELL_KNOWN,
+			NdefRecord.RTD_ALTERNATIVE_CARRIER, new byte[0],
+			generateAlternativeCarrierData ()).toByteArray();
+		
+		
+		byte[] data = new byte[1 + ac.length];
+		data[0] = 0x12;
+		for (int i = 0; i < ac.length; ++i) {
+			data[1+i] = ac[i];
+		}
+		
+		return new NdefRecord (NdefRecord.TNF_WELL_KNOWN,
+			NdefRecord.RTD_HANDOVER_SELECT, new byte[0], data);
+	}
 	
 	private static byte[] generateAlternativeCarrierData () {
 		byte[] data = {0x01, 0x01, 0x30, 0x00};
