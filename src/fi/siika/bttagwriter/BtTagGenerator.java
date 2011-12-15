@@ -106,12 +106,8 @@ public class BtTagGenerator {
 		data[++index] = buffer.get(1);
 		
 		// address (6 bytes) TODO!
-		Log.d("BtTagGenerator", address);
 		String[] parts = address.split(":");
-		Log.d("BtTagGenerator", String.valueOf(parts.length));
-		Log.d("BtTagGenerator", parts[5]);
 		data[++index] = (byte)Short.parseShort(parts[5], 16);
-		Log.d("BtTagGenerator", new StringBuilder().append(data[index]).toString());
 		data[++index] = (byte)Short.parseShort(parts[4], 16);
 		data[++index] = (byte)Short.parseShort(parts[3], 16);
 		data[++index] = (byte)Short.parseShort(parts[2], 16);

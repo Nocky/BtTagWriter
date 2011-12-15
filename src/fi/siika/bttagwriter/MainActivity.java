@@ -50,14 +50,14 @@ import android.widget.ViewFlipper;
  * Main activity of BtTagWriter application
  * @author Sami Viitanen <sami.viitanen@gmail.com>
  */
-public class MainActivity extends Activity {
-	
-	private BluetoothAdapter mBtAdapter = null;
-	private boolean mBtEnabled = false;
+public class MainActivity extends Activity implements BluetoothManager.Listener {
+
 	private PendingIntent mNfcPendingIntent = null;
 	private TagWriter mTagWriter = null;
 	private Handler mTagWriterHandler = null; 
 	private TagWriter.TagInformation mTagInfo = new TagWriter.TagInformation();
+	private BluetoothManager mBtMgr = null;
+	private NfcManager mNfcMgr = null;
 	
 	public enum Pages {
 		START(0), ABOUT(1), BT_SELECT(2), EXTRA_OPTIONS(3), TAG(4), SUCCESS(5);
@@ -82,7 +82,7 @@ public class MainActivity extends Activity {
 			if (page == Pages.BT_SELECT) {
 				startBluetoothDiscovery();
 			} else if (page == Pages.TAG) {
-				enableNfcReader();
+				mNfcMgr.enableTechDiscovered();
 			}
 		}
 	}
@@ -93,23 +93,11 @@ public class MainActivity extends Activity {
 	}
 	
 	/*
-	 * Get Bluetooth adapter.
-	 */
-	private BluetoothAdapter getBluetoothAdapter() {
-		if (mBtAdapter == null) {
-			mBtAdapter = BluetoothAdapter.getDefaultAdapter();
-		}
-		
-		return mBtAdapter;
-	}
-	
-	/*
 	 * Start Bluetooth discovery (if not active)
 	 */
 	private void startBluetoothDiscovery() {
-		BluetoothAdapter adapter = getBluetoothAdapter();
 		
-		if (adapter == null) {
+		if (mBtMgr.startDiscovery() == false) {
 			showActionDialog(R.string.action_dialog_bluetooth_failed_str,
 				new DialogInterface.OnClickListener() {
 
@@ -118,152 +106,8 @@ public class MainActivity extends Activity {
 					}
 				
 				}, false, null);
-			//mBtListAdapter.addDevice("Fake device", "00:00:00:00:00:00");
-			return;
-		} else if (adapter.isEnabled() == false) {
-			mBtEnabled = true;
-			adapter.enable();
-			Toast toast = Toast.makeText(this,
-				R.string.toast_bluetooth_enabled_str, Toast.LENGTH_LONG);
-			toast.show();
-		} else if (adapter.isDiscovering() == false) {
-			adapter.startDiscovery();
 		}
 	}
-	
-	/*
-	 * Stop Bluetooth discovery (if active)
-	 */
-	private void stopBluetoothDiscovery() {
-		if (mBtAdapter != null) {
-			if (mBtAdapter.isDiscovering()) {
-				mBtAdapter.cancelDiscovery();
-			}
-		}
-	}
-	
-	private NfcAdapter mNfcReader = null;
-	
-	private NfcAdapter getNfcReader() {
-		
-		//TODO: Remove this
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD_MR1) {
-			return null;
-		} else if (mNfcReader == null) {
-			mNfcReader = NfcAdapter.getDefaultAdapter(this);
-		}
-		
-		return mNfcReader;
-	}
-	
-	/*
-	 * Enable NFC reader parts of software
-	 */
-	private void enableNfcReader() {
-		NfcAdapter nfcAdapter = getNfcReader();
-		if (nfcAdapter == null) {
-			showActionDialog(R.string.tag_no_nfc_support_str,
-				new DialogInterface.OnClickListener() {
-					public void onClick(DialogInterface dialog, int which) {
-						changeToPage(Pages.START);
-					}
-				}, false, null);
-			return;
-		}
-		
-		if (nfcAdapter.isEnabled() == false) {
-			showActionDialog(R.string.action_dialog_nfc_not_enabled_str,
-				new DialogInterface.OnClickListener() {
-
-					public void onClick(DialogInterface dialog, int which) {
-						startActivityForResult(new Intent (
-							android.provider.Settings.ACTION_WIRELESS_SETTINGS),
-							0);
-					}
-				
-				}, false, null);
-			return;
-		}
-		
-		mNfcPendingIntent = PendingIntent.getActivity(this, 0,
-			new Intent(this,getClass()).addFlags(
-			Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-		
-		IntentFilter tech = new IntentFilter(NfcAdapter.ACTION_TECH_DISCOVERED);
-	    try {
-	        tech.addDataType("*/*");
-	    } catch (MalformedMimeTypeException e) {
-	        throw new RuntimeException("fail", e);
-	    }
-
-		String[][] techList = new String[][] { new String[] {
-			MifareUltralight.class.getName() } };
-
-		nfcAdapter.enableForegroundDispatch(this, mNfcPendingIntent,
-			new IntentFilter[] { tech }, techList);
-	}
-	
-	/*
-	 * Disable NFC reader parts of software
-	 */
-	private void disableNfcReader() {
-		
-		//TODO: Remove this
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD_MR1) {
-			return;
-		} else if (mNfcReader != null && mNfcReader.isEnabled()) {
-			mNfcReader.disableForegroundDispatch (this);
-			mNfcPendingIntent = null;
-		}
-	}
-	
-	/*
-	 * Catch broadcasted messages here
-	 */
-	private final BroadcastReceiver mBCReceiver = new BroadcastReceiver() {
-		public void onReceive(Context context, Intent intent) {
-			
-			String action = intent.getAction();
-			if (BluetoothDevice.ACTION_FOUND.equals(action)) {
-				BluetoothDevice device = intent.getParcelableExtra (
-					BluetoothDevice.EXTRA_DEVICE);
-				mBtListAdapter.addDeviceIfNotPresent (device);
-			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
-				ProgressBar pb = (ProgressBar)findViewById (R.id.btScanProgressBar);
-				pb.setIndeterminate (false);
-				pb.setVisibility(View.INVISIBLE);
-				if (mBtEnabled) {
-					getBluetoothAdapter().disable();
-					mBtEnabled = false;
-				}
-			} else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-				ProgressBar pb = (ProgressBar)findViewById (R.id.btScanProgressBar);
-				pb.setIndeterminate (true);
-				pb.setVisibility(View.VISIBLE);
-			/*
-			} else if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
-				CharSequence text = "Hello Tech!";
-				Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
-				toast.show();
-			} else if (NfcAdapter.ACTION_TAG_DISCOVERED.equals(action)) {
-				CharSequence text = "Hello Tag!";
-				Toast toast = Toast.makeText(context, text, Toast.LENGTH_LONG);
-				toast.show();
-			*/
-			} else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
-				int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
-					BluetoothAdapter.STATE_OFF);
-				//TODO check if our ui is in state where it should be
-				if (state == BluetoothAdapter.STATE_ON) {
-					if (mBtEnabled) {
-						getBluetoothAdapter().startDiscovery();
-					}
-				} else if (state == BluetoothAdapter.STATE_OFF) {
-					mBtEnabled = false;
-				}
-			}
-		}        
-	};
 	
 	/**
 	 * Function that will handle things that should be done after user moves
@@ -272,9 +116,9 @@ public class MainActivity extends Activity {
 	 */
 	private void flipChildHidden (int index) {
 		if (Pages.BT_SELECT.equal(index)) {
-			stopBluetoothDiscovery();
+			mBtMgr.stopDiscovery();
 		} else if (Pages.TAG.equal(index)) {
-			disableNfcReader();
+			mNfcMgr.disableForegroundDispatch();
 		}
 	}
 	
@@ -453,7 +297,8 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        mBtEnabled = false;
+        mBtMgr = new BluetoothManager(this, this);
+        mNfcMgr = new NfcManager (this);
         
         if (mBtListAdapter == null) {
         	mBtListAdapter = new BluetoothRowAdapter(this);
@@ -483,16 +328,6 @@ public class MainActivity extends Activity {
         });
         
         connectSignals();
-        
-        //setup broadcaster listener
-        IntentFilter filter = new IntentFilter ();
-        filter.addAction (BluetoothDevice.ACTION_FOUND);
-        filter.addAction (BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-        filter.addAction (BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-        //filter.addAction (NfcAdapter.ACTION_TECH_DISCOVERED);
-        //filter.addAction (NfcAdapter.ACTION_TAG_DISCOVERED);
-        filter.addAction (BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver (mBCReceiver, filter);
     }
     
     @Override
@@ -565,6 +400,27 @@ public class MainActivity extends Activity {
     	dialog.show();
     	
     }
+
+	/* (non-Javadoc)
+	 * @see fi.siika.bttagwriter.BluetoothManager.Listener#bluetoothDeviceFound(android.bluetooth.BluetoothDevice)
+	 */
+	public void bluetoothDeviceFound(BluetoothDevice device) {
+		mBtListAdapter.addDeviceIfNotPresent (device);
+	}
+
+	/* (non-Javadoc)
+	 * @see fi.siika.bttagwriter.BluetoothManager.Listener#bluetoothDiscoveryStateChanged(boolean)
+	 */
+	public void bluetoothDiscoveryStateChanged(boolean active) {
+		ProgressBar pb = (ProgressBar)findViewById (R.id.btScanProgressBar);
+		pb.setIndeterminate (active);
+		if (active) {
+			pb.setVisibility(View.VISIBLE);
+		} else {
+			pb.setVisibility(View.INVISIBLE);
+		}
+		
+	}
 
 
 }

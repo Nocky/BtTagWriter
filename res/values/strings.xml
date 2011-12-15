@@ -28,5 +28,6 @@
     <string name="toast_bluetooth_enabled_str">Bluetooth is now enabled by application to locate the bluetooth device. Bluetooth will be automatically disabled after query is done.</string>
     <string name="tag_no_nfc_support_str">Your device does not support NFC</string>
     <string name="tag_no_accepted_str">Me no likely this tag</string>
+    <string name="pair_app_name">NFC Bluetooth Pair</string>
 
 </resources>
