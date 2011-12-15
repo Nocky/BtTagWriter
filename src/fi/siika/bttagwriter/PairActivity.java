@@ -27,6 +27,7 @@ import android.util.Log;
 import android.widget.Toast;
 import android.bluetooth.IBluetoothA2dp;
 import android.bluetooth.IBluetooth;
+import android.bluetooth.IBluetoothHeadset;
 
 /**
  * 
@@ -100,6 +101,37 @@ public class PairActivity extends Activity {
     	return ibta;
     }
     
+    private IBluetoothHeadset getIBluetoothHeadset() {
+
+    	IBluetoothHeadset hset = null;
+
+    	try {
+
+    	    Class c2 = Class.forName("android.os.ServiceManager");
+
+    	    Method m2 = c2.getDeclaredMethod("getService", String.class);
+    	    IBinder b = (IBinder) m2.invoke(null, "bluetooth_headset");
+
+    	    Log.d(getClass().getSimpleName(), b.getInterfaceDescriptor());
+
+    	    Class c3 = Class.forName("android.bluetooth.IBluetoothHeadset");
+
+    	    Class[] s2 = c3.getDeclaredClasses();
+
+    	    Class c = s2[0];
+    	    // printMethods(c);
+    	    Method m = c.getDeclaredMethod("asInterface", IBinder.class);
+
+    	    m.setAccessible(true);
+    	    hset = (IBluetoothHeadset) m.invoke(null, b);
+
+    	} catch (Exception e) {
+    	    Log.e(getClass().getSimpleName(), "Shit " + e.getMessage());
+    	}
+    	
+    	return hset;
+    }
+    
     private IBluetooth getIBluetooth() {
 
     	IBluetooth ibt = null;
@@ -140,9 +172,12 @@ public class PairActivity extends Activity {
     	
     	IBluetooth bt = getIBluetooth();
     	IBluetoothA2dp a2dp = getIBluetoothA2dp();
+    	//IBluetoothHeadset hset = getIBluetoothHeadset();
     	
     	try {
     		bt.createBond(device.getAddress());
+    		Log.d(getClass().getSimpleName(),
+    			new StringBuilder().append(a2dp.getPriority(device)).toString());
     		a2dp.connect(device);
     		Log.d (getClass().getSimpleName(), "Hep!");
     	} catch (Exception e) {
