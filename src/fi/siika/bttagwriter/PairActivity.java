@@ -6,12 +6,14 @@
  */
 package fi.siika.bttagwriter;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.UUID;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.nfc.NdefMessage;
@@ -19,9 +21,12 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.Log;
 import android.widget.Toast;
+import android.bluetooth.IBluetoothA2dp;
+import android.bluetooth.IBluetooth;
 
 /**
  * 
@@ -54,14 +59,95 @@ public class PairActivity extends Activity {
     	super.onPause();
     }
     
-    private void connectToBluetoothDevice (BluetoothDevice device) {
-    	UUID uuid = UUID.fromString ("0000110B-0000-1000-8000-00805F9B34FB");
+    private UUID[] uuids = new UUID[] {
+    	UUID.fromString ("00001112-0000-1000-8000-00805F9B34FB"),
+    	UUID.fromString ("00001203-0000-1000-8000-00805F9B34FB"),
+    	UUID.fromString ("00000003-0000-1000-8000-00805F9B34FB"),
+    	UUID.fromString ("00001108-0000-1000-8000-00805F9B34FB"),
+    	UUID.fromString ("0000111F-0000-1000-8000-00805F9B34FB"),
+    	UUID.fromString ("0000111E-0000-1000-8000-00805F9B34FB"),
+    	UUID.fromString ("0000110B-0000-1000-8000-00805F9B34FB")
+    };
+    
+    private IBluetoothA2dp getIBluetoothA2dp() {
+
+    	IBluetoothA2dp ibta = null;
+
     	try {
-    		BluetoothSocket socket =
-    			device.createInsecureRfcommSocketToServiceRecord(uuid);
-    		socket.connect();
+
+    	    Class c2 = Class.forName("android.os.ServiceManager");
+
+    	    Method m2 = c2.getDeclaredMethod("getService", String.class);
+    	    IBinder b = (IBinder) m2.invoke(null, "bluetooth_a2dp");
+
+    	    Log.d(getClass().getSimpleName(), b.getInterfaceDescriptor());
+
+    	    Class c3 = Class.forName("android.bluetooth.IBluetoothA2dp");
+
+    	    Class[] s2 = c3.getDeclaredClasses();
+
+    	    Class c = s2[0];
+    	    // printMethods(c);
+    	    Method m = c.getDeclaredMethod("asInterface", IBinder.class);
+
+    	    m.setAccessible(true);
+    	    ibta = (IBluetoothA2dp) m.invoke(null, b);
+
     	} catch (Exception e) {
-    		Toast toast = Toast.makeText(this, "FUCK!", Toast.LENGTH_LONG);
+    	    Log.e(getClass().getSimpleName(), "Shit " + e.getMessage());
+    	}
+    	
+    	return ibta;
+    }
+    
+    private IBluetooth getIBluetooth() {
+
+    	IBluetooth ibt = null;
+
+    	try {
+
+    	    Class c2 = Class.forName("android.os.ServiceManager");
+
+    	    Method m2 = c2.getDeclaredMethod("getService", String.class);
+    	    IBinder b = (IBinder) m2.invoke(null, "bluetooth");
+
+    	    Log.d(getClass().getSimpleName(), b.getInterfaceDescriptor());
+
+    	    Class c3 = Class.forName("android.bluetooth.IBluetooth");
+
+    	    Class[] s2 = c3.getDeclaredClasses();
+
+    	    Class c = s2[0];
+    	    // printMethods(c);
+    	    Method m = c.getDeclaredMethod("asInterface", IBinder.class);
+
+    	    m.setAccessible(true);
+    	    ibt = (IBluetooth) m.invoke(null, b);
+
+    	} catch (Exception e) {
+    	    Log.e(getClass().getSimpleName(), "Shit " + e.getMessage());
+    	}
+    	
+    	return ibt;
+    }
+
+
+    
+    private void connectToBluetoothDevice (BluetoothDevice device) {
+    	
+    	mBtMgr.getBluetoothAdapter().getProfileProxy(this, null,
+    		BluetoothProfile.A2DP);
+    	
+    	IBluetooth bt = getIBluetooth();
+    	IBluetoothA2dp a2dp = getIBluetoothA2dp();
+    	
+    	try {
+    		bt.createBond(device.getAddress());
+    		a2dp.connect(device);
+    		Log.d (getClass().getSimpleName(), "Hep!");
+    	} catch (Exception e) {
+    		Toast toast = Toast.makeText(this, "iFail", Toast.LENGTH_LONG);
+    		toast.show();
     	}
     }
     
