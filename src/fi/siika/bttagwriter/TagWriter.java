@@ -118,7 +118,7 @@ public class TagWriter extends Thread {
 			} else if (mTagClass.equals(NdefFormatable.class.getName())) {
 				NdefFormatable.get(mTag).format (
 					BtTagGenerator.generateNdefMessageForBtTag(mInfo.name,
-					mInfo.address));
+					mInfo.address, (short)128));
 			} else {
 				message = HANDLER_MSG_TAG_NOT_ACCEPTED;
 			}
@@ -126,12 +126,14 @@ public class TagWriter extends Thread {
 			if (mCancelled) {
 				message = HANDLER_MSG_CANCELLED;
 			} else {
-				Log.d(getClass().getName(), e.getMessage());
+				Log.w(getClass().getName(), e.getMessage());
 				message = HANDLER_MSG_CONNECTION_LOST;
 			}
 		} catch (FormatException e) {
-			Log.d(getClass().getName(),"Failed to format");
+			Log.e(getClass().getName(),"Failed to format");
 			message = HANDLER_MSG_FAILED_TO_FORMAT;
+		} catch (Exception e) {
+			Log.w(getClass().getName(), e.getMessage());
 		}
 		
 		if (mHandler != null) {
@@ -150,7 +152,9 @@ public class TagWriter extends Thread {
 		}
 		
 		byte[] ndefMessage = BtTagGenerator.generateNdefMessageForBtTag(
-			mInfo.name, mInfo.address).toByteArray();
+			mInfo.name, mInfo.address,
+			(short)(ndefSizeLimitPages*MifareUltralight.PAGE_SIZE)
+			).toByteArray();
 		
 		byte[] data = new byte[ndefMessage.length + 2];
 		data[0] = 0x03;

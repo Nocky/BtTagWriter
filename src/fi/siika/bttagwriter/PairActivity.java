@@ -25,6 +25,9 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.bluetooth.IBluetoothA2dp;
@@ -150,7 +153,8 @@ public class PairActivity extends Activity
     	return ibt;
     }
     
-    private void connectToBluetoothDevice (BluetoothDevice device) {
+    private void connectToBluetoothDevice (BluetoothDevice device,
+    	String name) {
     	
     	mConnectedDevice = device;
     	
@@ -159,63 +163,70 @@ public class PairActivity extends Activity
     	// A2DP interface (connecting)
     	IBluetoothA2dp a2dp = getIBluetoothA2dp();
     	
+    	String msg = new String();
+    	
     	try {
     		List<BluetoothDevice> connected = a2dp.getConnectedDevices();
     		if (connected.contains(device)) {
     			mAction = Actions.DISCONNECTING;
-    			TextView view = (TextView)findViewById(R.id.pairInfoTextView);
-    			view.setText(R.string.pair_disconnecting_str);
+    			msg = getResources().getString(R.string.pair_disconnecting_str);
+    			msg = msg.replaceAll("%1", name);
     			a2dp.disconnect(device);
     		} else if (device.getBondState() == BluetoothDevice.BOND_NONE) {
     			mAction = Actions.CONNECTING;
-    			TextView view = (TextView)findViewById(R.id.pairInfoTextView);
-    			view.setText(R.string.pair_bounding_str);
+    			msg = getResources().getString(R.string.pair_bounding_str);
+    			msg = msg.replaceAll("%1", name);
     			bt.createBond(device.getAddress());
     		} else {
     			mAction = Actions.CONNECTING;
-    			TextView view = (TextView)findViewById(R.id.pairInfoTextView);
-    			view.setText(R.string.pair_connecting_str);
+    			msg = getResources().getString(R.string.pair_connecting_str);
+    			msg = msg.replaceAll("%1", name);
     			a2dp.connect(device);
     		}
     	} catch (Exception e) {
-    		Toast toast = Toast.makeText(this, "iFail", Toast.LENGTH_LONG);
+    		msg = "FIX ME!";
+    	}
+    	
+    	Log.d (getClass().getSimpleName(), msg);
+    	
+    	if (msg.isEmpty() == false) {
+    		
+			TextView view = (TextView)findViewById(R.id.pairInfoTextView);
+			view.setText(msg);
+    		
+    		LayoutInflater inflater = getLayoutInflater();
+    		View layout = inflater.inflate(R.layout.pair_toast,
+    			(ViewGroup) findViewById(R.id.pairToastLayout));
+    		TextView text = (TextView) layout.findViewById(R.id.pairToastText);
+    		text.setText(msg);
+    		
+    		Toast toast = new Toast(getApplicationContext());
+    		toast.setDuration(Toast.LENGTH_LONG);
+			toast.setView(layout);
+    		
     		toast.show();
     	}
     }
     
     private void handleBluetoothNdefRecord (NdefRecord rec) {
-    	//first 6 bytes = address
-    	byte[] data = rec.getPayload();
-    	int[] address = new int[6];
-    	for (int i = 0; i < 6; i++) {
-    		address[i] = (int)(data[7-i]) & 0xff;
-    	}
-    	
-    	StringBuilder sb = new StringBuilder();
-    	for (int i = 0; i < 6; ++i) {
-    		if (i > 0) {
-    			sb.append(":");
-    		}
-    		if (address[i] < 0x10) {
-    			sb.append("0");
-    		}
 
-    		sb.append (Integer.toHexString(address[i]));
+    	byte[] payload = rec.getPayload();
+    	try {
+	    	BtSecureSimplePairing.Data data = BtSecureSimplePairing.parse (
+	    		payload);
+	    	
+	    	if (data == null) {
+	    		Log.d (getClass().getSimpleName(), "Ignoring tag");
+	    		this.finish();
+	    	}
+	    	
+	    	connectToBluetoothDevice (
+	    		mBtMgr.getBluetoothAdapter().getRemoteDevice (
+	    			data.getAddress()), data.getName());
+	    	
+    	} catch (Exception e) {
+    		Log.e (getClass().getSimpleName(), "Failed to parse and connect");
     	}
-    	
-    	String strAddress = sb.toString();
-    	strAddress = strAddress.toUpperCase();
-    	Log.d (getClass().getSimpleName(), strAddress);
-    	
-    	if (BluetoothAdapter.checkBluetoothAddress(strAddress)) {
-    		connectToBluetoothDevice (
-    			mBtMgr.getBluetoothAdapter().getRemoteDevice (strAddress));
-    	} else {
-    		sb.append(" fail!");
-    		Toast toast = Toast.makeText(this, sb.toString(), Toast.LENGTH_LONG);
-    		toast.show();
-    	}
-    	
     }
     
     private final static String BT_EP_OOB_MIME_TYPE =
@@ -244,7 +255,8 @@ public class PairActivity extends Activity
     			if (rec.getTnf() == NdefRecord.TNF_MIME_MEDIA &&
     				Arrays.equals(rec.getType(), getMimeType())) {
     			
-    				Log.d(getClass().getSimpleName(), "Reseived BT NDEF record");
+    				Log.d(getClass().getSimpleName(),
+    					"Reseived BT NDEF record");
     				handleBluetoothNdefRecord (rec);
     			}
     		}
@@ -283,7 +295,6 @@ public class PairActivity extends Activity
 		Log.d(getClass().getSimpleName(), "A2DP Service connected");
 		
 		if (mConnectedDevice == null) {
-			Log.d(getClass().getSimpleName(), "condev is null");
 			return;
 		}
 		

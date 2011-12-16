@@ -29,9 +29,10 @@
     <string name="tag_no_nfc_support_str">Your device does not support NFC</string>
     <string name="tag_no_accepted_str">Me no likely this tag</string>
     <string name="pair_app_name">NFC Bluetooth Pairing</string>
-    <string name="pair_connecting_str">Connecting to Bluetooth device</string>
-    <string name="pair_bounding_str">Pairing with the device</string>
+    <string name="pair_connecting_str">Connecting to %1</string>
+    <string name="pair_bounding_str">Pairing with %1</string>
     <string name="pair_searching_tag_str">Please tap your tag with the phone</string>
-    <string name="pair_disconnecting_str">Disconnecting the Bluetooth device</string>
+    <string name="pair_disconnecting_str">Disconnecting %1</string>
+    <string name="pair_unnamed_device_str">Bluetooth device</string>
 
 </resources>
