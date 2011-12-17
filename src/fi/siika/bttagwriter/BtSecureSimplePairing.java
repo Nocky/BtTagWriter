@@ -30,6 +30,8 @@ public class BtSecureSimplePairing {
 	private final static byte BYTE_COMPLETE_LOCAL_NAME = 0x09; 
 	private final static byte BYTE_CLASS_OF_DEVICE = 0x0D;
 	private final static byte BYTE_SIMPLE_PAIRING_HASH = 0x0E;
+	private final static byte BYTE_SIMPLE_PAIRING_RANDOMIZER = 0x0F;
+	private final static byte BYTE_MANUFACTURER_SPECIFIC_DATA = -1;
 	
 	private final static String DEBUG_TAG = "BtSecureSimplePairing";
 	
@@ -37,7 +39,7 @@ public class BtSecureSimplePairing {
 	private final static short SPACE_ADDRESS_BYTES = 6;
 	private final static short SPACE_DEVICE_CLASS_BYTES = 5;
 	private final static short SPACE_MIN_BYTES =
-		SPACE_TOTAL_LEN_BYTES + SPACE_ADDRESS_BYTES + SPACE_DEVICE_CLASS_BYTES;
+		SPACE_TOTAL_LEN_BYTES + SPACE_ADDRESS_BYTES;
 	
 	/**
 	 * Class containing the data we care about
@@ -45,13 +47,18 @@ public class BtSecureSimplePairing {
 	public static class Data {
 		private String mName;
 		private String mAddress;
-		private int mDeviceClass;
+		private byte[] mDeviceClass;
+		private byte[] mHash;
+		private byte[] mRandomizer;
+		private byte[] mManufacturerData;
 		
 		public Data() {
 			mName = "";
 			mAddress = "00:00:00:00:00:00";
-			mDeviceClass = (0x14 << 16) |
-				BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO;
+			mDeviceClass = new byte[0];
+			mHash = new byte[0];
+			mRandomizer = new byte[0];
+			mManufacturerData = new byte[0];
 		}
 		
 		public void setName(String name) {
@@ -60,6 +67,20 @@ public class BtSecureSimplePairing {
 		
 		public String getName () {
 			return mName;
+		}
+		
+		public byte[] getNameBuffer () {
+			byte[] ret = null;
+			
+			if (mName.isEmpty() == false) {
+				try {
+					ret = mName.getBytes("UTF-8");
+				} catch (Exception e) {
+					ret = null;
+				}
+			}
+			
+			return ret;
 		}
 		
 		/**
@@ -78,13 +99,87 @@ public class BtSecureSimplePairing {
 			return mAddress;
 		}
 		
-		public void setDeviceClass (int deviceClass) {
-			mDeviceClass = deviceClass;
+		public byte[] getAddressBuffer () {
+			byte[] ret = new byte[6];
+			String[] parts = mAddress.split(":");
+			for (int i = 0; i < 6; ++i) {
+				ret[i] = (byte)Short.parseShort(parts[5-i], 16);
+			}
+			return ret;
 		}
 		
-		public int getDeviceClass () {
+		public void setDeviceClass (byte[] deviceClass) {
+			if (deviceClass.length == 3) {
+				mDeviceClass = deviceClass;
+			}
+		}
+		
+		public byte[] getDeviceClass () {
 			return mDeviceClass;
 		}
+		
+		public boolean hasDeviceClass() {
+			return mDeviceClass.length == 3;
+		}
+		
+		public void setHash (byte[] hash) {
+			mHash = hash;
+		}
+		
+		public void setRandomizer (byte[] randomizer) {
+			mHash = randomizer;
+		}
+		
+		public byte[] getHash() {
+			return mHash;
+		}
+		
+		public byte[] getRandomizer() {
+			return mRandomizer;
+		}
+		
+		public void setManufacturerData (byte[] data) {
+			mManufacturerData = data;
+		}
+		
+		public byte[] getManufacturerData() {
+			return mManufacturerData;
+		}
+		
+		private final static String MANUFACTURER_DATA_PIN_PREFIX = "PIN";
+		
+		/**
+		 * This is temporary solution! Must move to use hash and randomizer
+		 * if possible!
+		 * @return Pin in string format if defined inside manufacturer data
+		 * as this application assumes it.
+		 */
+		public String getTempPin() {
+			String ret = null;
+			try {
+				ret = new String(mManufacturerData, "UTF-8");
+				if (ret.startsWith (MANUFACTURER_DATA_PIN_PREFIX)) {
+					ret = ret.substring(MANUFACTURER_DATA_PIN_PREFIX.length());
+				} else {
+					ret = null;
+				}
+			} catch (Exception e) {}
+			return ret;
+		}
+		
+		/**
+		 * This is temporary solution! Must move to use hash and randomizer
+		 * if possible!
+		 * @param pin Pin stored under manufacturer data as this application
+		 * assumes it.
+		 */
+		public void setTempPin (String pin) {
+			String str = MANUFACTURER_DATA_PIN_PREFIX + pin;
+			try {
+				mManufacturerData = str.getBytes("UTF-8");
+			} catch (Exception e) {}
+		}
+		
 	};
 	
 	/*
@@ -100,31 +195,63 @@ public class BtSecureSimplePairing {
 	/**
 	 * Generate binary Bluetooth Secure Simple Pairing content
 	 * @param input Information stored to binary output
-	 * @param makeSort TODO!
+	 * @param maxLength How big byte array can be returned
 	 * @return Return binary content
 	 */
 	public static byte[] generate(Data input, short maxLength)
 		throws IOException {
 		
 		//TODO: Is 30k bytes enough? I assume so ;) (16th bit can't be used)
-		//TODO: Can we leave class out?
 		short len = SPACE_MIN_BYTES;
 		
-		byte[] nameBytes = input.getName().getBytes("UTF-8");
-		short spaceTakenByName = (short)(2 + nameBytes.length);
+		byte[] manBytes = null;
+		byte[] classBytes = null;
+		byte[] nameBytes = null;
+		boolean moreIn = true;
 		
-		// No name at all if we do not have space
-		// Maybe short name could be tried too? But usually total name is short
-		// anyway. So cutting name does not help much.
-		if (len + spaceTakenByName > maxLength) {
-			nameBytes = null;
-			spaceTakenByName = 0;
+		// Manufacturer data is most important (as for now it contains PIN)
+		if (moreIn && len < maxLength) {
+			manBytes = input.getManufacturerData();
+			if (manBytes == null) {
+				moreIn = true;
+			} else if ((len + 2 + manBytes.length) <= maxLength) {
+				len += 2 + manBytes.length;
+			} else {
+				manBytes = null;
+				moreIn = false;
+			}
 		}
 		
-		len += spaceTakenByName;
+		// Device class is also important, as I will be used later to separate
+		// different ways to connect the device.
+		if (moreIn && len < maxLength) {
+			classBytes = input.getDeviceClass();
+			if (classBytes == null) {
+				moreIn = true;
+			} else if ((len + 2 + classBytes.length) <= maxLength) {
+				len += 2 + classBytes.length;
+			} else {
+				classBytes = null;
+				moreIn = false;
+			}
+		}
 		
-		//Never return too big!
+		// Name is nice to have but takes lots of space
+		if (moreIn && len < maxLength) {
+			nameBytes = input.getNameBuffer();
+			if (nameBytes == null) {
+				moreIn = true;
+			} else if ((len + 2 + nameBytes.length) <= maxLength) {
+				len += 2 + nameBytes.length;
+			} else {
+				nameBytes = null;
+				moreIn = false;
+			}
+		}
+		
+		//Still check that we are inside the limits
 		if (len > maxLength) {
+			Log.w (DEBUG_TAG, "Not enough space in tag for content");
 			throw new IOException("Not enough space");
 		}
 		
@@ -137,38 +264,38 @@ public class BtSecureSimplePairing {
 		data[++index] = buffer.get(0);
 		data[++index] = buffer.get(1);
 		
-		// address (6 bytes) TODO!
-		String[] parts = input.getAddress().split(":");
-		data[++index] = (byte)Short.parseShort(parts[5], 16);
-		data[++index] = (byte)Short.parseShort(parts[4], 16);
-		data[++index] = (byte)Short.parseShort(parts[3], 16);
-		data[++index] = (byte)Short.parseShort(parts[2], 16);
-		data[++index] = (byte)Short.parseShort(parts[1], 16);
-		data[++index] = (byte)Short.parseShort(parts[0], 16);
+		// address
+		byte[] addressBuffer = input.getAddressBuffer ();
+		for (int i = 0; i < addressBuffer.length; ++i) {
+			data[++index] = (byte)addressBuffer[i];
+		}
 		
-		if (spaceTakenByName > 0) {
-		
-			// name len (index + name) (1 byte)
+		// complete local name
+		if (nameBytes != null) {
 			data[++index] = (byte)(nameBytes.length + 0x01);
 			data[++index] = BYTE_COMPLETE_LOCAL_NAME;
-			// name (n bytes)
 			for (int i = 0; i < nameBytes.length; ++i) {
 				data[++index] = (byte)nameBytes[i];
 			}
-			
 		}
 		
-		// Define class of device (TODO: change this so that it will support
-		// other values)
-		data[++index] = 0x04;
-		data[++index] = BYTE_CLASS_OF_DEVICE;
-		//TODO: Read from input data!!!
-		// Class of Device (3 bytes)
-		// https://www.bluetooth.org/apps/content/?doc_id=49706
-		data[++index] = 0x14;
-		// 0x0402 = BluetoothClass.Device.AUDIO_VIDEO_CAR_AUDIO
-		data[++index] = 0x04;
-		data[++index] = 0x20;
+		// manufacturer specific data
+		if (manBytes != null) {
+			data[++index] = (byte)(1 + manBytes.length);
+			data[++index] = BYTE_MANUFACTURER_SPECIFIC_DATA;
+			for (int i = 0; i < manBytes.length; ++i) {
+				data[++index] = (byte)manBytes[i];
+			}
+		}
+		
+		// class of device
+		if (classBytes != null) {
+			data[++index] = (byte)(1 + classBytes.length);
+			data[++index] = BYTE_CLASS_OF_DEVICE;
+			for (int i = 0; i < classBytes.length; ++i) {
+				data[++index] = (byte)classBytes[i];
+			}
+		}
 
 		return data;
 	}
@@ -228,11 +355,13 @@ public class BtSecureSimplePairing {
     			}
     			break;
     		case BYTE_CLASS_OF_DEVICE:
-    			ByteBuffer bb = ByteBuffer.wrap(new byte[] {0, 0, 0, 0});
-    			bb.position(1);
-    			bb.put(dataArray, 0, 3);
-    			bb.rewind();
-    			data.setDeviceClass(bb.asIntBuffer().get());
+    			data.setDeviceClass(dataArray);
+    			break;
+    		case BYTE_SIMPLE_PAIRING_RANDOMIZER:
+    			data.setRandomizer(dataArray);
+    			break;
+    		case BYTE_SIMPLE_PAIRING_HASH:
+    			data.setHash(dataArray);
     			break;
     		default:
     			//There are many known elements we ignore here

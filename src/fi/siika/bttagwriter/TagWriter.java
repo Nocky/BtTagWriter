@@ -148,7 +148,10 @@ public class TagWriter extends Thread {
 		
 		int ndefSizeLimitPages = 36;
 		if (tag.getType() == MifareUltralight.TYPE_ULTRALIGHT) {
-			//ndefSizeLimitPages = 12;
+			Log.d (getClass().getSimpleName(), "Assume UL size 12 pages");
+			ndefSizeLimitPages = 12;
+		} else {
+			Log.d (getClass().getSimpleName(), "Assume UL size 36 pages");
 		}
 		
 		byte[] ndefMessage = BtTagGenerator.generateNdefMessageForBtTag(

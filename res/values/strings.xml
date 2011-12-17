@@ -35,7 +35,9 @@
     <string name="pair_disconnecting_str">Disconnecting %1</string>
     <string name="pair_unnamed_device_str">Bluetooth device</string>
     <string name="pair_enabling_bluetooth">Enabling Bluetooth connectivity</string>
-    <string name="pair_failed_to_connect_str">Failed to connect to %1</string>
+    <string name="pair_failed_to_bound_str">Failed to pair %1</string><string name="pair_failed_to_connect_str">Failed to connect to %1</string>
     <string name="pair_failed_to_disconnect_str">Failed to disconnect %1</string>
+    <string name="pair_failed_unknown_str">Failed: %1</string>
+    
 
 </resources>

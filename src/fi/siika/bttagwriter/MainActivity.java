@@ -303,6 +303,7 @@ public class MainActivity extends Activity implements
 	
 	@Override
 	public void onPause() {
+		mBtMgr.releaseAdapter();	
 		super.onPause();
 	}
 	

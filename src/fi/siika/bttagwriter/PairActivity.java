@@ -49,8 +49,12 @@ public class PairActivity extends Activity
 	private Actions mAction = Actions.IDLE;
 	private ConnectTimer mTimer = null; //workaround
 	
+	/**
+	 * Actions PairActivity can be performing
+	 */
 	private enum Actions {
 		IDLE,
+		BOUNDING,
 		CONNECTING,
 		DISCONNECTING
 	};
@@ -160,53 +164,102 @@ public class PairActivity extends Activity
     	return ibt;
     }
     
-    private void connectToBluetoothDevice (BluetoothDevice device,
-    	String name) {
+    private String getDeviceName() {
+    	String myName = mDeviceName;
     	
-    	mConnectedDevice = device;
-    	mDeviceName = name;
-    	
-    	// Bluetooth interface (pairing)
-    	IBluetooth bt = getIBluetooth();
-    	// A2DP interface (connecting)
-    	IBluetoothA2dp a2dp = getIBluetoothA2dp();
-    	
-    	String msg = new String();
-    	String myName = name;
     	if (myName.isEmpty()) {
     		myName = getResources().getString(R.string.pair_unnamed_device_str);
     	}
     	
-    	try {
-    		List<BluetoothDevice> connected = a2dp.getConnectedDevices();
-    		if (connected.contains(device)) {
-    			mAction = Actions.DISCONNECTING;
-    			msg = getResources().getString(R.string.pair_disconnecting_str);
-    			msg = msg.replaceAll("%1", myName);
-    			a2dp.disconnect(device);
-    		} else if (device.getBondState() == BluetoothDevice.BOND_NONE) {
-    			mAction = Actions.CONNECTING;
-    			msg = getResources().getString(R.string.pair_bounding_str);
-    			msg = msg.replaceAll("%1", myName);
-    			bt.createBond(device.getAddress());
-    		} else {
-    			mAction = Actions.CONNECTING;
-    			if (mBtMgr.isEnabled() == false) {
-    				msg = getResources().getString(
-    					R.string.pair_enabling_bluetooth);
-    				mBtMgr.enable();
-    			} else {
-    				msg = getResources().getString(
-    					R.string.pair_connecting_str);
-    				msg = msg.replaceAll("%1", myName);
-    				a2dp.connect(device);
-    			}
+    	return myName;
+    }
+    
+    private void boundAndConnect () {
+    	
+    	boolean finishActivity = false;
+    	String msg = new String();
+    	mAction = Actions.CONNECTING;
+    	
+    	if (mBtMgr.isEnabled() == false) {
+    		mBtMgr.enable();
+    	
+    	} else if (mConnectedDevice.getBondState() ==
+    		BluetoothDevice.BOND_NONE) {
+    		
+    		try {
+	    		IBluetooth bt = getIBluetooth();
+				mAction = Actions.BOUNDING;
+				msg = getResources().getString(R.string.pair_bounding_str);
+				msg = msg.replaceAll("%1", getDeviceName());
+				mTimer.start();
+				bt.createBond(mConnectedDevice.getAddress());
+    		} catch (Exception e) {
+    			mTimer.cancel();
+    			msg = getResources().getString(R.string.pair_failed_to_bound_str);
+    			msg = msg.replaceAll("%1", getDeviceName());
+    			finishActivity = true;
     		}
-    	} catch (Exception e) {
-    		msg = "FIX ME!";
+    		
+    	} else {
+  	   		a2dpConnect ();
     	}
     	
     	showMessage (msg);
+    	
+    	if (finishActivity) {
+    		finish();
+    	}
+    }
+    
+    private void changeConnectedState (BluetoothDevice device,
+    	String name) {
+    	
+    	if (device == null) {
+    		Log.e (getClass().getSimpleName(),
+    			"changeConnectedState called with null");
+    		finish();
+    		return;
+    	}
+    	
+    	String msg = new String();
+    	boolean finishActivity = false;
+    	mConnectedDevice = device;
+    	mDeviceName = name;
+    	
+    	// A2DP interface (connecting)
+    	IBluetoothA2dp a2dp = getIBluetoothA2dp();
+    	
+    	try {	
+	    	List<BluetoothDevice> connected = a2dp.getConnectedDevices();
+	    	if (connected.contains(mConnectedDevice)) {
+				mAction = Actions.DISCONNECTING;
+				msg = getResources().getString(
+					R.string.pair_disconnecting_str);
+				msg = msg.replaceAll("%1", getDeviceName());
+				try {
+					mTimer.start();
+					a2dp.disconnect(device);
+				} catch (Exception e) {
+					mTimer.cancel();
+					msg = getResources().getString (
+						R.string.pair_failed_to_disconnect_str);
+					msg = msg.replaceAll("%1", getDeviceName());
+					finishActivity = true;
+				}
+	    	} else {
+	    		boundAndConnect ();
+	    	}
+    	} catch (Exception e) {
+    		msg = getResources().getString(R.string.pair_failed_unknown_str);
+    		msg = msg.replaceAll("%1", e.getMessage());
+    		finishActivity = true;
+    	}
+    	
+    	showMessage (msg);
+    	
+    	if (finishActivity) {
+    		finish();
+    	}
     }
     
     private void handleBluetoothNdefRecord (NdefRecord rec) {
@@ -221,9 +274,8 @@ public class PairActivity extends Activity
 	    		this.finish();
 	    	}
 	    	
-	    	connectToBluetoothDevice (
-	    		mBtMgr.getBluetoothAdapter().getRemoteDevice (
-	    			data.getAddress()), data.getName());
+	    	changeConnectedState (mBtMgr.getBluetoothAdapter().getRemoteDevice (
+	    		data.getAddress()), data.getName());
 	    	
     	} catch (Exception e) {
     		Log.e (getClass().getSimpleName(), "Failed to parse and connect");
@@ -352,6 +404,33 @@ public class PairActivity extends Activity
 		Log.d(getClass().getSimpleName(), "A2DP Service disconnected");
 		
 	}
+	
+	/**
+	 * Handles connecing afte
+	 */
+	private void a2dpConnect () {
+		
+		String msg = new String();
+		
+		try {
+			mTimer.cancel();
+			IBluetoothA2dp a2dp = getIBluetoothA2dp();
+			List<BluetoothDevice> connected = a2dp.getConnectedDevices();
+			if (connected.contains(mConnectedDevice)) {
+				Log.d (getClass().getSimpleName(), "Already connected");
+				finish();
+			} else {
+				msg = getResources().getString(R.string.pair_connecting_str);
+    			msg = msg.replaceAll("%1", mDeviceName);
+    			mTimer.start();
+    			a2dp.connect(mConnectedDevice);
+			}
+		} catch (Exception e) {
+			Log.e (getClass().getSimpleName(), "Failed to connect");
+		}
+		
+		showMessage (msg);
+	}
 
 	/* (non-Javadoc)
 	 * @see fi.siika.bttagwriter.ConnectTimer.Listener#timerTick(int)
@@ -362,7 +441,15 @@ public class PairActivity extends Activity
 		Log.d (getClass().getSimpleName(), "Workaround timer: "
 			+ String.valueOf(state));
 		
-		if (mAction == Actions.CONNECTING &&
+		if (mAction == Actions.BOUNDING) {
+			if (mConnectedDevice.getBondState() ==
+				BluetoothDevice.BOND_BONDED) {
+				
+				mTimer.cancel();
+				boundAndConnect();
+			}
+		
+		} else if (mAction == Actions.CONNECTING &&
 			state == BluetoothProfile.STATE_CONNECTED) {
 			mTimer.cancel();
 			finish();
@@ -393,34 +480,37 @@ public class PairActivity extends Activity
 	 * @see fi.siika.bttagwriter.BluetoothManager.StateListener#bluetoothStateChanged(boolean)
 	 */
 	public void bluetoothStateChanged(boolean enabled) {
-		if (mAction == Actions.CONNECTING) {
-			connectToBluetoothDevice (mConnectedDevice, mDeviceName);
+		if (enabled == true &&
+			(mAction == Actions.CONNECTING || mAction == Actions.BOUNDING)) {
+			
+			boundAndConnect();
 		}
 	}
 	
 	private void showMessage (String msg) {
 		
-    	Log.d (getClass().getSimpleName(), msg);
+		if (msg.isEmpty()) {
+			return;
+		}
 		
-    	if (msg.isEmpty() == false) {
+    	Log.d (getClass().getSimpleName(), msg);
     		
-			TextView view = (TextView)findViewById(R.id.pairInfoTextView);
-			view.setText(msg);
-    		
-    		LayoutInflater inflater = getLayoutInflater();
-    		View layout = inflater.inflate(R.layout.pair_toast,
-    			(ViewGroup) findViewById(R.id.pairToastLayout));
-    		TextView text = (TextView) layout.findViewById(R.id.pairToastText);
-    		text.setText(msg);
-    		
-    		Toast toast = new Toast(getApplicationContext());
-    		toast.setDuration(Toast.LENGTH_SHORT);
-    		toast.setGravity(Gravity.TOP | Gravity.FILL_HORIZONTAL, 0, 0);
+		TextView view = (TextView)findViewById(R.id.pairInfoTextView);
+		view.setText(msg);
+		
+		LayoutInflater inflater = getLayoutInflater();
+		View layout = inflater.inflate(R.layout.pair_toast,
+			(ViewGroup) findViewById(R.id.pairToastLayout));
+		TextView text = (TextView) layout.findViewById(R.id.pairToastText);
+		text.setText(msg);
+		
+		Toast toast = new Toast(getApplicationContext());
+		toast.setDuration(Toast.LENGTH_SHORT);
+		toast.setGravity(Gravity.TOP | Gravity.FILL_HORIZONTAL, 0, 0);
 
-			toast.setView(layout);
-    		
-    		toast.show();
-    	}
+		toast.setView(layout);
+		
+		toast.show();
 	}
 
 }
