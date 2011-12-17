@@ -122,31 +122,32 @@
 		            android:textAppearance="?android:attr/textAppearanceLarge"
 		            android:textColor="@color/bt_devices_caption_fgcolor"
 		            android:shadowColor="@color/bt_devices_caption_shadowcolor" />
+		        
+		        <ViewFlipper
+                    android:id="@+id/btScanActionsFlipper"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:inAnimation="@animator/fade_in_anim"
+                    android:outAnimation="@animator/fade_out_anim"
+                    >
 		
-		        <ProgressBar
-		            android:id="@+id/btScanProgressBar"
-		            style="?android:attr/progressBarStyleSmall"
-		            android:layout_width="wrap_content"
-		            android:layout_height="match_parent"
-		            android:layout_marginBottom="3pt"
-		            android:layout_marginRight="6pt"
-		            android:layout_marginTop="3pt"
-		            android:layout_weight="1"
-		            android:indeterminate="false"
-		            android:visibility="invisible" />
-
-		        <ImageButton
-		            android:id="@+id/btRescanButton"
-		            android:layout_width="wrap_content"
-		            android:layout_height="wrap_content"
-		            android:layout_weight="1"
-		            android:src="@drawable/ic_menu_refresh"
-		            android:layout_marginLeft="0pt"
-                    android:layout_marginRight="6pt"
-                    android:layout_marginBottom="6pt"
-                    android:background="@null"
-                    android:visibility="invisible"
-                    />
+			        <ProgressBar
+			            android:id="@+id/btScanProgressBar"
+			            style="?android:attr/progressBarStyleSmall"
+			            android:layout_width="wrap_content"
+			            android:layout_height="match_parent"
+			            android:indeterminate="false"/>
+	
+			        <ImageButton
+			            android:id="@+id/btRescanButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="match_parent"
+			            android:src="@drawable/ic_menu_refresh"
+	                    android:background="@null"
+	                    />
+			        
+		        </ViewFlipper>
 		
 		    </LinearLayout>
 		    
@@ -284,16 +285,18 @@
                     android:layout_height="wrap_content"
                     android:layout_marginLeft="24pt"
                     android:layout_marginRight="24pt"
-                    android:layout_marginBottom="6pt"
+                    android:layout_marginBottom="12pt"
                     android:src="@drawable/tap" />
             
                 <TextView
                     android:id="@+id/tapTextView"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
                     android:paddingLeft="6pt"
                     android:paddingRight="6pt"
-                    android:text="@string/tap_guide_str" />
+                    android:text="@string/tap_guide_str"
+                    android:textAppearance="?android:attr/textAppearanceMedium" />
             
             </LinearLayout>
         

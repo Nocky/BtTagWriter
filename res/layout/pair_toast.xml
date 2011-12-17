@@ -3,7 +3,9 @@
     android:id="@+id/pairToastLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal" >
+    android:background="@color/toast_bgcolor"
+    android:orientation="horizontal"
+    android:padding="6dp" >
 
     <ImageView
         android:id="@+id/pairToastImage"
@@ -16,8 +18,10 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:paddingLeft="6pt"
+        android:paddingRight="3pt"
         android:paddingTop="3pt"
         android:text="@string/pair_connecting_str"
-        android:textAppearance="?android:attr/textAppearanceMedium" />
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/toast_fgcolor" />
 
 </LinearLayout>

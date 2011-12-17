@@ -21,7 +21,11 @@ import android.widget.Toast;
  */
 public class BluetoothManager {
 	
-	public interface Listener {
+	public interface StateListener {
+		public void bluetoothStateChanged(boolean enabled);
+	}
+	
+	public interface DiscoveryListener {
 		public void bluetoothDeviceFound (BluetoothDevice device);
 		public void bluetoothDiscoveryStateChanged (boolean active);
 	};
@@ -29,12 +33,16 @@ public class BluetoothManager {
 	private Context mContext = null;
 	private BluetoothAdapter mBtAdapter = null;
 	private boolean mEnabledBt = false;
-	private Listener mListener = null;
+	private DiscoveryListener mDiscoveryListener = null;
+	private StateListener mStateListener = null;
 	private boolean mReceiverConnected = false;
 	
-	public BluetoothManager(Context context, Listener listener) {
+	public BluetoothManager(Context context) {
 		mContext = context;
-		mListener = listener;
+	}
+	
+	public void setStateListener(StateListener listener) {
+		mStateListener = listener;
 	}
 	
 	private void connectReceiver() {
@@ -67,22 +75,50 @@ public class BluetoothManager {
 		
 		connectReceiver();
 		
-		
 		return mBtAdapter;
+	}
+	
+	/**
+	 * Is bluetooth connectivity enabled.
+	 * @return true if connectivity is enabled
+	 */
+	public boolean isEnabled() {
+		boolean enabled = false;
+		BluetoothAdapter adapter = getBluetoothAdapter();
+		if (adapter != null) {
+			enabled = adapter.isEnabled();
+		}
+		return enabled;
+	}
+	
+	/**
+	 * This will call state listener's state changed function even if bluetooth
+	 * was already enabled!
+	 */
+	public void enable() {
+		BluetoothAdapter adapter = getBluetoothAdapter();
+		if (isEnabled() == false) {
+			mEnabledBt = true;
+			adapter.enable();
+		} else {
+			if (mStateListener != null) {
+				mStateListener.bluetoothStateChanged(true);
+			}
+		}
 	}
 	
 	/*
 	 * Start Bluetooth discovery (if not active)
 	 */
-	public boolean startDiscovery() {
+	public boolean startDiscovery(DiscoveryListener listener) {
+		mDiscoveryListener = listener;
 		BluetoothAdapter adapter = getBluetoothAdapter();
 		boolean success = true;
 		
 		if (adapter == null) {
 			success = false;
 		} else if (adapter.isEnabled() == false) {
-			mEnabledBt = true;
-			adapter.enable();
+			enable();
 			Toast toast = Toast.makeText(mContext,
 				R.string.toast_bluetooth_enabled_str, Toast.LENGTH_LONG);
 			toast.show();
@@ -122,30 +158,36 @@ public class BluetoothManager {
 				 BluetoothDevice device = intent.getParcelableExtra (
 						 BluetoothDevice.EXTRA_DEVICE);
 				
-				 if (mListener != null) {
-					 mListener.bluetoothDeviceFound(device);
+				 if (mDiscoveryListener != null) {
+					 mDiscoveryListener.bluetoothDeviceFound(device);
 				 }
 			
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(
 				action)) {
 				
-				if (mListener != null) {
-					mListener.bluetoothDiscoveryStateChanged(false);
+				if (mDiscoveryListener != null) {
+					mDiscoveryListener.bluetoothDiscoveryStateChanged(false);
 				}
 				disableIfEnabled();
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_STARTED.equals(action)) {
-				if (mListener != null) {
-					mListener.bluetoothDiscoveryStateChanged(true);
+				if (mDiscoveryListener != null) {
+					mDiscoveryListener.bluetoothDiscoveryStateChanged(true);
 				}
 			} else if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(action)) {
 				int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE,
 					BluetoothAdapter.STATE_OFF);
 				if (state == BluetoothAdapter.STATE_ON) {
-					if (mEnabledBt) {
+					if (mDiscoveryListener != null) {
 						getBluetoothAdapter().startDiscovery();
+					}
+					if (mStateListener != null) {
+						mStateListener.bluetoothStateChanged(true);
 					}
 				} else if (state == BluetoothAdapter.STATE_OFF) {
 					mEnabledBt = false;
+					if (mStateListener != null) {
+						mStateListener.bluetoothStateChanged(false);
+					}
 				}
 			}
 		

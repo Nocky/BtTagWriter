@@ -18,7 +18,7 @@
     <string name="action_dialog_nfc_not_enabled_str">NFC does not seem to be enabled. You have to enable it manually. Tap OK to start settings. Return to this application with back after you are done.</string>
     <string name="action_dialog_ok">OK</string>
     <string name="action_dialog_bluetooth_failed_str">Failed to enable Bluetooth.</string>
-    <string name="tap_guide_str">Now please touch writable tag with your device.</string>
+    <string name="tap_guide_str">Now please touch writable tag with your phone to write the Bluetooth pairing information.</string>
     <string name="extraopts_caption_str">Options</string>
     <string name="extraopts_ready_str">Ready</string>
     <string name="extraopts_selected_device_caption_str">Selected device:</string>
@@ -34,5 +34,8 @@
     <string name="pair_searching_tag_str">Please tap your tag with the phone</string>
     <string name="pair_disconnecting_str">Disconnecting %1</string>
     <string name="pair_unnamed_device_str">Bluetooth device</string>
+    <string name="pair_enabling_bluetooth">Enabling Bluetooth connectivity</string>
+    <string name="pair_failed_to_connect_str">Failed to connect to %1</string>
+    <string name="pair_failed_to_disconnect_str">Failed to disconnect %1</string>
 
 </resources>

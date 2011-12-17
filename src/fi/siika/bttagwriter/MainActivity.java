@@ -16,6 +16,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -41,6 +42,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -51,7 +53,8 @@ import android.widget.ViewFlipper;
  * Main activity of BtTagWriter application
  * @author Sami Viitanen <sami.viitanen@gmail.com>
  */
-public class MainActivity extends Activity implements BluetoothManager.Listener {
+public class MainActivity extends Activity implements
+	BluetoothManager.DiscoveryListener {
 
 	private PendingIntent mNfcPendingIntent = null;
 	private TagWriter mTagWriter = null;
@@ -98,7 +101,7 @@ public class MainActivity extends Activity implements BluetoothManager.Listener 
 	 */
 	private void startBluetoothDiscovery() {
 		
-		if (mBtMgr.startDiscovery() == false) {
+		if (mBtMgr.startDiscovery(this) == false) {
 			showActionDialog(R.string.action_dialog_bluetooth_failed_str,
 				new DialogInterface.OnClickListener() {
 
@@ -159,7 +162,7 @@ public class MainActivity extends Activity implements BluetoothManager.Listener 
 	private OnClickListener mRescanButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			
-			mBtMgr.startDiscovery();
+			mBtMgr.startDiscovery(MainActivity.this);
 		}
 	};
 	
@@ -308,7 +311,7 @@ public class MainActivity extends Activity implements BluetoothManager.Listener 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         
-        mBtMgr = new BluetoothManager(this, this);
+        mBtMgr = new BluetoothManager(this);
         mNfcMgr = new NfcManager (this);
         
         if (mBtListAdapter == null) {
@@ -416,7 +419,13 @@ public class MainActivity extends Activity implements BluetoothManager.Listener 
 	 * @see fi.siika.bttagwriter.BluetoothManager.Listener#bluetoothDeviceFound(android.bluetooth.BluetoothDevice)
 	 */
 	public void bluetoothDeviceFound(BluetoothDevice device) {
-		mBtListAdapter.addDeviceIfNotPresent (device);
+		
+		//For now filter out everything but audio
+		if (device.getBluetoothClass().hasService(
+			BluetoothClass.Service.AUDIO)) {
+			
+			mBtListAdapter.addDeviceIfNotPresent (device);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -426,12 +435,16 @@ public class MainActivity extends Activity implements BluetoothManager.Listener 
 		ProgressBar pb = (ProgressBar)findViewById (R.id.btScanProgressBar);
 		ImageButton ib = (ImageButton)findViewById (R.id.btRescanButton);
 		pb.setIndeterminate (active);
+		
+		ViewFlipper flip = (ViewFlipper)findViewById (
+			R.id.btScanActionsFlipper);
+
 		if (active) {
+			flip.setDisplayedChild(0);
 			pb.setVisibility(View.VISIBLE);
-			ib.setVisibility(View.INVISIBLE);
 		} else {
+			flip.setDisplayedChild(1);
 			pb.setVisibility(View.INVISIBLE);
-			ib.setVisibility(View.VISIBLE);
 		}
 		
 	}

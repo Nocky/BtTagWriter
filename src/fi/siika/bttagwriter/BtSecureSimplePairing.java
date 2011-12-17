@@ -204,12 +204,18 @@ public class BtSecureSimplePairing {
     	
     	//Read the rest
     	for (int i = 8; i < binaryData.length; ++i) {
-    		byte dataLen = binaryData[i];
-    		byte dataType = binaryData[i+1];
+    		int dataLen = (int)(binaryData[i]); //this includes type and data
+    		int dataType = (int)(binaryData[i+1]); //type bit
+    		
+    		/*
+    		Log.d (DEBUG_TAG, new StringBuilder().append("Element: ").append(
+    			dataLen).append(" ").append(dataType).toString());
+    		*/
+    		
     		byte[] dataArray = Arrays.copyOfRange(binaryData, i+2,
     			i + 1 + dataLen);
     		
-    		i = i + 1 + dataLen + 1; //Update index for next round
+    		i = i + dataLen; //Update index for next round (for will add 1)
     		
     		switch (dataType) {
     		case BYTE_COMPLETE_LOCAL_NAME:
@@ -222,7 +228,10 @@ public class BtSecureSimplePairing {
     			}
     			break;
     		case BYTE_CLASS_OF_DEVICE:
-    			ByteBuffer bb = ByteBuffer.wrap(dataArray);
+    			ByteBuffer bb = ByteBuffer.wrap(new byte[] {0, 0, 0, 0});
+    			bb.position(1);
+    			bb.put(dataArray, 0, 3);
+    			bb.rewind();
     			data.setDeviceClass(bb.asIntBuffer().get());
     			break;
     		default:

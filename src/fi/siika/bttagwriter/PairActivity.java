@@ -22,9 +22,11 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,22 +39,21 @@ import android.bluetooth.IBluetooth;
  * 
  */
 public class PairActivity extends Activity
-	implements BluetoothProfile.ServiceListener {
+	implements BluetoothProfile.ServiceListener, ConnectTimer.Listener,
+	BluetoothManager.StateListener {
 	
 	private BluetoothManager mBtMgr = null;
 	private NfcManager mNfcMgr = null;
 	private BluetoothDevice mConnectedDevice = null;
+	private String mDeviceName = new String();
 	private Actions mAction = Actions.IDLE;
+	private ConnectTimer mTimer = null; //workaround
 	
 	private enum Actions {
 		IDLE,
 		CONNECTING,
 		DISCONNECTING
 	};
-	
-	private void shutdown() {
-		mBtMgr.disableIfEnabled();
-	}
 	
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -61,8 +62,10 @@ public class PairActivity extends Activity
         
         Log.d(getClass().getSimpleName(), "created!");
         
-        mBtMgr = new BluetoothManager (this, null);
+        mBtMgr = new BluetoothManager (this);
+        mBtMgr.setStateListener(this);
         mNfcMgr = new NfcManager (this);
+        mTimer = new ConnectTimer (this);
         
         onNewIntent(getIntent());
     }
@@ -74,10 +77,14 @@ public class PairActivity extends Activity
     	
     	mBtMgr.getBluetoothAdapter().getProfileProxy (this, this,
     		BluetoothProfile.A2DP);
+    	
+    	int a2dpState = mBtMgr.getBluetoothAdapter().getProfileConnectionState(
+    		BluetoothProfile.A2DP);
     }
     
     @Override
     public void onPause() {
+    	mTimer.cancel();
     	mBtMgr.releaseAdapter();
     	mNfcMgr.disableForegroundDispatch();
     	super.onPause();
@@ -157,6 +164,7 @@ public class PairActivity extends Activity
     	String name) {
     	
     	mConnectedDevice = device;
+    	mDeviceName = name;
     	
     	// Bluetooth interface (pairing)
     	IBluetooth bt = getIBluetooth();
@@ -164,48 +172,41 @@ public class PairActivity extends Activity
     	IBluetoothA2dp a2dp = getIBluetoothA2dp();
     	
     	String msg = new String();
+    	String myName = name;
+    	if (myName.isEmpty()) {
+    		myName = getResources().getString(R.string.pair_unnamed_device_str);
+    	}
     	
     	try {
     		List<BluetoothDevice> connected = a2dp.getConnectedDevices();
     		if (connected.contains(device)) {
     			mAction = Actions.DISCONNECTING;
     			msg = getResources().getString(R.string.pair_disconnecting_str);
-    			msg = msg.replaceAll("%1", name);
+    			msg = msg.replaceAll("%1", myName);
     			a2dp.disconnect(device);
     		} else if (device.getBondState() == BluetoothDevice.BOND_NONE) {
     			mAction = Actions.CONNECTING;
     			msg = getResources().getString(R.string.pair_bounding_str);
-    			msg = msg.replaceAll("%1", name);
+    			msg = msg.replaceAll("%1", myName);
     			bt.createBond(device.getAddress());
     		} else {
     			mAction = Actions.CONNECTING;
-    			msg = getResources().getString(R.string.pair_connecting_str);
-    			msg = msg.replaceAll("%1", name);
-    			a2dp.connect(device);
+    			if (mBtMgr.isEnabled() == false) {
+    				msg = getResources().getString(
+    					R.string.pair_enabling_bluetooth);
+    				mBtMgr.enable();
+    			} else {
+    				msg = getResources().getString(
+    					R.string.pair_connecting_str);
+    				msg = msg.replaceAll("%1", myName);
+    				a2dp.connect(device);
+    			}
     		}
     	} catch (Exception e) {
     		msg = "FIX ME!";
     	}
     	
-    	Log.d (getClass().getSimpleName(), msg);
-    	
-    	if (msg.isEmpty() == false) {
-    		
-			TextView view = (TextView)findViewById(R.id.pairInfoTextView);
-			view.setText(msg);
-    		
-    		LayoutInflater inflater = getLayoutInflater();
-    		View layout = inflater.inflate(R.layout.pair_toast,
-    			(ViewGroup) findViewById(R.id.pairToastLayout));
-    		TextView text = (TextView) layout.findViewById(R.id.pairToastText);
-    		text.setText(msg);
-    		
-    		Toast toast = new Toast(getApplicationContext());
-    		toast.setDuration(Toast.LENGTH_LONG);
-			toast.setView(layout);
-    		
-    		toast.show();
-    	}
+    	showMessage (msg);
     }
     
     private void handleBluetoothNdefRecord (NdefRecord rec) {
@@ -292,20 +293,32 @@ public class PairActivity extends Activity
 	 */
 	public void onServiceConnected(int profile, BluetoothProfile proxy) {
 		
-		Log.d(getClass().getSimpleName(), "A2DP Service connected");
+		if (profile != BluetoothProfile.A2DP) {
+			Log.d(getClass().getSimpleName(), "Non A2DP BTPSC");
+			return;
+		} else {
+			Log.d(getClass().getSimpleName(), "A2DP BTPSC");
+		}
 		
 		if (mConnectedDevice == null) {
+			Log.d(getClass().getSimpleName(), "ConDev was null");
 			return;
 		}
 		
 		int state = proxy.getConnectionState(mConnectedDevice);
 		
+		//For unknown reason state is little random. Sometimes we receive
+		//CONNECTED and nothing else when disconnecting
 		if (state == BluetoothProfile.STATE_CONNECTING ||
 			state == BluetoothProfile.STATE_CONNECTED) {
 			
 			if (mAction == Actions.CONNECTING) {
 				Log.d(getClass().getSimpleName(), "Device connected");
 				this.finish();
+			} else {
+				Log.w(getClass().getSimpleName(), "Connecting? "
+					+ String.valueOf(state));
+				mTimer.start();
 			}
 		} else if (state == BluetoothProfile.STATE_DISCONNECTING ||
 			state == BluetoothProfile.STATE_DISCONNECTED) {
@@ -313,9 +326,14 @@ public class PairActivity extends Activity
 			if (mAction == Actions.DISCONNECTING) {
 				Log.d(getClass().getSimpleName(), "Device disconnected");
 				this.finish();
+			} else {
+				Log.w(getClass().getSimpleName(), "Disconnecting?"
+					+ String.valueOf(state));
+				mTimer.start();
 			}
 		} else {
-			Log.d(getClass().getSimpleName(), new StringBuilder().append("state: ").append (state).toString());
+			Log.d(getClass().getSimpleName(), new StringBuilder().append(
+				"state: ").append (state).toString());
 		}
 	}
 
@@ -323,8 +341,86 @@ public class PairActivity extends Activity
 	 * @see android.bluetooth.BluetoothProfile.ServiceListener#onServiceDisconnected(int)
 	 */
 	public void onServiceDisconnected(int profile) {
+		
+		if (profile != BluetoothProfile.A2DP) {
+			Log.d(getClass().getSimpleName(), "Non A2DP BTPSDC");
+			return;
+		} else {
+			Log.d(getClass().getSimpleName(), "A2DP BTPSDC");
+		}
+		
 		Log.d(getClass().getSimpleName(), "A2DP Service disconnected");
 		
+	}
+
+	/* (non-Javadoc)
+	 * @see fi.siika.bttagwriter.ConnectTimer.Listener#timerTick(int)
+	 */
+	public void timerTick(int secondsLeft) {
+		int state = mBtMgr.getBluetoothAdapter().getProfileConnectionState(
+			BluetoothProfile.A2DP);
+		Log.d (getClass().getSimpleName(), "Workaround timer: "
+			+ String.valueOf(state));
+		
+		if (mAction == Actions.CONNECTING &&
+			state == BluetoothProfile.STATE_CONNECTED) {
+			mTimer.cancel();
+			finish();
+		} else if (mAction == Actions.DISCONNECTING &&
+			state == BluetoothProfile.STATE_DISCONNECTED) {
+			mTimer.cancel();
+			finish();
+		} else if (secondsLeft == 0) {
+			Log.e (getClass().getSimpleName(), "Failed in bluetooth action");
+			String msg = new String();
+			if (mAction == Actions.DISCONNECTING) {
+				msg = getResources().getString(
+					R.string.pair_failed_to_disconnect_str);
+				msg = msg.replace("%1", mDeviceName);
+			} else {
+				msg = getResources().getString(
+					R.string.pair_failed_to_connect_str);
+				msg = msg.replace("%1", mDeviceName);
+			}
+			showMessage (msg);
+			mTimer.cancel();
+			finish();
+		}
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see fi.siika.bttagwriter.BluetoothManager.StateListener#bluetoothStateChanged(boolean)
+	 */
+	public void bluetoothStateChanged(boolean enabled) {
+		if (mAction == Actions.CONNECTING) {
+			connectToBluetoothDevice (mConnectedDevice, mDeviceName);
+		}
+	}
+	
+	private void showMessage (String msg) {
+		
+    	Log.d (getClass().getSimpleName(), msg);
+		
+    	if (msg.isEmpty() == false) {
+    		
+			TextView view = (TextView)findViewById(R.id.pairInfoTextView);
+			view.setText(msg);
+    		
+    		LayoutInflater inflater = getLayoutInflater();
+    		View layout = inflater.inflate(R.layout.pair_toast,
+    			(ViewGroup) findViewById(R.id.pairToastLayout));
+    		TextView text = (TextView) layout.findViewById(R.id.pairToastText);
+    		text.setText(msg);
+    		
+    		Toast toast = new Toast(getApplicationContext());
+    		toast.setDuration(Toast.LENGTH_SHORT);
+    		toast.setGravity(Gravity.TOP | Gravity.FILL_HORIZONTAL, 0, 0);
+
+			toast.setView(layout);
+    		
+    		toast.show();
+    	}
 	}
 
 }
