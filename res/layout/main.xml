@@ -58,7 +58,12 @@
         <ScrollView
             android:layout_width="match_parent"
             android:id="@+id/aboutScrollView"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:paddingLeft="6pt"
+            android:paddingRight="6pt"
+            android:paddingTop="6pt"
+            android:paddingBottom="6pt"
+            >
 		
 			<LinearLayout
 	            android:layout_width="match_parent"
@@ -69,27 +74,59 @@
 	                android:id="@+id/appDescriptionTextView"
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
-	                android:paddingLeft="6pt"
-	                android:paddingRight="6pt"
 	                android:layout_marginBottom="6pt"
-	                android:text="@string/about_info_str" />
+	                android:autoLink="all"
+	                android:text="" />
+	            
+	            <ImageView
+                    android:src="@android:drawable/divider_horizontal_dark"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="fitXY"
+                    android:paddingBottom="3pt"
+                    android:paddingTop="3pt"
+                    />
 	                
 	            <TextView
 	                android:id="@+id/limitationsTextView"
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
-	                android:paddingLeft="6pt"
-	                android:paddingRight="6pt"
 	                android:layout_marginBottom="6pt"
 	                android:singleLine="false"
-	                android:text="@string/about_limitations_str" />
+	                android:text=""
+	                />
+	            
+                <ImageView
+                    android:src="@android:drawable/divider_horizontal_dark"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="fitXY"
+                    android:paddingBottom="3pt"
+                    android:paddingTop="3pt"
+                    />
+	            
+	            <TextView
+                    android:id="@+id/creditsTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6pt"
+                    android:singleLine="false"
+                    android:text=""
+                    />
+	            
+	            <ImageView
+                    android:src="@android:drawable/divider_horizontal_dark"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="fitXY"
+                    android:paddingBottom="3pt"
+                    android:paddingTop="3pt"
+                    />
 	            
 	            <TextView
 	                android:id="@+id/copyrightTextView"
 	                android:layout_width="wrap_content"
 	                android:layout_height="wrap_content"
-	                android:paddingLeft="6pt"
-	                android:paddingRight="6pt"
 	                android:layout_marginBottom="6pt"
 	                android:autoLink="all"
 	                android:text="@string/about_copyright_str" />

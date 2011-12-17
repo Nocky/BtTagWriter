@@ -24,6 +24,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
+import android.text.Html;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -341,6 +342,19 @@ public class MainActivity extends Activity implements
         		changeToPage (Pages.EXTRA_OPTIONS);
         	}
         });
+        
+        //Setting HTML to text views has to be done in code. Do it here.
+        TextView appTV = (TextView)findViewById (R.id.appDescriptionTextView);
+        appTV.setText (Html.fromHtml (getString (
+        	R.string.about_info_str)));
+        
+        TextView limitTV = (TextView)findViewById (R.id.limitationsTextView);
+        limitTV.setText (Html.fromHtml (getString (
+        	R.string.about_issues_str)));
+        
+        TextView credsTV = (TextView)findViewById (R.id.creditsTextView);
+        credsTV.setText (Html.fromHtml (getString (
+        	R.string.about_credits_str)));
         
         connectSignals();
     }

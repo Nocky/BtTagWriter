@@ -438,8 +438,6 @@ public class PairActivity extends Activity
 	public void timerTick(int secondsLeft) {
 		int state = mBtMgr.getBluetoothAdapter().getProfileConnectionState(
 			BluetoothProfile.A2DP);
-		Log.d (getClass().getSimpleName(), "Workaround timer: "
-			+ String.valueOf(state));
 		
 		if (mAction == Actions.BOUNDING) {
 			if (mConnectedDevice.getBondState() ==
