@@ -168,6 +168,7 @@ public class PairActivity extends Activity
     	String myName = mDeviceName;
     	
     	if (myName.isEmpty()) {
+    		
     		myName = getResources().getString(R.string.pair_unnamed_device_str);
     	}
     	
@@ -416,7 +417,7 @@ public class PairActivity extends Activity
 				finish();
 			} else {
 				msg = getResources().getString(R.string.pair_connecting_str);
-    			msg = msg.replaceAll("%1", mDeviceName);
+    			msg = msg.replaceAll("%1", getDeviceName());
     			mTimer.start();
     			a2dp.connect(mConnectedDevice);
 			}
@@ -456,11 +457,11 @@ public class PairActivity extends Activity
 			if (mAction == Actions.DISCONNECTING) {
 				msg = getResources().getString(
 					R.string.pair_failed_to_disconnect_str);
-				msg = msg.replace("%1", mDeviceName);
+				msg = msg.replace("%1", getDeviceName());
 			} else {
 				msg = getResources().getString(
 					R.string.pair_failed_to_connect_str);
-				msg = msg.replace("%1", mDeviceName);
+				msg = msg.replace("%1", getDeviceName());
 			}
 			showMessage (msg);
 			mTimer.cancel();
