@@ -22,6 +22,8 @@ import android.util.Log;
  */
 public class BtTagGenerator {
 	
+	private static final String DEBUG_TAG = "BtTagGenerator";
+	
 	/**
 	 * Will construct NdefMessage for given Bluetooth name and address
 	 * @param name Name of Bluetooth device
@@ -37,10 +39,40 @@ public class BtTagGenerator {
 		content.setName(name);
 		content.setAddress(address);
 		
+		byte[] mime = BtSecureSimplePairing.MIME_TYPE.getBytes("UTF-8");
+		int minSize = 4 + mime.length 
+			+ BtSecureSimplePairing.MIN_SIZE_IN_BYTES;
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("minSize/sizeLimit ");
+		sb.append(minSize);
+		sb.append("/");
+		sb.append(sizeLimit);
+		Log.d (DEBUG_TAG, sb.toString());
+		
+		/* Let's see if to enable this
+		if (minSize > sizeLimit) {
+			minSize -= mime.length;
+			mime = BtSecureSimplePairing.SHORT_MIME_TYPE.getBytes("UTF-8");
+			minSize += mime.length;
+		}
+		*/
+		
+		if (minSize > sizeLimit) {
+			Log.e (DEBUG_TAG, "Not enough size!");
+			return null;
+		}
+		
+		int mediaSizeLimit = sizeLimit - 2 - mime.length;
+		
 		media = new NdefRecord (NdefRecord.TNF_MIME_MEDIA,
 			BtSecureSimplePairing.MIME_TYPE.getBytes("UTF-8"),
 			new byte[] {(byte)0x01},
-			BtSecureSimplePairing.generate(content, sizeLimit));
+			BtSecureSimplePairing.generate(content,
+			(short)(mediaSizeLimit-4)));
+		
+		Log.d (DEBUG_TAG, new StringBuilder().append(
+			"media size: ").append(media.toByteArray().length).toString());
 		
 		return new NdefMessage(new NdefRecord[] {
 			//HS is disabled as it does not seam to work with Android

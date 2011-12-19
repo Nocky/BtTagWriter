@@ -22,6 +22,23 @@ public class BtSecureSimplePairing {
 	
 	public final static String MIME_TYPE = "application/vnd.bluetooth.ep.oob";
 	
+	/**
+	 * Using this would give 14 bytes more in small tags. But proper with
+	 * proper mime mifare ultralight can still fit the address. So this is
+	 * not used yet.
+	 */
+	//public final static String SHORT_MIME_TYPE = "application/x-btc";
+	
+	
+	/**
+	 * Check if given mime type 
+	 * @param mime Mime type string checked
+	 * @return true if mime is one of those used with this data
+	 */
+	public static boolean validMimeType (String mime) {
+		return (MIME_TYPE.equals(mime));
+	}
+	
 	/*
 	 * Magic values are from:
 	 * https://www.bluetooth.org/Technical/AssignedNumbers/generic_access_profile.htm
@@ -37,8 +54,11 @@ public class BtSecureSimplePairing {
 	
 	private final static short SPACE_TOTAL_LEN_BYTES = 2;
 	private final static short SPACE_ADDRESS_BYTES = 6;
-	private final static short SPACE_DEVICE_CLASS_BYTES = 5;
-	private final static short SPACE_MIN_BYTES =
+	
+	/*!
+	 * Minimum space needed in bytes
+	 */
+	public final static short MIN_SIZE_IN_BYTES =
 		SPACE_TOTAL_LEN_BYTES + SPACE_ADDRESS_BYTES;
 	
 	/**
@@ -201,8 +221,13 @@ public class BtSecureSimplePairing {
 	public static byte[] generate(Data input, short maxLength)
 		throws IOException {
 		
+		StringBuilder sb = new StringBuilder();
+		sb.append ("oob ");
+		sb.append(maxLength);
+		Log.d (DEBUG_TAG, sb.toString());
+		
 		//TODO: Is 30k bytes enough? I assume so ;) (16th bit can't be used)
-		short len = SPACE_MIN_BYTES;
+		short len = MIN_SIZE_IN_BYTES;
 		
 		byte[] manBytes = null;
 		byte[] classBytes = null;

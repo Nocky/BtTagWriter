@@ -282,20 +282,15 @@ public class PairActivity extends Activity
     	}
     }
     
-    private final static String BT_EP_OOB_MIME_TYPE =
-        "application/vnd.bluetooth.ep.oob";
-    
-    private byte[] mMimeByteArray = null;
-    
-    private byte[] getMimeType() {
-    	if (mMimeByteArray == null) {
-    		try {
-    			mMimeByteArray = BT_EP_OOB_MIME_TYPE.getBytes("UTF-8");
-    		} catch (Exception e) {
-    		}
+    private boolean acceptMimeType (byte[] input) {
+    	
+    	try {
+        	String mime = new String (input, "UTF-8");
+        	return BtSecureSimplePairing.validMimeType(mime);
+    	} catch (Exception e) {
+    		Log.e (getClass().getSimpleName(), "Failed to compare mime types");
+    		return false;
     	}
-    				
-    	return mMimeByteArray;
     }
 
     
@@ -306,7 +301,7 @@ public class PairActivity extends Activity
     		for (int j = 0; j < recs.length; ++j) {
     			NdefRecord rec = recs[j];
     			if (rec.getTnf() == NdefRecord.TNF_MIME_MEDIA &&
-    				Arrays.equals(rec.getType(), getMimeType())) {
+    				acceptMimeType(rec.getType())) {
     			
     				Log.d(getClass().getSimpleName(),
     					"Reseived BT NDEF record");

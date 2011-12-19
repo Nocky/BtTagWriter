@@ -146,18 +146,26 @@ public class TagWriter extends Thread {
 		
 		tag.connect();
 		
-		int ndefSizeLimitPages = 36;
+		int ndefSizeLimitPages = 0;
 		if (tag.getType() == MifareUltralight.TYPE_ULTRALIGHT) {
-			Log.d (getClass().getSimpleName(), "Assume UL size 12 pages");
 			ndefSizeLimitPages = 12;
-		} else {
-			Log.d (getClass().getSimpleName(), "Assume UL size 36 pages");
 		}
 		
+		Log.d (getClass().getSimpleName(), new StringBuilder().append (
+			"Assume MUL size to be ").append(ndefSizeLimitPages).toString());
+		
+		int sizeAvailableBytes = ndefSizeLimitPages * 
+			MifareUltralight.PAGE_SIZE - 2;
+		
 		byte[] ndefMessage = BtTagGenerator.generateNdefMessageForBtTag(
-			mInfo.name, mInfo.address,
-			(short)(ndefSizeLimitPages*MifareUltralight.PAGE_SIZE)
-			).toByteArray();
+			mInfo.name, mInfo.address, (short)sizeAvailableBytes).toByteArray();
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append ("UL Write: ");
+		sb.append (sizeAvailableBytes);
+		sb.append (" ");
+		sb.append (ndefMessage.length);
+		Log.d (getClass().getSimpleName(), sb.toString());
 		
 		byte[] data = new byte[ndefMessage.length + 2];
 		data[0] = 0x03;
@@ -172,14 +180,20 @@ public class TagWriter extends Thread {
 		}
 		
 		if (ndefSizeLimitPages < pages) {
-			throw new IOException("Too small tag");
+			sb = new StringBuilder();
+			sb.append("WTF ");
+			sb.append(ndefSizeLimitPages);
+			sb.append(" ");
+			sb.append(pages);
+			Log.e (getClass().getSimpleName(), sb.toString());
+			//throw new IOException("Too small tag");
 		}
-		
+
 		for (int i = 0; i < pages; ++i) {
 			int index = 4*i;
 			//This will auto fill with 0x00s if we index out
 			byte[] page = Arrays.copyOfRange(data, index, index + 4);
-			StringBuilder sb = new StringBuilder();
+			sb = new StringBuilder();
 			//sb.append("Write page ").append(START_NDEF_MIFARE_UL_PAGE + i);
 			//Log.d(getClass().getSimpleName(),sb.toString());
 			tag.writePage (START_NDEF_MIFARE_UL_PAGE + i, page);
