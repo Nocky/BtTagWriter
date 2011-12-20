@@ -109,11 +109,9 @@ public class BluetoothManager {
 		}
 	}
 	
-	private void browserPairedDevices() {
+	private void browsePairedDevices() {
 		BluetoothAdapter adapter = getBluetoothAdapter();
 		Set<BluetoothDevice> paired = adapter.getBondedDevices();
-		Log.d (getClass().getSimpleName(), "Found bounded "
-			+ String.valueOf(paired.size()));
 		
 		Iterator<BluetoothDevice>iter = paired.iterator();
 		while (iter.hasNext()) {
@@ -141,8 +139,8 @@ public class BluetoothManager {
 				R.string.toast_bluetooth_enabled_str, Toast.LENGTH_LONG);
 			toast.show();
 		} else if (adapter.isDiscovering() == false) {
-			browserPairedDevices();
 			adapter.startDiscovery();
+		    browsePairedDevices();
 		}
 		
 		return success;
@@ -184,6 +182,10 @@ public class BluetoothManager {
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(
 				action)) {
 				
+				//Workaround, first call of paired devices does not work if
+				//Bluetooth was just enabled.
+				//browsePairedDevices();
+				
 				if (mDiscoveryListener != null) {
 					mDiscoveryListener.bluetoothDiscoveryStateChanged(false);
 				}
@@ -197,6 +199,7 @@ public class BluetoothManager {
 					BluetoothAdapter.STATE_OFF);
 				if (state == BluetoothAdapter.STATE_ON) {
 					if (mDiscoveryListener != null) {
+						browsePairedDevices();
 						getBluetoothAdapter().startDiscovery();
 					}
 					if (mStateListener != null) {
