@@ -18,6 +18,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.text.Html;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -424,6 +425,9 @@ public class WriterActivity extends Activity implements
     public void onNewIntent(Intent intent) {
     	setIntent(intent);
     	String action = intent.getAction();
+    	
+    	Log.d (getClass().getSimpleName(), "onNewIntent");
+    	
     	
     	if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
     		Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);    		

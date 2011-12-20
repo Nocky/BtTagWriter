@@ -13,10 +13,12 @@ import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
 import android.nfc.NfcAdapter;
 import android.nfc.tech.MifareUltralight;
+import android.nfc.tech.Ndef;
 import android.os.Build;
+import android.util.Log;
 
 /**
- * 
+ * NFC manager takes care of setup of NFC
  */
 public class NfcManager {
 	
@@ -27,6 +29,7 @@ public class NfcManager {
 	public NfcManager (Activity activity) {
 		mActivity = activity;
 	}
+	
 	
 	public NfcAdapter getAdapter() {
 		//TODO: Remove this
@@ -44,6 +47,12 @@ public class NfcManager {
 		if (nfcAdapter == null ) {
 			return;
 		}
+		
+		if (mPendingIntent != null) {
+			return;
+		}
+		
+		Log.d (getClass().getSimpleName(), "Enable ndef dispatch");
 
 		mPendingIntent = PendingIntent.getActivity(mActivity, 0,
 			new Intent(mActivity, mActivity.getClass()).addFlags(
@@ -56,11 +65,6 @@ public class NfcManager {
 			throw new RuntimeException("fail", e);
 		}
 
-		/*
-		String[][] techList = new String[][] { new String[] {
-			MifareUltralight.class.getName() } };
-		*/
-
 		nfcAdapter.enableForegroundDispatch(mActivity, mPendingIntent,
 			new IntentFilter[] { tech }, new String[][] {});
 	}
@@ -70,6 +74,12 @@ public class NfcManager {
 		if (nfcAdapter == null ) {
 			return;
 		}
+		
+		if (mPendingIntent != null) {
+			return;
+		}
+		
+		Log.d (getClass().getSimpleName(), "Enable tech dispatch");
 
 		mPendingIntent = PendingIntent.getActivity(mActivity, 0,
 			new Intent(mActivity, mActivity.getClass()).addFlags(
@@ -82,8 +92,11 @@ public class NfcManager {
 			throw new RuntimeException("fail", e);
 		}
 
+		//TODO: Use xml instead?
 		String[][] techList = new String[][] { new String[] {
-			MifareUltralight.class.getName() } };
+			MifareUltralight.class.getName() }, new String[] {
+			Ndef.class.getName()
+			} };
 
 		nfcAdapter.enableForegroundDispatch(mActivity, mPendingIntent,
 			new IntentFilter[] { tech }, techList);
@@ -93,6 +106,7 @@ public class NfcManager {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD_MR1) {
 			return;
 		} else if (mAdapter != null && mAdapter.isEnabled()) {
+			Log.d (getClass().getSimpleName(), "Disable dispatch");
 			mAdapter.disableForegroundDispatch (mActivity);
 			mPendingIntent = null;
 		}

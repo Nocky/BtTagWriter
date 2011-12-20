@@ -8,11 +8,14 @@
 package fi.siika.bttagwriter;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import android.nfc.FormatException;
 import android.nfc.Tag;
+import android.nfc.tech.MifareClassic;
 import android.nfc.tech.MifareUltralight;
+import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.Handler;
 import android.util.Log;
@@ -115,12 +118,23 @@ public class TagWriter extends Thread {
 	 */
 	public boolean writeToTag (Tag tag, TagInformation information) {
 		
+		String[] techs = tag.getTechList();
+		for (int i = 0; i < techs.length; ++i) {
+			Log.d (getClass().getSimpleName(), "Tag tech: " + techs[i]);
+		}
+		
 		MifareUltralight mul = MifareUltralight.get(tag);
 		if (mul != null) {
 			mTag = tag;
 			mTagClass = MifareUltralight.class.getName();
 		} else {
-			mTag = null;
+			Ndef ndef = Ndef.get(tag);
+			if (ndef != null) {
+				mTag = tag;
+				mTagClass = Ndef.class.getName();
+			} else {
+				mTag = null;
+			}
 		}
 		
 		if (mTag != null) {
@@ -129,6 +143,7 @@ public class TagWriter extends Thread {
 			run();
 			return true;
 		} else {
+			Log.w (getClass().getSimpleName(), "Failed to resolve tag");
 			return false;
 		}
 	}
@@ -144,10 +159,14 @@ public class TagWriter extends Thread {
 			if (mTagClass.equals(MifareUltralight.class.getName())) {
 				MifareUltralight mul = MifareUltralight.get(mTag);
 				message = writeToMifareUltraLight(mul);
-			} else if (mTagClass.equals(NdefFormatable.class.getName())) {
-				NdefFormatable.get(mTag).format (
+			} else if (mTagClass.equals(Ndef.class.getName())) {
+				Ndef ndef = Ndef.get(mTag);
+				ndef.writeNdefMessage(
 					BtTagGenerator.generateNdefMessageForBtTag(mInfo,
-						(short)128));
+						(short)ndef.getMaxSize()));
+				if (mInfo.readOnly) {
+					ndef.makeReadOnly();
+				}
 			} else {
 				message = HANDLER_MSG_TAG_NOT_ACCEPTED;
 			}
@@ -270,6 +289,72 @@ public class TagWriter extends Thread {
 		Log.d(getClass().getName(), "Mifare Ultralight written");
 		return HANDLER_MSG_SUCCESS;
 	}
+	
+	/* If Ndef works this crap can be removed
+	private byte[] mifareClassicSectorTrailer() {
+		byte[] ret = new byte[16];
+		
+		int index = 0;
+		byte[] key = MifareClassic.KEY_NFC_FORUM;
+		for (int i = 0; i < key.length; ++i) {
+			ret[index] = key[i];
+			index += 1;
+		}
+		
+		return ret;
+	}
+	
+	private int writeToMifareClassic(MifareClassic tag) throws Exception {
+		
+		Log.d (getClass().getSimpleName(), "Writing to Mifare Classic");
+		
+		tag.connect();
+		
+		int mifareSize = tag.getSize();
+		Log.d (getClass().getSimpleName(),
+			"Mifare size: " + String.valueOf(mifareSize));
+		
+		byte[] ndefMessage = BtTagGenerator.generateNdefMessageForBtTag(
+			mInfo, (short)(mifareSize / 2)).toByteArray();
+		byte[] payload = ndefMessage;
+		
+		int blocks = payload.length / 16;
+		if (payload.length % 16 != 0) {
+			blocks += 1;
+		}
+		int sectors = blocks / 3;
+		if (blocks % 3 != 0) {
+			sectors += 1;
+		}
+		
+		for (int sector = 1; sector <= sectors; ++sector) {
+			
+			tag.authenticateSectorWithKeyA(sector, MifareClassic.KEY_DEFAULT);
+			int block = tag.sectorToBlock(sector);
+			
+			int blockIndex = (sector - 1) * 3;
+			int dataIndex = blockIndex * 16;
+			
+			byte blockData[] = Arrays.copyOfRange(payload, dataIndex,
+				dataIndex + 16);
+			tag.writeBlock (block, blockData);
+			dataIndex += 16;
+			blockData = Arrays.copyOfRange(payload, dataIndex, dataIndex + 16);
+			tag.writeBlock (block + 1, blockData);
+			dataIndex += 16;
+			blockData = Arrays.copyOfRange(payload, dataIndex, dataIndex + 16);
+			tag.writeBlock (block + 2, blockData);
+			
+			//write key
+			tag.writeBlock (block + 2, blockData);
+			
+		}
+		
+		tag.close();
+		
+		return HANDLER_MSG_SUCCESS;
+	}
+	*/
 	
 	/**
 	 * Cancel current write process if started
