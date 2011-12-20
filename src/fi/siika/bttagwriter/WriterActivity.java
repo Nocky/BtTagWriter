@@ -309,10 +309,6 @@ public class WriterActivity extends Activity implements
 					break;
 				case TagWriter.HANDLER_MSG_CANCELLED:
 					break;
-				case TagWriter.HANDLER_MSG_WRITE_PROTECTED:
-					showActionDialog(R.string.tag_is_write_protected_str,
-						mWriteFailedDialogListener, false, null);
-					break;
 				case TagWriter.HANDLER_MSG_TOO_SMALL:
 					showActionDialog(R.string.tag_is_too_small_str,
 						mWriteFailedDialogListener, false, null);

@@ -95,6 +95,8 @@ public class TagWriter extends Thread {
 	private final static byte CC_NO_SECURITY_BYTE = (byte)0x00;
 	private final static byte CC_READ_ONLY_SECURITY_BYTE = (byte)0x0F;
 	
+	private final static byte MUL_CMD_REQA = 0x26;
+	private final static byte MUL_CMD_WUPA = 0x52;
 	
 	/**
 	 * Construct new TagWriter
@@ -156,14 +158,16 @@ public class TagWriter extends Thread {
 			if (mCancelled) {
 				message = HANDLER_MSG_CANCELLED;
 			} else {
-				Log.w(getClass().getName(), e.getMessage());
+				Log.w(getClass().getName(), e.getClass().getSimpleName()
+					+ " " + e.getMessage());
 				message = HANDLER_MSG_CONNECTION_LOST;
 			}
 		} catch (FormatException e) {
 			Log.e(getClass().getName(),"Failed to format");
 			message = HANDLER_MSG_FAILED_TO_FORMAT;
 		} catch (Exception e) {
-			Log.w(getClass().getName(), e.getMessage());
+			Log.w(getClass().getName(), "Exception: " + e.getMessage());
+			message = HANDLER_MSG_CONNECTION_LOST;
 		}
 		
 		if (mHandler != null) {
@@ -187,8 +191,7 @@ public class TagWriter extends Thread {
 		
 		//Write IntLock if given
 		if (intLock != null) {
-			//TODO: Disabled for now
-			//tag.writePage(START_INTLOCK_MIFARE_UL_PAGE, intLock);
+			tag.writePage(START_INTLOCK_MIFARE_UL_PAGE, intLock);
 		}
 	}
 	
@@ -250,7 +253,18 @@ public class TagWriter extends Thread {
 		
 		// Try to write data
 		writeDataToMifareUltraLight (tag, intLock, cc, payload);
-
+		
+		//Finally activate locking if needed
+		//TODO: what 0x26 is? find documentation and proper name for it
+		if (mInfo.readOnly) {
+			try {
+				byte[] res = tag.transceive(new byte[] {MUL_CMD_REQA});
+			} catch (Exception e) {
+				//TODO: Don't know why this throws exception but it does
+				//ignoring it for now.
+			}
+		}
+		
 		tag.close();
 		
 		Log.d(getClass().getName(), "Mifare Ultralight written");

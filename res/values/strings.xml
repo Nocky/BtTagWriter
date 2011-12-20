@@ -40,8 +40,7 @@
     <string name="extraopts_notice_str">&lt;b&gt;Notice&lt;/b&gt;: Some of the values asked here can not be stored to the smallest tags.</string>
     <string name="btscan_started_str">Please enable the pair mode of your Bluetooth device.</string>
     <string name="btscan_no_devices_found_str">No Bluetooth audio devices found. Please check that your Bluetooth devices are turned on, in pairing mode and visible. Then restart the device discovery.</string>
-    <string name="tag_write_failed_str">Writing to tag failed for unknown reason.</string>
-    <string name="tag_is_write_protected_str">Given tag is read only and data can not be written to it.</string>
+    <string name="tag_write_failed_str">Writing to tag failed.\nPlease check that tag is not write protected. Also keep it close to device while software is writing.</string>
     <string name="tag_is_too_small_str">Given tag is too small to contain information needed.</string>
     <string name="tag_unsupported_str">Given tag is unsupported. Try another.</string>
     
