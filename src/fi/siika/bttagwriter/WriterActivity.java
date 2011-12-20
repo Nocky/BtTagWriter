@@ -10,20 +10,13 @@ package fi.siika.bttagwriter;
 import java.util.Iterator;
 import java.util.Vector;
 
-import fi.siika.bttagwriter.TagWriter.TagInformation;
-
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.PendingIntent;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.IntentFilter.MalformedMimeTypeException;
 import android.text.Html;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -32,8 +25,6 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
-import android.nfc.tech.MifareUltralight;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -41,9 +32,9 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -54,10 +45,9 @@ import android.widget.ViewFlipper;
  * Main activity of BtTagWriter application
  * @author Sami Viitanen <sami.viitanen@gmail.com>
  */
-public class MainActivity extends Activity implements
+public class WriterActivity extends Activity implements
 	BluetoothManager.DiscoveryListener {
 
-	private PendingIntent mNfcPendingIntent = null;
 	private TagWriter mTagWriter = null;
 	private Handler mTagWriterHandler = null; 
 	private TagWriter.TagInformation mTagInfo = new TagWriter.TagInformation();
@@ -163,7 +153,7 @@ public class MainActivity extends Activity implements
 	private OnClickListener mRescanButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			
-			mBtMgr.startDiscovery(MainActivity.this);
+			mBtMgr.startDiscovery(WriterActivity.this);
 		}
 	};
 	
@@ -178,6 +168,23 @@ public class MainActivity extends Activity implements
 		new OnClickListener() {
 		
 		public void onClick(View v) {
+			
+			//Read extra options
+			
+			CheckBox cbox = (CheckBox)findViewById(R.id.readOnlycheckBox);
+			if (cbox != null) {
+				mTagInfo.readOnly = cbox.isChecked();
+			} else {
+				mTagInfo.readOnly = false;
+			}
+			
+			EditText editText = (EditText)findViewById(R.id.extraoptsPinEdit);
+			if (editText != null) {
+				mTagInfo.pin = editText.getText().toString();
+			} else {
+				mTagInfo.pin = "";
+			}
+			
 			
 			changeToPage (Pages.TAG);
 		}
@@ -281,6 +288,14 @@ public class MainActivity extends Activity implements
 		ib.setOnClickListener(mRescanButtonListener);
 	}
 	
+	private DialogInterface.OnClickListener mWriteFailedDialogListener =
+		new DialogInterface.OnClickListener() {
+
+		public void onClick(DialogInterface dialog, int which) {
+		}
+		
+	};
+	
 	@Override
 	public void onResume() {
 		super.onResume();
@@ -292,9 +307,19 @@ public class MainActivity extends Activity implements
 				case TagWriter.HANDLER_MSG_SUCCESS:
 					changeToPage(Pages.SUCCESS);
 					break;
+				case TagWriter.HANDLER_MSG_CANCELLED:
+					break;
+				case TagWriter.HANDLER_MSG_WRITE_PROTECTED:
+					showActionDialog(R.string.tag_is_write_protected_str,
+						mWriteFailedDialogListener, false, null);
+					break;
+				case TagWriter.HANDLER_MSG_TOO_SMALL:
+					showActionDialog(R.string.tag_is_too_small_str,
+						mWriteFailedDialogListener, false, null);
+					break;
 				default:
-					showActionDialog(R.string.tag_no_accepted_str, null,
-						false, null);
+					showActionDialog(R.string.tag_write_failed_str,
+						mWriteFailedDialogListener, false, null);
 				}
 			}
 		};
@@ -356,6 +381,10 @@ public class MainActivity extends Activity implements
         credsTV.setText (Html.fromHtml (getString (
         	R.string.about_credits_str)));
         
+        TextView eonTV = (TextView)findViewById (R.id.extraoptsNoticeCaption);
+        eonTV.setText (Html.fromHtml (getString (
+        	R.string.extraopts_notice_str)));
+        
         connectSignals();
     }
     
@@ -392,8 +421,8 @@ public class MainActivity extends Activity implements
     	if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
     		Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);    		
     		if (mTagWriter.writeToTag(tag, mTagInfo) == false) {
-    			showActionDialog(R.string.tag_no_accepted_str, null, false,
-    				null);
+    			showActionDialog(R.string.tag_unsupported_str,
+    				mWriteFailedDialogListener, false, null);
     		}
 
     	} else {
@@ -448,7 +477,6 @@ public class MainActivity extends Activity implements
 	 */
 	public void bluetoothDiscoveryStateChanged(boolean active) {
 		ProgressBar pb = (ProgressBar)findViewById (R.id.btScanProgressBar);
-		ImageButton ib = (ImageButton)findViewById (R.id.btRescanButton);
 		pb.setIndeterminate (active);
 		
 		ViewFlipper flip = (ViewFlipper)findViewById (
@@ -457,9 +485,29 @@ public class MainActivity extends Activity implements
 		if (active) {
 			flip.setDisplayedChild(0);
 			pb.setVisibility(View.VISIBLE);
+			
+			Toast toast = Toast.makeText(this, R.string.btscan_started_str,
+				Toast.LENGTH_LONG);
+			toast.show();
+			
+			TextView nodevText = (TextView)findViewById (
+				R.id.btScanNoDevicesFoundText);
+			if (nodevText != null) {
+				nodevText.setVisibility(View.GONE);
+			}
+			
 		} else {
 			flip.setDisplayedChild(1);
 			pb.setVisibility(View.INVISIBLE);
+			
+			if (this.mBtListAdapter.getCount() == 0) {
+				TextView nodevText = (TextView)findViewById (
+					R.id.btScanNoDevicesFoundText);
+				if (nodevText != null) {
+					nodevText.setVisibility(View.VISIBLE);
+				}
+			}
+			
 		}
 		
 	}

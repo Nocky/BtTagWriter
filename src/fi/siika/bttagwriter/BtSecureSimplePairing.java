@@ -11,7 +11,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothClass;
 import android.util.Log;
 
 /**
@@ -48,7 +47,8 @@ public class BtSecureSimplePairing {
 	private final static byte BYTE_CLASS_OF_DEVICE = 0x0D;
 	private final static byte BYTE_SIMPLE_PAIRING_HASH = 0x0E;
 	private final static byte BYTE_SIMPLE_PAIRING_RANDOMIZER = 0x0F;
-	private final static byte BYTE_MANUFACTURER_SPECIFIC_DATA = -1;
+	
+	private final static byte BYTE_MANUFACTURER_SPECIFIC_DATA = -1; //-1 = 0xFF
 	
 	private final static String DEBUG_TAG = "BtSecureSimplePairing";
 	

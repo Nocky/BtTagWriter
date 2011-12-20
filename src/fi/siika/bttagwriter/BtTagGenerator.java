@@ -8,12 +8,9 @@
 package fi.siika.bttagwriter;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
-import android.nfc.tech.MifareUltralight;
 import android.util.Log;
 
 /**
@@ -30,14 +27,17 @@ public class BtTagGenerator {
 	 * @param address Address of Bluetooth device ("00:00:00:00:00:00" format)
 	 * @return NdefMessage with asked information
 	 */
-	public static NdefMessage generateNdefMessageForBtTag (String name, 
-		String address, short sizeLimit) throws IOException {
+	public static NdefMessage generateNdefMessageForBtTag (
+		TagWriter.TagInformation info, short sizeLimit) throws IOException {
 		
 		NdefRecord media = null;
 		
 		BtSecureSimplePairing.Data content = new BtSecureSimplePairing.Data();
-		content.setName(name);
-		content.setAddress(address);
+		content.setName(info.name);
+		content.setAddress(info.address);
+		if (info.pin != null && info.pin.isEmpty() == false) {
+			content.setTempPin(info.pin);
+		}
 		
 		byte[] mime = BtSecureSimplePairing.MIME_TYPE.getBytes("UTF-8");
 		int minSize = 4 + mime.length 
@@ -59,7 +59,7 @@ public class BtTagGenerator {
 		*/
 		
 		if (minSize > sizeLimit) {
-			Log.e (DEBUG_TAG, "Not enough size!");
+			Log.e (DEBUG_TAG, "Not enough space!");
 			return null;
 		}
 		

@@ -2,21 +2,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical"
+    android:paddingLeft="6pt"
+    android:paddingTop="3pt"
+    android:paddingBottom="3pt"
+    >
 
     <TextView
         android:id="@+id/btDeviceNameTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/bt_device_name_str"
-        android:layout_marginLeft="6pt"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
     <TextView
         android:id="@+id/btDeviceAddressTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="6pt"
         android:text="@string/bt_device_address_str" />
 
 </LinearLayout>

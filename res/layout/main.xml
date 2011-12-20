@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="vertical" >
+    android:orientation="vertical">
 
     <ViewFlipper
         android:id="@+id/mainFlipper"
@@ -139,40 +138,41 @@
 		    android:layout_width="match_parent"
 		    android:layout_height="match_parent"
 		    android:orientation="vertical"
-		    android:id="@+id/btDeviceLayout">
+		    android:id="@+id/btScanLayout">
 
 		    <LinearLayout
-		        android:id="@+id/btDeviceTopLayout"
+		        android:id="@+id/btScanTopLayout"
 		        android:layout_width="match_parent"
 		        android:layout_height="wrap_content"
+		        android:paddingLeft="6pt"
+		        android:paddingRight="6pt"
 		        android:background="@color/bt_devices_caption_bgcolor" >
 		
 		        <TextView
-		            android:id="@+id/bt_devices_caption"
+		            android:id="@+id/btScanCaption"
 		            android:layout_width="wrap_content"
 		            android:layout_height="wrap_content"
 		            android:layout_margin="3pt"
 		            android:layout_marginBottom="3pt"
-		            android:layout_weight="2"
-		            android:paddingLeft="6pt"
+		            android:layout_weight="1"
 		            android:text="@string/bt_devices_caption_str"
 		            android:textAppearance="?android:attr/textAppearanceLarge"
 		            android:textColor="@color/bt_devices_caption_fgcolor"
 		            android:shadowColor="@color/bt_devices_caption_shadowcolor" />
 		        
 		        <ViewFlipper
-                    android:id="@+id/btScanActionsFlipper"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:inAnimation="@animator/fade_in_anim"
-                    android:outAnimation="@animator/fade_out_anim"
-                    >
+		            android:id="@+id/btScanActionsFlipper"
+		            android:layout_width="wrap_content"
+		            android:layout_height="match_parent"
+		            android:layout_gravity="right"
+		            android:layout_weight="0"
+		            android:inAnimation="@animator/fade_in_anim"
+		            android:outAnimation="@animator/fade_out_anim" >
 		
 			        <ProgressBar
 			            android:id="@+id/btScanProgressBar"
 			            style="?android:attr/progressBarStyleSmall"
-			            android:layout_width="wrap_content"
+			            android:layout_width="match_parent"
 			            android:layout_height="match_parent"
 			            android:indeterminate="false"/>
 	
@@ -191,7 +191,17 @@
 		    <ListView
 		        android:layout_height="wrap_content" 
 		        android:layout_width="fill_parent"
+		        android:layout_marginTop="3pt"
 		        android:id="@+id/btDevicesList"/>
+		    
+		    <TextView
+                android:id="@+id/btScanNoDevicesFoundText"
+                android:text="@string/btscan_no_devices_found_str"
+                android:visibility="gone"
+                android:layout_height="wrap_content" 
+                android:layout_width="fill_parent"
+                android:layout_margin="3pt"
+                />
 		
 		</LinearLayout>
 		
@@ -206,7 +216,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/bt_devices_caption_bgcolor"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                >
         
                 <TextView
                     android:id="@+id/extraOptionsCaption"
@@ -226,7 +237,9 @@
             <ScrollView
                 android:id="@+id/extraoptsScrollView"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" >
+                android:layout_height="wrap_content"
+                android:layout_margin="6pt"
+                >
                 
                 <LinearLayout
                     android:id="@+id/extraOptionsScrollLayout"
@@ -262,19 +275,36 @@
                         />
 		            
 		            <TextView
-                        android:id="@+id/extraoptsPinCaption"
-                        android:text="@string/extraopts_pin_caption_str"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textAppearance="?android:attr/textAppearanceMedium"
-                        />
+		                android:id="@+id/extraoptsPinCaption"
+		                android:layout_width="wrap_content"
+		                android:layout_height="wrap_content"
+		                android:text="@string/extraopts_pin_caption_str"
+		                android:textAppearance="?android:attr/textAppearanceMedium"
+		                android:visibility="gone" />
 
 		            <EditText
 		                android:id="@+id/extraoptsPinEdit"
 		                android:layout_width="match_parent"
 		                android:layout_height="wrap_content"
-		                android:inputType="number">
+		                android:inputType="number"
+		                android:visibility="gone" >
+
 		            </EditText>
+		            
+		            <ImageView
+		                android:layout_width="fill_parent"
+		                android:layout_height="wrap_content"
+		                android:paddingBottom="3pt"
+		                android:paddingTop="3pt"
+		                android:scaleType="fitXY"
+		                android:src="@android:drawable/divider_horizontal_dark"
+		                android:visibility="gone" />
+
+		            <CheckBox
+		                android:id="@+id/readOnlycheckBox"
+		                android:layout_width="wrap_content"
+		                android:layout_height="wrap_content"
+		                android:text="@string/extraopts_make_readonly_str" />
 		            
 		            <ImageView
                         android:src="@android:drawable/divider_horizontal_dark"
@@ -284,12 +314,13 @@
                         android:paddingBottom="3pt"
                         android:paddingTop="3pt"
                         />
-
-		            <CheckBox
-		                android:id="@+id/readOnlycheckBox"
-		                android:layout_width="wrap_content"
-		                android:layout_height="wrap_content"
-		                android:text="@string/extraopts_make_readonly_str" />
+		            
+		            <TextView
+                        android:id="@+id/extraoptsNoticeCaption"
+                        android:text="@string/extraopts_notice_str"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        />
 		          
                 </LinearLayout>
 	            
@@ -306,51 +337,53 @@
             
         </LinearLayout>
 		    
-		<ScrollView android:layout_width="match_parent"
-            android:id="@+id/tagScrollView"
-            android:layout_height="match_parent">
-            
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:id="@+id/tagLayout">
-            
-                <ImageView
-                    android:id="@+id/tapImageView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginLeft="24pt"
-                    android:layout_marginRight="24pt"
-                    android:layout_marginBottom="12pt"
-                    android:src="@drawable/tap" />
-            
-                <TextView
-                    android:id="@+id/tapTextView"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center_horizontal"
-                    android:paddingLeft="6pt"
-                    android:paddingRight="6pt"
-                    android:text="@string/tap_guide_str"
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-            
-            </LinearLayout>
-        
-        </ScrollView>
+        <LinearLayout
+            android:id="@+id/tagLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="vertical" >
+
+            <ImageView
+                android:id="@+id/tapImageView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="24pt"
+                android:layout_marginRight="24pt"
+                android:layout_weight="2"
+                android:src="@drawable/tap" />
+
+            <TextView
+                android:id="@+id/tapTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:paddingLeft="6pt"
+                android:paddingRight="6pt"
+                android:layout_marginBottom="6pt"
+                android:text="@string/tap_guide_str"
+                android:layout_weight="1"
+                android:textAppearance="?android:attr/textAppearanceMedium" />
+        </LinearLayout>
 		
 		<LinearLayout
+		    android:id="@+id/successLayout"
 		    android:layout_width="match_parent"
 		    android:layout_height="match_parent"
 		    android:orientation="vertical"
-            android:id="@+id/successLayout">
+		    android:layout_marginTop="12pt"
+		    android:layout_marginLeft="6pt"
+		    android:layout_marginRight="6pt"
+		    android:layout_marginBottom="12pt">
             		
 		    <ImageView
 		        android:id="@+id/imageView1"
-		        android:layout_width="wrap_content"
+		        android:layout_width="match_parent"
 		        android:layout_height="wrap_content"
 		        android:layout_marginLeft="24pt"
 		        android:layout_marginRight="24pt"
+		        android:layout_weight="1"
+		        android:gravity="center"
 		        android:src="@drawable/success" />
 		
 		    <TextView
@@ -359,6 +392,8 @@
 		        android:layout_height="wrap_content"
 		        android:gravity="center"
 		        android:text="@string/end_success_str"
+		        android:layout_marginBottom="12pt"
+		        android:layout_weight="0"
 		        android:textAppearance="?android:attr/textAppearanceLarge" />
 		
 		    <Button
@@ -368,6 +403,8 @@
 		        android:layout_marginLeft="6pt"
 		        android:layout_marginRight="6pt"
 		        android:layout_marginTop="12pt"
+		        android:layout_marginBottom="3pt"
+		        android:layout_weight="0"
 		        android:text="@string/end_write_another_str" />
 		    
 		    <Button
@@ -376,6 +413,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginLeft="6pt"
                 android:layout_marginRight="6pt"
+                android:layout_marginTop="3pt"
+                android:layout_weight="0"
                 android:text="@string/end_exit_str" />
 		
 		</LinearLayout>

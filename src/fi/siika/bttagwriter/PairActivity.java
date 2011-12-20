@@ -7,22 +7,16 @@
 package fi.siika.bttagwriter;
 
 import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothProfile;
-import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
-import android.nfc.Tag;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.Log;
@@ -80,9 +74,6 @@ public class PairActivity extends Activity
     	mNfcMgr.enableForegroundNdefDiscovered();
     	
     	mBtMgr.getBluetoothAdapter().getProfileProxy (this, this,
-    		BluetoothProfile.A2DP);
-    	
-    	int a2dpState = mBtMgr.getBluetoothAdapter().getProfileConnectionState(
     		BluetoothProfile.A2DP);
     }
     
@@ -439,6 +430,7 @@ public class PairActivity extends Activity
 			if (mConnectedDevice.getBondState() ==
 				BluetoothDevice.BOND_BONDED) {
 				
+				Log.d (getClass().getSimpleName(), "Paired, now connect");
 				mTimer.cancel();
 				boundAndConnect();
 			}

@@ -14,9 +14,7 @@ import android.nfc.FormatException;
 import android.nfc.Tag;
 import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.NdefFormatable;
-import android.nfc.tech.TagTechnology;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 /**
@@ -34,10 +32,21 @@ public class TagWriter extends Thread {
 		 * Bluetooth address of device ("00:00:00:00:00:00" format)
 		 */
 		public String address;
+		
 		/**
 		 * Bluetooth name of device
 		 */
 		public String name;
+		
+		/**
+		 * If true writer will try to write protected the tag
+		 */
+		public boolean readOnly = false;
+		
+		/**
+		 * Pin code or if empty no pin code
+		 */
+		public String pin;
 		
 		@Override
 		public Object clone () {
@@ -47,6 +56,19 @@ public class TagWriter extends Thread {
 				return null;
 			}
 		}
+	}
+	
+	/**
+	 * Exception used when write fails because of lack of space
+	 */
+	private class OutOfSpaceException extends Exception {
+		
+		public OutOfSpaceException (String msg) {
+			super (msg);
+		}
+		
+		private static final long serialVersionUID = 1L;
+		
 	}
 	
 	private Handler mHandler = null;
@@ -61,13 +83,18 @@ public class TagWriter extends Thread {
 	public final static int HANDLER_MSG_FAILED_TO_FORMAT = -2;
 	public final static int HANDLER_MSG_TOO_SMALL = -3;
 	public final static int HANDLER_MSG_TAG_NOT_ACCEPTED = -4;
+	public final static int HANDLER_MSG_FAILED_TO_WRITE = -5;
+	public final static int HANDLER_MSG_WRITE_PROTECTED = -6;
 	
+	private final static int START_INTLOCK_MIFARE_UL_PAGE = 2;
 	private final static int START_CC_MIFARE_UL_PAGE = 3;
 	private final static int START_NDEF_MIFARE_UL_PAGE = 4;
 	private final static byte CC_NDEF_BYTE = (byte)0xE1;
 	private final static byte CC_NDEF_VERSION_1_1_BYTE = (byte)0x11;
 	
 	private final static byte CC_NO_SECURITY_BYTE = (byte)0x00;
+	private final static byte CC_READ_ONLY_SECURITY_BYTE = (byte)0x0F;
+	
 	
 	/**
 	 * Construct new TagWriter
@@ -114,14 +141,17 @@ public class TagWriter extends Thread {
 		try {
 			if (mTagClass.equals(MifareUltralight.class.getName())) {
 				MifareUltralight mul = MifareUltralight.get(mTag);
-				writeToMifareUltraLight(mul);
+				message = writeToMifareUltraLight(mul);
 			} else if (mTagClass.equals(NdefFormatable.class.getName())) {
 				NdefFormatable.get(mTag).format (
-					BtTagGenerator.generateNdefMessageForBtTag(mInfo.name,
-					mInfo.address, (short)128));
+					BtTagGenerator.generateNdefMessageForBtTag(mInfo,
+						(short)128));
 			} else {
 				message = HANDLER_MSG_TAG_NOT_ACCEPTED;
 			}
+		} catch (OutOfSpaceException e) {
+			message = HANDLER_MSG_TOO_SMALL;
+			Log.w (getClass().getSimpleName(), "Not enough space");
 		} catch (IOException e) {
 			if (mCancelled) {
 				message = HANDLER_MSG_CANCELLED;
@@ -141,12 +171,32 @@ public class TagWriter extends Thread {
 		}
 	}
 	
-	private void writeToMifareUltraLight(MifareUltralight tag)
-		throws IOException {
+	private void writeDataToMifareUltraLight(MifareUltralight tag,
+		byte[] intLock, byte[] cc, byte[] payload) throws Exception {
+		
+		//Write payload
+		int pageNum = START_NDEF_MIFARE_UL_PAGE;
+		for (int i = 0; i < payload.length; i = i + 4) {
+			byte[] page = Arrays.copyOfRange(payload, i, i + 4);
+			tag.writePage (pageNum, page);
+			pageNum += 1;
+		}
+		
+		//Write CC
+		tag.writePage(START_CC_MIFARE_UL_PAGE, cc);
+		
+		//Write IntLock if given
+		if (intLock != null) {
+			//TODO: Disabled for now
+			//tag.writePage(START_INTLOCK_MIFARE_UL_PAGE, intLock);
+		}
+	}
+	
+	private int writeToMifareUltraLight(MifareUltralight tag) throws Exception {
 		
 		tag.connect();
 		
-		int ndefSizeLimitPages = 0;
+		int ndefSizeLimitPages = 36;
 		if (tag.getType() == MifareUltralight.TYPE_ULTRALIGHT) {
 			ndefSizeLimitPages = 12;
 		}
@@ -157,57 +207,54 @@ public class TagWriter extends Thread {
 		int sizeAvailableBytes = ndefSizeLimitPages * 
 			MifareUltralight.PAGE_SIZE - 2;
 		
-		byte[] ndefMessage = BtTagGenerator.generateNdefMessageForBtTag(
-			mInfo.name, mInfo.address, (short)sizeAvailableBytes).toByteArray();
+		byte[] ndefMessage = null;
+		ndefMessage = BtTagGenerator.generateNdefMessageForBtTag(
+			mInfo, (short)sizeAvailableBytes).toByteArray();
 		
-		StringBuilder sb = new StringBuilder();
-		sb.append ("UL Write: ");
-		sb.append (sizeAvailableBytes);
-		sb.append (" ");
-		sb.append (ndefMessage.length);
-		Log.d (getClass().getSimpleName(), sb.toString());
-		
-		byte[] data = new byte[ndefMessage.length + 2];
-		data[0] = 0x03;
-		data[1] = (byte)(ndefMessage.length);
+		// Construct the payload
+		byte[] payload = new byte[ndefMessage.length + 2];
+		payload[0] = 0x03;
+		payload[1] = (byte)(ndefMessage.length);
 		for (int i = 0; i < ndefMessage.length; ++i) {
-			data[2+i] = ndefMessage[i];
+			payload[2+i] = ndefMessage[i];
 		}
 		
-		int pages = data.length / MifareUltralight.PAGE_SIZE;
-		if (data.length % MifareUltralight.PAGE_SIZE != 0) {
+		// Check the size of payload
+		int pages = payload.length / MifareUltralight.PAGE_SIZE;
+		if (payload.length % MifareUltralight.PAGE_SIZE != 0) {
 			pages += 1;
 		}
-		
 		if (ndefSizeLimitPages < pages) {
-			sb = new StringBuilder();
-			sb.append("WTF ");
-			sb.append(ndefSizeLimitPages);
-			sb.append(" ");
-			sb.append(pages);
-			Log.e (getClass().getSimpleName(), sb.toString());
-			//throw new IOException("Too small tag");
-		}
-
-		for (int i = 0; i < pages; ++i) {
-			int index = 4*i;
-			//This will auto fill with 0x00s if we index out
-			byte[] page = Arrays.copyOfRange(data, index, index + 4);
-			sb = new StringBuilder();
-			//sb.append("Write page ").append(START_NDEF_MIFARE_UL_PAGE + i);
-			//Log.d(getClass().getSimpleName(),sb.toString());
-			tag.writePage (START_NDEF_MIFARE_UL_PAGE + i, page);
+			Log.e (getClass().getSimpleName(), new StringBuilder().append(
+				"Too many pages!").append(pages).toString());
+		    throw new OutOfSpaceException("Too many pages " + String.valueOf(pages));
 		}
 		
-		//And finally write header
-		tag.writePage(START_CC_MIFARE_UL_PAGE, new byte[] {
-			CC_NDEF_BYTE, CC_NDEF_VERSION_1_1_BYTE,
+		// Construct CC
+		byte secByte = CC_NO_SECURITY_BYTE;
+		if (mInfo.readOnly) {
+			secByte = CC_READ_ONLY_SECURITY_BYTE;
+		}
+		byte[] cc = new byte[] { CC_NDEF_BYTE, CC_NDEF_VERSION_1_1_BYTE,
 			(byte)(ndefSizeLimitPages * MifareUltralight.PAGE_SIZE / 8),
-			CC_NO_SECURITY_BYTE});
+			secByte};
 		
+		// Construct Lock bytes
+		byte[] intLock = null;
+		if (mInfo.readOnly) {
+			Log.d (getClass().getSimpleName(), "Turning on lock bits");
+			intLock = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+		    intLock[2] = -1;
+			intLock[3] = -1;
+		}
+		
+		// Try to write data
+		writeDataToMifareUltraLight (tag, intLock, cc, payload);
+
 		tag.close();
 		
-		Log.d(getClass().getName(),"Mifare Ultralight written");
+		Log.d(getClass().getName(), "Mifare Ultralight written");
+		return HANDLER_MSG_SUCCESS;
 	}
 	
 	/**

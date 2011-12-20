@@ -6,16 +6,12 @@
  */
 package fi.siika.bttagwriter;
 
-import fi.siika.bttagwriter.MainActivity.Pages;
 import android.app.Activity;
 import android.app.PendingIntent;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
 import android.nfc.NfcAdapter;
-import android.nfc.Tag;
 import android.nfc.tech.MifareUltralight;
 import android.os.Build;
 
