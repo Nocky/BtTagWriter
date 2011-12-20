@@ -203,6 +203,7 @@ public class WriterActivity extends Activity implements
 		public class Row {
 			public String name;
 			public String address;
+			public boolean paired = false;
 		};
 		
 		private Vector<Row> mList;
@@ -230,20 +231,30 @@ public class WriterActivity extends Activity implements
 			TextView line =(TextView)row.findViewById (R.id.btDeviceNameTextView);
 			line.setText (rowData.name);
 			line =(TextView)row.findViewById (R.id.btDeviceAddressTextView);
-			line.setText (rowData.address);
+			
+			String addressLine = rowData.address;
+			if (rowData.paired) {
+				addressLine =
+					getResources().getString(R.string.btscan_paired_str) + " "
+					+ addressLine;
+			}
+			
+			line.setText (addressLine);
 			return(row);                         
 		}
 		
-		public void addDevice(String name, String address) {
+		public void addDevice(String name, String address, boolean paired) {
 			Row row = new Row();
 			row.name = name;
 			row.address = address;
+			row.paired = paired;
 			mList.add(row);
 			notifyDataSetChanged();
 		}
 		
 		public void addDevice(BluetoothDevice device) {
-			addDevice (device.getName(), device.getAddress());
+			addDevice (device.getName(), device.getAddress(),
+				device.getBondState() == BluetoothDevice.BOND_BONDED);
 		}
 		
 		public Row getRow (int index) {

@@ -1,0 +1,7 @@
+BT Tag Writer changelog
+
+*** #2 v0.2 [2011-12-20]
+  * Also use list of paired devices to populate discovery list in wizard
+
+*** #1 v0.1 [2011-12-20]
+  * Initial demo release to Android Market

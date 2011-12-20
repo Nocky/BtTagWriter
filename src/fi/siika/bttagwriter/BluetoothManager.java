@@ -6,12 +6,16 @@
  */
 package fi.siika.bttagwriter;
 
+import java.util.Iterator;
+import java.util.Set;
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.util.Log;
 import android.widget.Toast;
 
 /**
@@ -105,6 +109,22 @@ public class BluetoothManager {
 		}
 	}
 	
+	private void browserPairedDevices() {
+		BluetoothAdapter adapter = getBluetoothAdapter();
+		Set<BluetoothDevice> paired = adapter.getBondedDevices();
+		Log.d (getClass().getSimpleName(), "Found bounded "
+			+ String.valueOf(paired.size()));
+		
+		Iterator<BluetoothDevice>iter = paired.iterator();
+		while (iter.hasNext()) {
+			BluetoothDevice device = iter.next();
+			
+			 if (mDiscoveryListener != null) {
+				 mDiscoveryListener.bluetoothDeviceFound(device);
+			 }
+		}
+	}
+	
 	/*
 	 * Start Bluetooth discovery (if not active)
 	 */
@@ -121,6 +141,7 @@ public class BluetoothManager {
 				R.string.toast_bluetooth_enabled_str, Toast.LENGTH_LONG);
 			toast.show();
 		} else if (adapter.isDiscovering() == false) {
+			browserPairedDevices();
 			adapter.startDiscovery();
 		}
 		
