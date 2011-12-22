@@ -1,7 +1,8 @@
 BT Tag Writer changelog
 
 *** #4 v0.4 [2011-12-XX]
-  * Initial Mifare Classic support via Ndef class
+  * Mifare 1K/Classic support (NOT WORKING YET?)
+  * Headset support (NOT TESTED YET)
 
 *** #3 v0.3 [2011-12-20]
   * Mistake in 0.2 release fixed. Now paired devices are also shown if
