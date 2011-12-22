@@ -10,7 +10,9 @@ import java.lang.reflect.Method;
 import java.util.List;
 
 import android.app.Activity;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
 import android.nfc.NdefMessage;
@@ -28,6 +30,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.bluetooth.IBluetoothA2dp;
 import android.bluetooth.IBluetooth;
+import android.bluetooth.IBluetoothHeadset;
 
 /**
  * 
@@ -85,75 +88,7 @@ public class PairActivity extends Activity
     	super.onPause();
     }
     
-    /**
-     * As application APIs does not offer way to connect A2DP devices this
-     * has to be done via these interface classes.
-     * @return A2DP interface instance
-     */
-    private IBluetoothA2dp getIBluetoothA2dp() {
 
-    	IBluetoothA2dp ibta = null;
-
-    	try {
-
-    	    Class c2 = Class.forName("android.os.ServiceManager");
-
-    	    Method m2 = c2.getDeclaredMethod("getService", String.class);
-    	    IBinder b = (IBinder) m2.invoke(null, "bluetooth_a2dp");
-
-    	    Class c3 = Class.forName("android.bluetooth.IBluetoothA2dp");
-
-    	    Class[] s2 = c3.getDeclaredClasses();
-
-    	    Class c = s2[0];
-    	    // printMethods(c);
-    	    Method m = c.getDeclaredMethod("asInterface", IBinder.class);
-
-    	    m.setAccessible(true);
-    	    ibta = (IBluetoothA2dp) m.invoke(null, b);
-
-    	} catch (Exception e) {
-    	    Log.e(getClass().getSimpleName(), "A2DP inteface problem: "
-    	    	+ e.getMessage());
-    	}
-    	
-    	return ibta;
-    }
-    
-    /**
-     * As application API does not offer direct access to pairing of new
-     * bluetooth devices this has to be done via interface class
-     * @return Bluetooth interface class
-     */
-    private IBluetooth getIBluetooth() {
-
-    	IBluetooth ibt = null;
-
-    	try {
-
-    	    Class c2 = Class.forName("android.os.ServiceManager");
-
-    	    Method m2 = c2.getDeclaredMethod("getService", String.class);
-    	    IBinder b = (IBinder) m2.invoke(null, "bluetooth");
-    	    
-    	    Class c3 = Class.forName("android.bluetooth.IBluetooth");
-
-    	    Class[] s2 = c3.getDeclaredClasses();
-
-    	    Class c = s2[0];
-    	    // printMethods(c);
-    	    Method m = c.getDeclaredMethod("asInterface", IBinder.class);
-
-    	    m.setAccessible(true);
-    	    ibt = (IBluetooth) m.invoke(null, b);
-
-    	} catch (Exception e) {
-    	    Log.e(getClass().getSimpleName(), "Bluetooth interface problem: "
-    	    	+ e.getMessage());
-    	}
-    	
-    	return ibt;
-    }
     
     private String getDeviceName() {
     	String myName = mDeviceName;
@@ -179,7 +114,7 @@ public class PairActivity extends Activity
     		BluetoothDevice.BOND_NONE) {
     		
     		try {
-	    		IBluetooth bt = getIBluetooth();
+	    		IBluetooth bt = BtInterfaces.getBluetooth();
 				mAction = Actions.BOUNDING;
 				msg = getResources().getString(R.string.pair_bounding_str);
 				msg = msg.replaceAll("%1", getDeviceName());
@@ -219,7 +154,7 @@ public class PairActivity extends Activity
     	mDeviceName = name;
     	
     	// A2DP interface (connecting)
-    	IBluetoothA2dp a2dp = getIBluetoothA2dp();
+    	IBluetoothA2dp a2dp = BtInterfaces.getA2dp();
     	
     	try {	
 	    	List<BluetoothDevice> connected = a2dp.getConnectedDevices();
@@ -393,24 +328,74 @@ public class PairActivity extends Activity
 	}
 	
 	/**
-	 * Handles connecing afte
+	 * Does either A2DP or headset connect based on device
+	 */
+	private void audioConnect() {
+		
+		int devClass = mConnectedDevice.getBluetoothClass().getDeviceClass();
+		Log.d (getClass().getSimpleName(), "Device class "
+			+ String.valueOf(devClass));
+		
+		if (devClass == BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE ||
+			devClass == BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET) {
+			
+			headsetConnect();
+		} else {
+			a2dpConnect();
+		}
+	}
+	
+	/**
+	 * Handles the headset connecting
+	 */
+	private void headsetConnect() {
+		Log.d(getClass().getSimpleName(), "Connecting headset");
+		
+		String msg = new String();
+		
+		try {
+			IBluetoothHeadset hset = BtInterfaces.getHeadset();
+			if (hset.getAudioState(mConnectedDevice) ==
+				BluetoothHeadset.STATE_AUDIO_DISCONNECTED) {
+			
+				msg = getResources().getString(R.string.pair_connecting_str);
+    			msg = msg.replaceAll("%1", getDeviceName());
+    			mTimer.start();
+				hset.connect(mConnectedDevice);
+			} else {
+				Log.d (getClass().getSimpleName(), "Already connected");
+				finish();
+			}
+			
+		} catch (Exception e) {
+			Log.e (getClass().getSimpleName(), "Failed to connect");
+		}
+		
+		showMessage (msg);
+	}
+	
+	/**
+	 * Handles the A2DP connecting
 	 */
 	private void a2dpConnect () {
+		
+		Log.d(getClass().getSimpleName(), "Connecting A2DP");
 		
 		String msg = new String();
 		
 		try {
 			mTimer.cancel();
-			IBluetoothA2dp a2dp = getIBluetoothA2dp();
-			List<BluetoothDevice> connected = a2dp.getConnectedDevices();
-			if (connected.contains(mConnectedDevice)) {
-				Log.d (getClass().getSimpleName(), "Already connected");
-				finish();
-			} else {
+			IBluetoothA2dp a2dp = BtInterfaces.getA2dp();
+			if (a2dp.getConnectionState(mConnectedDevice) ==
+				BluetoothProfile.STATE_DISCONNECTED) {
+				
 				msg = getResources().getString(R.string.pair_connecting_str);
     			msg = msg.replaceAll("%1", getDeviceName());
     			mTimer.start();
-    			a2dp.connect(mConnectedDevice);
+    			a2dp.connect(mConnectedDevice);	
+			} else {
+				Log.d (getClass().getSimpleName(), "Already connected");
+				finish();
 			}
 		} catch (Exception e) {
 			Log.e (getClass().getSimpleName(), "Failed to connect");
