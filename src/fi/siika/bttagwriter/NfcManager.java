@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
 import android.nfc.NfcAdapter;
+import android.nfc.tech.MifareClassic;
 import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.Ndef;
 import android.os.Build;
@@ -95,8 +96,8 @@ public class NfcManager {
 		//TODO: Use xml instead?
 		String[][] techList = new String[][] { new String[] {
 			MifareUltralight.class.getName() }, new String[] {
-			Ndef.class.getName()
-			} };
+			Ndef.class.getName() }, new String[] { 
+			MifareClassic.class.getName() } };
 
 		nfcAdapter.enableForegroundDispatch(mActivity, mPendingIntent,
 			new IntentFilter[] { tech }, techList);

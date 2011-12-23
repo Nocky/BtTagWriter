@@ -12,6 +12,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import android.nfc.FormatException;
+import android.nfc.NdefMessage;
 import android.nfc.Tag;
 import android.nfc.tech.MifareClassic;
 import android.nfc.tech.MifareUltralight;
@@ -64,7 +65,7 @@ public class TagWriter extends Thread {
 	/**
 	 * Exception used when write fails because of lack of space
 	 */
-	private class OutOfSpaceException extends Exception {
+	private static class OutOfSpaceException extends Exception {
 		
 		public OutOfSpaceException (String msg) {
 			super (msg);
@@ -101,6 +102,9 @@ public class TagWriter extends Thread {
 	private final static byte MUL_CMD_REQA = 0x26;
 	private final static byte MUL_CMD_WUPA = 0x52;
 	
+	private final static byte TLV_NDEF_MESSAGE = 3;
+
+	
 	/**
 	 * Construct new TagWriter
 	 * @param handler Handler used to send messages
@@ -123,29 +127,54 @@ public class TagWriter extends Thread {
 			Log.d (getClass().getSimpleName(), "Tag tech: " + techs[i]);
 		}
 		
-		MifareUltralight mul = MifareUltralight.get(tag);
+		MifareUltralight mul = MifareUltralight.get (tag);
+		Ndef ndef = Ndef.get (tag);
+		MifareClassic mc = MifareClassic.get (tag);
+		
 		if (mul != null) {
 			mTag = tag;
 			mTagClass = MifareUltralight.class.getName();
+		} else if (ndef != null) {
+			mTag = tag;
+			mTagClass = Ndef.class.getName();
+		} else if (mc != null) {
+			mTag = tag;
+			mTagClass = MifareClassic.class.getName();
 		} else {
-			Ndef ndef = Ndef.get(tag);
-			if (ndef != null) {
-				mTag = tag;
-				mTagClass = Ndef.class.getName();
-			} else {
-				mTag = null;
-			}
-		}
-		
-		if (mTag != null) {
-			mInfo = (TagInformation)(information.clone());
-			mCancelled = false;
-			run();
-			return true;
-		} else {
-			Log.w (getClass().getSimpleName(), "Failed to resolve tag");
+			Log.e (getClass().getSimpleName(), "Failed to identify tag given");
 			return false;
 		}
+			
+		mInfo = (TagInformation)(information.clone());
+		mCancelled = false;
+		run();
+		return true;
+	}
+	
+	/**
+	 * Actions needed for writing to Mifare Classic
+	 * @param tag
+	 * @throws Exception
+	 */
+	private void mifareClassicPath (MifareClassic tag) throws Exception {
+		// Make sure classic is formatted
+		MifareClassicWriter.ndefFormat(tag);
+		
+		// Then write data
+		int size = tag.getSize();
+		// TODO: Does the size include trailers or not? 16 is for sector 0
+		double fSize = (double)size * (3.0 / 4.0) - 16.0;
+		byte[] payload = generatePayload (mInfo, (int)Math.round(fSize)-2);
+		
+		// Try to add 0xF3 0x01 to front!
+		byte[] morePayload = new byte[payload.length + 2];
+		morePayload[0] = (byte)0xF3;
+		morePayload[1] = (byte)0x01;
+		for (int i = 0; i < payload.length; ++i) {
+			morePayload[2+i] = payload[i];
+		}
+		
+		MifareClassicWriter.writeData(tag, morePayload);
 	}
 	
 	/**
@@ -167,6 +196,9 @@ public class TagWriter extends Thread {
 				if (mInfo.readOnly) {
 					ndef.makeReadOnly();
 				}
+			} else if (mTagClass.equals(MifareClassic.class.getName())) {
+				MifareClassic mc = MifareClassic.get (mTag);
+				mifareClassicPath (mc);
 			} else {
 				message = HANDLER_MSG_TAG_NOT_ACCEPTED;
 			}
@@ -214,6 +246,41 @@ public class TagWriter extends Thread {
 		}
 	}
 	
+	/**
+	 * Generate payload with single ndef message. Adds TLV frame for it.
+	 * @param info Information used to generate payload
+	 * @param sizeLimit Limit in bytes
+	 * @return Payload in byte array
+	 */
+	private static byte[] generatePayload (TagInformation info, int sizeLimit)
+		throws Exception {
+		
+		final int SPACE_TAKEN_BY_TLV = 2;
+		
+		NdefMessage ndefMessage = BtTagGenerator.generateNdefMessageForBtTag (
+			info, (short)(sizeLimit - SPACE_TAKEN_BY_TLV));
+		
+		if (ndefMessage == null) {
+			throw new OutOfSpaceException("Not enough space for message");
+		}
+		
+		// Construct the payload
+		byte[] message = ndefMessage.toByteArray();
+		int msgLen = message.length;
+		
+		if ((msgLen + 2) > sizeLimit) {
+			throw new OutOfSpaceException("Not enough space for message");
+		}
+		
+		byte[] payload = new byte[msgLen + SPACE_TAKEN_BY_TLV];
+		payload[0] = TLV_NDEF_MESSAGE;
+		payload[1] = (byte)(msgLen);
+		for (int i = 0; i < msgLen; ++i) {
+			payload[SPACE_TAKEN_BY_TLV+i] = message[i];
+		}
+		return payload;
+	}
+	
 	private int writeToMifareUltraLight(MifareUltralight tag) throws Exception {
 		
 		tag.connect();
@@ -227,20 +294,10 @@ public class TagWriter extends Thread {
 			"Assume MUL size to be ").append(ndefSizeLimitPages).toString());
 		
 		int sizeAvailableBytes = ndefSizeLimitPages * 
-			MifareUltralight.PAGE_SIZE - 2;
+			MifareUltralight.PAGE_SIZE;
 		
-		byte[] ndefMessage = null;
-		ndefMessage = BtTagGenerator.generateNdefMessageForBtTag(
-			mInfo, (short)sizeAvailableBytes).toByteArray();
-		
-		// Construct the payload
-		byte[] payload = new byte[ndefMessage.length + 2];
-		payload[0] = 0x03;
-		payload[1] = (byte)(ndefMessage.length);
-		for (int i = 0; i < ndefMessage.length; ++i) {
-			payload[2+i] = ndefMessage[i];
-		}
-		
+		byte[] payload = generatePayload (mInfo, sizeAvailableBytes);
+			
 		// Check the size of payload
 		int pages = payload.length / MifareUltralight.PAGE_SIZE;
 		if (payload.length % MifareUltralight.PAGE_SIZE != 0) {
