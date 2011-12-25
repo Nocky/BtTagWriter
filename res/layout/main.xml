@@ -121,6 +121,23 @@
                     android:paddingBottom="3pt"
                     android:paddingTop="3pt"
                     />
+                
+                <TextView
+                    android:id="@+id/linksTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="6pt"
+                    android:autoLink="all"
+                    android:text="@string/about_links_str" />
+	            
+	            <ImageView
+                    android:src="@android:drawable/divider_horizontal_dark"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:scaleType="fitXY"
+                    android:paddingBottom="3pt"
+                    android:paddingTop="3pt"
+                    />
 	            
 	            <TextView
 	                android:id="@+id/copyrightTextView"

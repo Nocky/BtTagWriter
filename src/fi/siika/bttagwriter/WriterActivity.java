@@ -393,6 +393,10 @@ public class WriterActivity extends Activity implements
         eonTV.setText (Html.fromHtml (getString (
         	R.string.extraopts_notice_str)));
         
+        TextView linksTV = (TextView)findViewById (R.id.linksTextView);
+        linksTV.setText (Html.fromHtml (getString (
+        	R.string.about_links_str)));
+        
         connectSignals();
     }
     

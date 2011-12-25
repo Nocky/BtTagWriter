@@ -44,6 +44,7 @@
     <string name="tag_is_too_small_str">Given tag is too small to contain information needed.</string>
     <string name="tag_unsupported_str">Given tag is unsupported. Try another.</string>
     <string name="btscan_paired_str">(paired)</string>
+    <string name="about_links_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Links&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;* video: http://www.youtube.com/watch?v=IbuLGsXIvKI&lt;br/&gt;* source code: http://oss.siika.fi&lt;br/&gt;</string>
     
     
 
