@@ -15,7 +15,8 @@ import android.os.IBinder;
 import android.util.Log;
 
 /**
- * 
+ * Class hiding the ugly way application now uses to get interfaces not
+ * provided by normal application APIs
  */
 public class BtInterfaces {
 	

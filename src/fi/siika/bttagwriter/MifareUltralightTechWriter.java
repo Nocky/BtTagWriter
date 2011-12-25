@@ -1,0 +1,138 @@
+/**
+ * MifareUltralightWriter.java (bttagwriter)
+ *
+ * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
+ * All rights reserved.
+ */
+package fi.siika.bttagwriter;
+
+import java.util.Arrays;
+
+import android.nfc.Tag;
+import android.nfc.tech.MifareUltralight;
+import android.util.Log;
+
+/**
+ * Special write functionality for Mifare Ultralights. This class can be
+ * removed if Ndef(Formatable) can handle ultralights well enough. But that
+ * can not be tested before 4.0.3 version of Android is released.
+ */
+public class MifareUltralightTechWriter extends TagTechWriter {
+	
+	private final static String DEBUG_TAG = "MUWriter";
+	
+	private final static int START_INTLOCK_MIFARE_UL_PAGE = 2;
+	private final static int START_CC_MIFARE_UL_PAGE = 3;
+	private final static int START_NDEF_MIFARE_UL_PAGE = 4;
+	private final static byte CC_NDEF_BYTE = (byte)0xE1;
+	private final static byte CC_NDEF_VERSION_1_1_BYTE = (byte)0x11;
+	private final static byte CC_NO_SECURITY_BYTE = (byte)0x00;
+	private final static byte CC_READ_ONLY_SECURITY_BYTE = (byte)0x0F;
+	private final static byte MUL_CMD_REQA = 0x26;
+	private final static byte MUL_CMD_WUPA = 0x52;
+	
+	/**
+	 * Writes given information to tag given
+	 * @param tag Tag where information is written
+	 * @param info Information written
+	 * @return TagWriter handler result
+	 * @throws Exception Throws exception if error
+	 */
+	@Override
+	public int writeToTag (Tag tag,
+		TagWriter.TagInformation info) throws Exception {
+		
+		MifareUltralight mul = MifareUltralight.get(tag);
+		
+		mul.connect();
+		
+		int ndefSizeLimitPages = 36;
+		if (mul.getType() == MifareUltralight.TYPE_ULTRALIGHT) {
+			ndefSizeLimitPages = 12;
+		}
+		
+		Log.d (DEBUG_TAG, new StringBuilder().append (
+			"Assume MUL size to be ").append(ndefSizeLimitPages).toString());
+		
+		int sizeAvailableBytes = ndefSizeLimitPages * 
+			MifareUltralight.PAGE_SIZE;
+		
+		byte[] payload = generatePayload (info, sizeAvailableBytes);
+			
+		// Check the size of payload
+		int pages = payload.length / MifareUltralight.PAGE_SIZE;
+		if (payload.length % MifareUltralight.PAGE_SIZE != 0) {
+			pages += 1;
+		}
+		if (ndefSizeLimitPages < pages) {
+			Log.e (DEBUG_TAG, new StringBuilder().append (
+				"Too many pages!").append(pages).toString());
+		    throw new OutOfSpaceException("Too many pages "
+				+ String.valueOf(pages));
+		}
+		
+		// Construct CC
+		byte secByte = CC_NO_SECURITY_BYTE;
+		if (info.readOnly) {
+			secByte = CC_READ_ONLY_SECURITY_BYTE;
+		}
+		byte[] cc = new byte[] { CC_NDEF_BYTE, CC_NDEF_VERSION_1_1_BYTE,
+			(byte)(ndefSizeLimitPages * MifareUltralight.PAGE_SIZE / 8),
+			secByte};
+		
+		// Construct Lock bytes
+		byte[] intLock = null;
+		if (info.readOnly) {
+			Log.d (DEBUG_TAG, "Turning on lock bits");
+			intLock = new byte[] { 0x00, 0x00, 0x00, 0x00 };
+		    intLock[2] = -1;
+			intLock[3] = -1;
+		}
+		
+		// Try to write data
+		writeData (mul, intLock, cc, payload);
+		
+		//Finally activate locking if needed
+		//TODO: what 0x26 is? find documentation and proper name for it
+		if (info.readOnly) {
+			try {
+				mul.transceive(new byte[] {MUL_CMD_REQA});
+			} catch (Exception e) {
+				//TODO: Don't know why this throws exception but it does
+				//ignoring it for now.
+			}
+		}
+		
+		mul.close();
+		
+		Log.d (DEBUG_TAG, "Mifare Ultralight written");
+		return TagWriter.HANDLER_MSG_SUCCESS;
+	}
+	
+	@Override
+	public void close (Tag tag) throws Exception {
+		MifareUltralight mul = MifareUltralight.get(tag);
+		mul.close();
+	}
+	
+	private static void writeData (MifareUltralight tag,
+		byte[] intLock, byte[] cc, byte[] payload) throws Exception {
+			
+		//Write payload
+		int pageNum = START_NDEF_MIFARE_UL_PAGE;
+		for (int i = 0; i < payload.length; i = i + 4) {
+			byte[] page = Arrays.copyOfRange(payload, i, i + 4);
+			tag.writePage (pageNum, page);
+			pageNum += 1;
+		}
+		
+		//Write CC
+		tag.writePage(START_CC_MIFARE_UL_PAGE, cc);
+		
+		//Write IntLock if given
+		if (intLock != null) {
+			tag.writePage(START_INTLOCK_MIFARE_UL_PAGE, intLock);
+		}
+	}
+
+}

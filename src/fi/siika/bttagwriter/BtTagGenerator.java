@@ -21,14 +21,17 @@ public class BtTagGenerator {
 	
 	private static final String DEBUG_TAG = "BtTagGenerator";
 	
+
 	/**
-	 * Will construct NdefMessage for given Bluetooth name and address
-	 * @param name Name of Bluetooth device
-	 * @param address Address of Bluetooth device ("00:00:00:00:00:00" format)
-	 * @return NdefMessage with asked information
+	 * 
+	 * @param info
+	 * @param sizeLimit Will try to keep size of message lower than this limit.
+	 * If -1 will not do any size check and will generate full size message.
+	 * @return
+	 * @throws IOException
 	 */
 	public static NdefMessage generateNdefMessageForBtTag (
-		TagWriter.TagInformation info, short sizeLimit) throws IOException {
+		TagWriter.TagInformation info, int sizeLimit) throws Exception {
 		
 		NdefRecord media = null;
 		
@@ -50,20 +53,16 @@ public class BtTagGenerator {
 		sb.append(sizeLimit);
 		Log.d (DEBUG_TAG, sb.toString());
 		
-		/* Let's see if to enable this
-		if (minSize > sizeLimit) {
-			minSize -= mime.length;
-			mime = BtSecureSimplePairing.SHORT_MIME_TYPE.getBytes("UTF-8");
-			minSize += mime.length;
-		}
-		*/
+		int mediaSizeLimit = 1024; // Safe max value
 		
-		if (minSize > sizeLimit) {
-			Log.e (DEBUG_TAG, "Not enough space!");
-			return null;
+		if (sizeLimit > 0) {
+			if (minSize > sizeLimit) {
+				Log.e (DEBUG_TAG, "Not enough space!");
+				throw new OutOfSpaceException ("Too small tag");
+			}
+			
+			mediaSizeLimit = sizeLimit - 2 - mime.length;
 		}
-		
-		int mediaSizeLimit = sizeLimit - 2 - mime.length;
 		
 		media = new NdefRecord (NdefRecord.TNF_MIME_MEDIA,
 			BtSecureSimplePairing.MIME_TYPE.getBytes("UTF-8"),
@@ -80,6 +79,7 @@ public class BtTagGenerator {
 			media});
 	}
 	
+	/* Not used currently
 	private static NdefRecord generateHandoverSelectRecord() {
 		byte[] ac = new NdefRecord (NdefRecord.TNF_WELL_KNOWN,
 			NdefRecord.RTD_ALTERNATIVE_CARRIER, new byte[0],
@@ -95,7 +95,9 @@ public class BtTagGenerator {
 		return new NdefRecord (NdefRecord.TNF_WELL_KNOWN,
 			NdefRecord.RTD_HANDOVER_SELECT, new byte[0], data);
 	}
+	*/
 	
+	/* Not used currently
 	private static byte[] generateAlternativeCarrierData () {
 		//0x01 = active target
 		//0x01 = ndef record id
@@ -104,4 +106,5 @@ public class BtTagGenerator {
 		byte[] data = {0x01, 0x01, 0x30, 0x00};
 		return data;
 	}
+	*/
 }
