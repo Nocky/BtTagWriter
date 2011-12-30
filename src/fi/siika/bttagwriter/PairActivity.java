@@ -15,6 +15,7 @@ import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothProfile;
 import android.content.Intent;
+import android.net.NetworkInfo.State;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -45,6 +46,8 @@ public class PairActivity extends Activity
 	private String mDeviceName = new String();
 	private Actions mAction = Actions.IDLE;
 	private ConnectTimer mTimer = null; //workaround
+	
+	private final static String DEBUG_TAG = "PairActivity";
 	
 	/**
 	 * Actions PairActivity can be performing
@@ -88,8 +91,6 @@ public class PairActivity extends Activity
     	super.onPause();
     }
     
-
-    
     private String getDeviceName() {
     	String myName = mDeviceName;
     	
@@ -101,9 +102,9 @@ public class PairActivity extends Activity
     	return myName;
     }
     
-    private void boundAndConnect () {
+    private boolean boundAndConnect () {
     	
-    	boolean finishActivity = false;
+    	boolean ret = true;
     	String msg = new String();
     	mAction = Actions.CONNECTING;
     	
@@ -124,18 +125,99 @@ public class PairActivity extends Activity
     			mTimer.cancel();
     			msg = getResources().getString(R.string.pair_failed_to_bound_str);
     			msg = msg.replaceAll("%1", getDeviceName());
-    			finishActivity = true;
+    			ret = false;
     		}
     		
     	} else {
-  	   		a2dpConnect ();
+    		audioConnect ();
     	}
     	
     	showMessage (msg);
     	
-    	if (finishActivity) {
-    		finish();
+    	return ret;
+    }
+    
+    private boolean disconnect (ConnectedState state) {
+    	
+    	boolean ret = true;
+    	mAction = Actions.DISCONNECTING;
+		String msg = getResources().getString(
+				R.string.pair_disconnecting_str);
+		msg = msg.replaceAll("%1", getDeviceName());
+		mTimer.start();
+    	
+    	if (state == ConnectedState.A2DP_CONNECTED) {
+			IBluetoothA2dp a2dp = BtInterfaces.getA2dp();
+			try {
+				a2dp.disconnect (mConnectedDevice);
+			} catch (Exception e) {
+				msg = getResources().getString (
+						R.string.pair_failed_to_disconnect_str);
+				msg = msg.replaceAll("%1", getDeviceName());
+				
+				mTimer.cancel();
+				ret = false;
+			}
     	}
+    	
+    	showMessage (msg);
+    	return ret;
+    	
+    }
+    
+    private static enum DeviceClass {
+    	UNKNOWN_CLASS,
+    	A2DP_CLASS,
+    };
+    
+    private static DeviceClass getDeviceClass (BluetoothDevice device) {
+		int devClass = device.getBluetoothClass().getDeviceClass();
+		
+		// These classes we ignore
+		if (devClass == BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE ||
+			devClass == BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET) {
+			
+			return DeviceClass.UNKNOWN_CLASS;
+			
+		} else {
+			
+			//TODO: Not all other devices are A2DPs, maybe add all classes to if
+			return DeviceClass.A2DP_CLASS;
+		}
+    }
+    
+    private static enum ConnectedState {
+    	UNKNOWN,
+    	DISCONNECTED,
+    	A2DP_CONNECTED,
+    	HEADSET_CONNECTED,
+    };
+    
+    private static ConnectedState isDeviceConnected (BluetoothDevice device) {
+    	
+    	ConnectedState ret = ConnectedState.DISCONNECTED;
+    	DeviceClass devClass = getDeviceClass (device);
+    	
+    	try {
+    	   	
+	    	if (devClass == DeviceClass.A2DP_CLASS) {
+	    		
+	    		IBluetoothA2dp a2dp = BtInterfaces.getA2dp();
+	    		if (a2dp.getConnectionState(device) ==
+		    		BluetoothProfile.STATE_CONNECTED) {
+	    			
+	    			ret = ConnectedState.A2DP_CONNECTED;
+		    			
+		    	}
+	    	} else {
+	    		ret = ConnectedState.UNKNOWN;
+	    	}
+    	} catch (Exception e) {
+    		Log.e (DEBUG_TAG, "Failed to get connected state: "
+    			+ e.getMessage());
+    	}
+    	
+    	return ret;
     }
     
     private void changeConnectedState (BluetoothDevice device,
@@ -148,41 +230,21 @@ public class PairActivity extends Activity
     		return;
     	}
     	
-    	String msg = new String();
     	boolean finishActivity = false;
     	mConnectedDevice = device;
     	mDeviceName = name;
     	
-    	// A2DP interface (connecting)
-    	IBluetoothA2dp a2dp = BtInterfaces.getA2dp();
+    	ConnectedState state = isDeviceConnected (device);
     	
-    	try {	
-	    	List<BluetoothDevice> connected = a2dp.getConnectedDevices();
-	    	if (connected.contains(mConnectedDevice)) {
-				mAction = Actions.DISCONNECTING;
-				msg = getResources().getString(
-					R.string.pair_disconnecting_str);
-				msg = msg.replaceAll("%1", getDeviceName());
-				try {
-					mTimer.start();
-					a2dp.disconnect(device);
-				} catch (Exception e) {
-					mTimer.cancel();
-					msg = getResources().getString (
-						R.string.pair_failed_to_disconnect_str);
-					msg = msg.replaceAll("%1", getDeviceName());
-					finishActivity = true;
-				}
-	    	} else {
-	    		boundAndConnect ();
-	    	}
-    	} catch (Exception e) {
-    		msg = getResources().getString(R.string.pair_failed_unknown_str);
-    		msg = msg.replaceAll("%1", e.getMessage());
+    	if (state == ConnectedState.DISCONNECTED) {
+    		finishActivity = !boundAndConnect ();
+    	} else if (state != ConnectedState.UNKNOWN) {
+    		finishActivity = !disconnect (state);
+    	} else {
+    		Log.e (getClass().getSimpleName(),
+    			"Can not change connection state");
     		finishActivity = true;
     	}
-    	
-    	showMessage (msg);
     	
     	if (finishActivity) {
     		finish();
@@ -267,11 +329,16 @@ public class PairActivity extends Activity
 	 */
 	public void onServiceConnected(int profile, BluetoothProfile proxy) {
 		
-		if (profile != BluetoothProfile.A2DP) {
-			Log.d(getClass().getSimpleName(), "Non A2DP BTPSC");
-			return;
+		if (profile == BluetoothProfile.A2DP ||
+			profile == BluetoothProfile.HEADSET) {
+			
+			Log.d(getClass().getSimpleName(), "onServiceConnected");
+		
 		} else {
-			Log.d(getClass().getSimpleName(), "A2DP BTPSC");
+				
+			Log.d(getClass().getSimpleName(), "Non A2DP BTPSC or headset: "
+				+ String.valueOf(profile));
+			return;
 		}
 		
 		if (mConnectedDevice == null) {
@@ -316,11 +383,13 @@ public class PairActivity extends Activity
 	 */
 	public void onServiceDisconnected(int profile) {
 		
-		if (profile != BluetoothProfile.A2DP) {
+		if (profile == BluetoothProfile.A2DP ||
+			profile == BluetoothProfile.HEADSET) {
+			
+			Log.d(getClass().getSimpleName(), "onServiceDisconnected");
+		} else {
 			Log.d(getClass().getSimpleName(), "Non A2DP BTPSDC");
 			return;
-		} else {
-			Log.d(getClass().getSimpleName(), "A2DP BTPSDC");
 		}
 		
 		Log.d(getClass().getSimpleName(), "A2DP Service disconnected");
@@ -333,53 +402,27 @@ public class PairActivity extends Activity
 	private void audioConnect() {
 		
 		int devClass = mConnectedDevice.getBluetoothClass().getDeviceClass();
-		Log.d (getClass().getSimpleName(), "Device class "
-			+ String.valueOf(devClass));
 		
 		if (devClass == BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE ||
 			devClass == BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET) {
 			
-			headsetConnect();
+			Log.d (getClass().getSimpleName(), "Connecting headset");
+			
+			//headsetConnect();
+			a2dpConnect();
 		} else {
+			
+			Log.d (getClass().getSimpleName(), "Connecting A2DP class "
+				+ String.valueOf(devClass));
+			
 			a2dpConnect();
 		}
-	}
-	
-	/**
-	 * Handles the headset connecting
-	 */
-	private void headsetConnect() {
-		Log.d(getClass().getSimpleName(), "Connecting headset");
-		
-		String msg = new String();
-		
-		try {
-			IBluetoothHeadset hset = BtInterfaces.getHeadset();
-			if (hset.getAudioState(mConnectedDevice) ==
-				BluetoothHeadset.STATE_AUDIO_DISCONNECTED) {
-			
-				msg = getResources().getString(R.string.pair_connecting_str);
-    			msg = msg.replaceAll("%1", getDeviceName());
-    			mTimer.start();
-				hset.connect(mConnectedDevice);
-			} else {
-				Log.d (getClass().getSimpleName(), "Already connected");
-				finish();
-			}
-			
-		} catch (Exception e) {
-			Log.e (getClass().getSimpleName(), "Failed to connect");
-		}
-		
-		showMessage (msg);
 	}
 	
 	/**
 	 * Handles the A2DP connecting
 	 */
 	private void a2dpConnect () {
-		
-		Log.d(getClass().getSimpleName(), "Connecting A2DP");
 		
 		String msg = new String();
 		
@@ -398,7 +441,8 @@ public class PairActivity extends Activity
 				finish();
 			}
 		} catch (Exception e) {
-			Log.e (getClass().getSimpleName(), "Failed to connect");
+			Log.e (getClass().getSimpleName(), "Failed to A2DP connect:"
+				+ e.getMessage());
 		}
 		
 		showMessage (msg);

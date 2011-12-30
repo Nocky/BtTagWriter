@@ -58,40 +58,6 @@ public class BtInterfaces {
     }
     
     /**
-     * As application APIs does not offer way to connect headset devices this
-     * has to be done via these interface classes.
-     * @return Headset interface instance
-     */
-    public static IBluetoothHeadset getHeadset() {
-
-    	IBluetoothHeadset hset = null;
-
-    	try {
-
-    	    Class c2 = Class.forName("android.os.ServiceManager");
-
-    	    Method m2 = c2.getDeclaredMethod("getService", String.class);
-    	    IBinder b = (IBinder) m2.invoke(null, "bluetooth_headset");
-
-    	    Class c3 = Class.forName("android.bluetooth.IBluetoothHeadset");
-
-    	    Class[] s2 = c3.getDeclaredClasses();
-
-    	    Class c = s2[0];
-    	    // printMethods(c);
-    	    Method m = c.getDeclaredMethod("asInterface", IBinder.class);
-
-    	    m.setAccessible(true);
-    	    hset = (IBluetoothHeadset) m.invoke(null, b);
-
-    	} catch (Exception e) {
-    	    Log.e(DEBUG_TAG, "Headset inteface problem: " + e.getMessage());
-    	}
-    	
-    	return hset;
-    }
-    
-    /**
      * As application API does not offer direct access to pairing of new
      * bluetooth devices this has to be done via interface class
      * @return Bluetooth interface class

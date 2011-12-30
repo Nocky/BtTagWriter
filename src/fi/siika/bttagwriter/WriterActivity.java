@@ -479,12 +479,23 @@ public class WriterActivity extends Activity implements
 	 */
 	public void bluetoothDeviceFound(BluetoothDevice device) {
 		
+		BluetoothClass btClass = device.getBluetoothClass();
+		
+		
 		//For now filter out everything but audio
-		if (device.getBluetoothClass().hasService(
-			BluetoothClass.Service.AUDIO)) {
-			
-			mBtListAdapter.addDeviceIfNotPresent (device);
+		if (btClass.hasService(BluetoothClass.Service.AUDIO) == false) {
+			return;
 		}
+		
+		//Check that it is not headset (can not get those connected)
+		int devClass = btClass.getDeviceClass();
+		if (devClass == BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE ||
+			devClass == BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET) {
+			return;
+		}
+			
+		mBtListAdapter.addDeviceIfNotPresent (device);
+		
 	}
 
 	/* (non-Javadoc)
