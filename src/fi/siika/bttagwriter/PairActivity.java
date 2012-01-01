@@ -31,10 +31,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.bluetooth.IBluetoothA2dp;
 import android.bluetooth.IBluetooth;
-import android.bluetooth.IBluetoothHeadset;
 
 /**
- * 
+ * Activity used to handle pairing when suitable NDEF message is found from
+ * tag read. This activity is only called via NDEF indents and is not visible
+ * in application launcher.
  */
 public class PairActivity extends Activity
 	implements BluetoothProfile.ServiceListener, ConnectTimer.Listener,
@@ -102,6 +103,10 @@ public class PairActivity extends Activity
     	return myName;
     }
     
+    /**
+     * Will take care of bounding (if needed) and connecting
+     * @return false if action was not started successfully
+     */
     private boolean boundAndConnect () {
     	
     	boolean ret = true;
@@ -137,6 +142,11 @@ public class PairActivity extends Activity
     	return ret;
     }
     
+    /**
+     * Will take care of disconnecting of bluetooth device
+     * @param state Current connection state
+     * @return false if failed to start disconnecting
+     */
     private boolean disconnect (ConnectedState state) {
     	
     	boolean ret = true;
@@ -165,8 +175,17 @@ public class PairActivity extends Activity
     	
     }
     
+    /**
+     * Grouping long list of Bluetooth device classes to simpler list
+     */
     private static enum DeviceClass {
+    	/**
+    	 * Unknown and so ignored Bluetooth device
+    	 */
     	UNKNOWN_CLASS,
+    	/**
+    	 * A2DP audio device, should be connected via A2DP interfaces
+    	 */
     	A2DP_CLASS,
     };
     
@@ -189,8 +208,7 @@ public class PairActivity extends Activity
     private static enum ConnectedState {
     	UNKNOWN,
     	DISCONNECTED,
-    	A2DP_CONNECTED,
-    	HEADSET_CONNECTED,
+    	A2DP_CONNECTED
     };
     
     private static ConnectedState isDeviceConnected (BluetoothDevice device) {
@@ -271,6 +289,11 @@ public class PairActivity extends Activity
     	}
     }
     
+    /**
+     * Check that given mime type is something this activity wants
+     * @param input Mime type in byte array
+     * @return true if Mime is accepted
+     */
     private boolean acceptMimeType (byte[] input) {
     	
     	try {
@@ -282,7 +305,10 @@ public class PairActivity extends Activity
     	}
     }
 
-    
+    /**
+     * Will check all messages and handle those that are meant for this activity
+     * @param msgs Array of NDEF messages
+     */
     private void handleNdefMessages(NdefMessage[] msgs) {
     	for (int i = 0; i < msgs.length; ++i) {
     		NdefMessage msg = msgs[i];
@@ -502,9 +528,13 @@ public class PairActivity extends Activity
 		}
 	}
 	
+	/**
+	 * Will show given message to user in UI
+	 * @param msg Message shown. Ignored and not shown if empty.
+	 */
 	private void showMessage (String msg) {
 		
-		if (msg.isEmpty()) {
+		if (msg == null || msg.isEmpty()) {
 			return;
 		}
 		

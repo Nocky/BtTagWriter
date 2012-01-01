@@ -10,7 +10,6 @@ import java.lang.reflect.Method;
 
 import android.bluetooth.IBluetooth;
 import android.bluetooth.IBluetoothA2dp;
-import android.bluetooth.IBluetoothHeadset;
 import android.os.IBinder;
 import android.util.Log;
 
