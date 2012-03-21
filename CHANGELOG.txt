@@ -1,9 +1,10 @@
 BT Tag Writer Changelog
 
-*** #4 v0.4 [2012-01-XX]
+*** #4 v0.4 [2012-04-XX]
   * Version depends now Android 4.0.3 for working Ndef(Formatable) classes
   * Adds support for other tags than just Mifare Ultraligths (NOT TESTED)
-  * Headsets removed from wizard. No way to connect headsets?
+  * Headsets removed from wizard. Looks like I can not get headset to work.
+  * Crash fix
 
 *** #3 v0.3 [2011-12-20]
   * Mistake in 0.2 release fixed. Now paired devices are also shown if

@@ -17,6 +17,11 @@ import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.text.Html;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -24,11 +29,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.nfc.NfcAdapter;
-import android.nfc.Tag;
-import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -48,17 +48,19 @@ import android.widget.ViewFlipper;
  */
 public class WriterActivity extends Activity implements
 	BluetoothManager.DiscoveryListener {
+	
+	private final static String TAG = "WriterActivity";
 
-	private TagWriter mTagWriter = null;
-	private Handler mTagWriterHandler = null; 
-	private TagWriter.TagInformation mTagInfo = new TagWriter.TagInformation();
-	private BluetoothManager mBtMgr = null;
-	private NfcManager mNfcMgr = null;
+	private TagWriter mTagWriter;
+	private Handler mTagWriterHandler; 
+	private final TagWriter.TagInformation mTagInfo = new TagWriter.TagInformation();
+	private BluetoothManager mBtMgr;
+	private NfcManager mNfcMgr;
 	
 	public enum Pages {
 		START(0), ABOUT(1), BT_SELECT(2), EXTRA_OPTIONS(3), TAG(4), SUCCESS(5);
 		
-		private int mValue;
+		private final int mValue;
 		
 		private Pages(int value) {
 			mValue = value;
@@ -143,7 +145,7 @@ public class WriterActivity extends Activity implements
 		return true;
 	}
 	
-	private OnClickListener mStartButtonListener = new OnClickListener() {
+	private final OnClickListener mStartButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			
 			mBtListAdapter.clear();
@@ -151,21 +153,21 @@ public class WriterActivity extends Activity implements
 		}
 	};
 	
-	private OnClickListener mRescanButtonListener = new OnClickListener() {
+	private final OnClickListener mRescanButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			
 			mBtMgr.startDiscovery(WriterActivity.this);
 		}
 	};
 	
-	private OnClickListener mAboutButtonListener = new OnClickListener() {
+	private final OnClickListener mAboutButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			
 			changeToPage (Pages.ABOUT);
 		}
 	};
 	
-	private OnClickListener mExtraoptsReadyButtonListener =
+	private final OnClickListener mExtraoptsReadyButtonListener =
 		new OnClickListener() {
 		
 		public void onClick(View v) {
@@ -191,7 +193,7 @@ public class WriterActivity extends Activity implements
 		}
 	};
 	
-	private OnClickListener mExitButtonListener = new OnClickListener() {
+	private final OnClickListener mExitButtonListener = new OnClickListener() {
 		public void onClick(View v) {
 			
 			finish();
@@ -207,7 +209,7 @@ public class WriterActivity extends Activity implements
 			public boolean paired = false;
 		};
 		
-		private Vector<Row> mList;
+		private final Vector<Row> mList;
 
 		public BluetoothRowAdapter(Context context) {
 			super(context, R.layout.bt_device_layout, R.id.btDeviceNameTextView);
@@ -262,6 +264,7 @@ public class WriterActivity extends Activity implements
 			return mList.elementAt(index);
 		}
 		
+		@Override
 		public void clear() {
 			mList.clear();
 			notifyDataSetChanged();
@@ -300,7 +303,7 @@ public class WriterActivity extends Activity implements
 		ib.setOnClickListener(mRescanButtonListener);
 	}
 	
-	private DialogInterface.OnClickListener mWriteFailedDialogListener =
+	private final DialogInterface.OnClickListener mWriteFailedDialogListener =
 		new DialogInterface.OnClickListener() {
 
 		public void onClick(DialogInterface dialog, int which) {
@@ -430,7 +433,7 @@ public class WriterActivity extends Activity implements
     	setIntent(intent);
     	String action = intent.getAction();
     	
-    	Log.d (getClass().getSimpleName(), "onNewIntent");
+    	//Log.d (TAG, "onNewIntent");
     	
     	
     	if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
@@ -481,6 +484,10 @@ public class WriterActivity extends Activity implements
 		
 		BluetoothClass btClass = device.getBluetoothClass();
 		
+		if (btClass == null) {
+			Log.w(TAG, "null from BluetoothDevice.getBluetoohClass");
+			return;
+		}
 		
 		//For now filter out everything but audio
 		if (btClass.hasService(BluetoothClass.Service.AUDIO) == false) {
