@@ -4,11 +4,14 @@
  * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
  * All rights reserved.
  */
-package fi.siika.bttagwriter;
+package fi.siika.bttagwriter.writers;
+
+import java.io.UnsupportedEncodingException;
 
 import android.nfc.NdefMessage;
 import android.nfc.Tag;
-import fi.siika.bttagwriter.TagWriter.TagInformation;
+import fi.siika.bttagwriter.data.BtTagGenerator;
+import fi.siika.bttagwriter.data.TagInformation;
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 
 /**
@@ -25,7 +28,7 @@ public abstract class TagTechWriter {
 	 * @return
 	 * @throws Exception
 	 */
-	public abstract int writeToTag (Tag tag, TagWriter.TagInformation info)
+	public abstract int writeToTag (Tag tag, TagInformation info)
 		throws Exception;
 	
 	/**
@@ -39,9 +42,9 @@ public abstract class TagTechWriter {
 	 * @param info Information used to generate payload
 	 * @param sizeLimit Limit in bytes
 	 * @return Payload in byte array
+	 * @throws UnsupportedEncodingException 
 	 */
-	protected static byte[] generatePayload (TagInformation info, int sizeLimit)
-		throws Exception {
+	protected static byte[] generatePayload (TagInformation info, int sizeLimit) throws OutOfSpaceException, UnsupportedEncodingException {
 		
 		final int SPACE_TAKEN_BY_TLV = 2;
 		

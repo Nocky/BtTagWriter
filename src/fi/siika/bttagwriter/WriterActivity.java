@@ -41,6 +41,9 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
+import fi.siika.bttagwriter.data.TagInformation;
+import fi.siika.bttagwriter.managers.BluetoothManager;
+import fi.siika.bttagwriter.managers.NfcManager;
 
 /**
  * Main activity of BtTagWriter application
@@ -53,7 +56,7 @@ public class WriterActivity extends Activity implements
 
 	private TagWriter mTagWriter;
 	private Handler mTagWriterHandler; 
-	private final TagWriter.TagInformation mTagInfo = new TagWriter.TagInformation();
+	private final TagInformation mTagInfo = new TagInformation();
 	private BluetoothManager mBtMgr;
 	private NfcManager mNfcMgr;
 	

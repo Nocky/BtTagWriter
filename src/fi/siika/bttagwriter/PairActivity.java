@@ -6,21 +6,20 @@
  */
 package fi.siika.bttagwriter;
 
-import java.lang.reflect.Method;
-import java.util.List;
-
+import fi.siika.bttagwriter.data.BtSecureSimplePairing;
+import fi.siika.bttagwriter.managers.BluetoothManager;
+import fi.siika.bttagwriter.managers.NfcManager;
 import android.app.Activity;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothHeadset;
 import android.bluetooth.BluetoothProfile;
+import android.bluetooth.IBluetooth;
+import android.bluetooth.IBluetoothA2dp;
 import android.content.Intent;
-import android.net.NetworkInfo.State;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.os.Bundle;
-import android.os.IBinder;
 import android.os.Parcelable;
 import android.util.Log;
 import android.view.Gravity;
@@ -29,8 +28,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.bluetooth.IBluetoothA2dp;
-import android.bluetooth.IBluetooth;
 
 /**
  * Activity used to handle pairing when suitable NDEF message is found from
@@ -48,7 +45,7 @@ public class PairActivity extends Activity
 	private Actions mAction = Actions.IDLE;
 	private ConnectTimer mTimer = null; //workaround
 	
-	private final static String DEBUG_TAG = "PairActivity";
+	private final static String TAG = "PairActivity";
 	
 	/**
 	 * Actions PairActivity can be performing
@@ -231,7 +228,7 @@ public class PairActivity extends Activity
 	    		ret = ConnectedState.UNKNOWN;
 	    	}
     	} catch (Exception e) {
-    		Log.e (DEBUG_TAG, "Failed to get connected state: "
+    		Log.e (TAG, "Failed to get connected state: "
     			+ e.getMessage());
     	}
     	

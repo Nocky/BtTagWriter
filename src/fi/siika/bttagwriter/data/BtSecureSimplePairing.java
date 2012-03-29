@@ -4,7 +4,7 @@
  * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
  * All rights reserved.
  */
-package fi.siika.bttagwriter;
+package fi.siika.bttagwriter.data;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -50,7 +50,7 @@ public class BtSecureSimplePairing {
 	
 	private final static byte BYTE_MANUFACTURER_SPECIFIC_DATA = -1; //-1 = 0xFF
 	
-	private final static String DEBUG_TAG = "BtSecureSimplePairing";
+	private final static String TAG = "BtSecureSimplePairing";
 	
 	private final static short SPACE_TOTAL_LEN_BYTES = 2;
 	private final static short SPACE_ADDRESS_BYTES = 6;
@@ -220,12 +220,7 @@ public class BtSecureSimplePairing {
 	 */
 	public static byte[] generate(Data input, short maxLength)
 		throws OutOfSpaceException {
-		
-		StringBuilder sb = new StringBuilder();
-		sb.append ("oob ");
-		sb.append(maxLength);
-		Log.d (DEBUG_TAG, sb.toString());
-		
+				
 		//TODO: Is 30k bytes enough? I assume so ;) (16th bit can't be used)
 		short len = MIN_SIZE_IN_BYTES;
 		
@@ -276,7 +271,7 @@ public class BtSecureSimplePairing {
 		
 		//Still check that we are inside the limits
 		if (len > maxLength) {
-			Log.w (DEBUG_TAG, "Not enough space in tag for content");
+			Log.w (TAG, "Not enough space in tag for content");
 			throw new OutOfSpaceException("Not enough space for BT data");
 		}
 		
@@ -352,7 +347,6 @@ public class BtSecureSimplePairing {
     		sb.append (Integer.toHexString(addressBuffer[i]));
     	}
     	data.setAddress(sb.toString());
-    	Log.d (DEBUG_TAG, "Address: " + data.getAddress());
     	
     	//Read the rest
     	for (int i = 8; i < binaryData.length; ++i) {
@@ -390,13 +384,13 @@ public class BtSecureSimplePairing {
     			break;
     		default:
     			//There are many known elements we ignore here
-    			Log.w(DEBUG_TAG, new StringBuilder().append(
+    			Log.w(TAG, new StringBuilder().append(
     				"Unknown element: ").append(dataType).toString());
     		}
     		
     	}
     	
-    	Log.d (DEBUG_TAG, "Parsed data: '" + data.getAddress() + "' '"
+    	Log.d (TAG, "Parsed data: '" + data.getAddress() + "' '"
     		+ data.getName() + "'");
 		
 		return data;

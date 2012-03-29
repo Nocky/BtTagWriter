@@ -4,13 +4,18 @@
  * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
  * All rights reserved.
  */
-package fi.siika.bttagwriter;
+package fi.siika.bttagwriter.writers;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 import android.nfc.Tag;
 import android.nfc.tech.MifareUltralight;
 import android.util.Log;
+import fi.siika.bttagwriter.TagWriter;
+import fi.siika.bttagwriter.data.TagInformation;
+import fi.siika.bttagwriter.exceptions.IOFailureException;
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 
 /**
@@ -20,7 +25,7 @@ import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
  */
 public class MifareUltralightTechWriter extends TagTechWriter {
 	
-	private final static String DEBUG_TAG = "MUWriter";
+	private final static String TAG = "MUWriter";
 	
 	private final static int START_INTLOCK_MIFARE_UL_PAGE = 2;
 	private final static int START_CC_MIFARE_UL_PAGE = 3;
@@ -37,28 +42,33 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 	 * @param tag Tag where information is written
 	 * @param info Information written
 	 * @return TagWriter handler result
+	 * @throws UnsupportedEncodingException 
 	 * @throws Exception Throws exception if error
 	 */
 	@Override
-	public int writeToTag (Tag tag,
-		TagWriter.TagInformation info) throws Exception {
+	public int writeToTag (Tag tag, TagInformation info) throws IOFailureException, OutOfSpaceException, UnsupportedEncodingException {
 		
 		MifareUltralight mul = MifareUltralight.get(tag);
 		
-		mul.connect();
+		try {
+			mul.connect();
+		} catch (IOException e) {
+			throw new IOFailureException ("Failed to connect to MUL", e);
+		}
 		
 		int ndefSizeLimitPages = 36;
 		if (mul.getType() == MifareUltralight.TYPE_ULTRALIGHT) {
 			ndefSizeLimitPages = 12;
 		}
 		
-		Log.d (DEBUG_TAG, new StringBuilder().append (
+		Log.d (TAG, new StringBuilder().append (
 			"Assume MUL size to be ").append(ndefSizeLimitPages).toString());
 		
 		int sizeAvailableBytes = ndefSizeLimitPages * 
 			MifareUltralight.PAGE_SIZE;
 		
-		byte[] payload = generatePayload (info, sizeAvailableBytes);
+		byte[] payload;
+		payload = generatePayload (info, sizeAvailableBytes);
 			
 		// Check the size of payload
 		int pages = payload.length / MifareUltralight.PAGE_SIZE;
@@ -66,7 +76,7 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 			pages += 1;
 		}
 		if (ndefSizeLimitPages < pages) {
-			Log.e (DEBUG_TAG, new StringBuilder().append (
+			Log.e (TAG, new StringBuilder().append (
 				"Too many pages!").append(pages).toString());
 		    throw new OutOfSpaceException("Too many pages "
 				+ String.valueOf(pages) + " for UL");
@@ -84,14 +94,18 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 		// Construct Lock bytes
 		byte[] intLock = null;
 		if (info.readOnly) {
-			Log.d (DEBUG_TAG, "Turning on lock bits");
+			Log.d (TAG, "Turning on lock bits");
 			intLock = new byte[] { 0x00, 0x00, 0x00, 0x00 };
 		    intLock[2] = -1;
 			intLock[3] = -1;
 		}
 		
 		// Try to write data
-		writeData (mul, intLock, cc, payload);
+		try {
+			writeData (mul, intLock, cc, payload);
+		} catch (IOException e) {
+			throw new IOFailureException("Failed to write to MUL", e);
+		}
 		
 		//Finally activate locking if needed
 		//TODO: what 0x26 is? find documentation and proper name for it
@@ -104,9 +118,13 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 			}
 		}
 		
-		mul.close();
+		try {
+			mul.close();
+		} catch (IOException e) {
+			throw new IOFailureException ("Failed to close MUL", e);
+		}
 		
-		Log.d (DEBUG_TAG, "Mifare Ultralight written");
+		Log.d (TAG, "Mifare Ultralight written");
 		return TagWriter.HANDLER_MSG_SUCCESS;
 	}
 	
@@ -117,7 +135,7 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 	}
 	
 	private static void writeData (MifareUltralight tag,
-		byte[] intLock, byte[] cc, byte[] payload) throws Exception {
+		byte[] intLock, byte[] cc, byte[] payload) throws IOException {
 			
 		//Write payload
 		int pageNum = START_NDEF_MIFARE_UL_PAGE;

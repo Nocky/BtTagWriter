@@ -16,7 +16,11 @@ import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.Handler;
 import android.util.Log;
+import fi.siika.bttagwriter.data.TagInformation;
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
+import fi.siika.bttagwriter.writers.MifareUltralightTechWriter;
+import fi.siika.bttagwriter.writers.NdefTechWriter;
+import fi.siika.bttagwriter.writers.TagTechWriter;
 
 /**
  * TagWriter provides thread and code that will take care of the tag write
@@ -26,40 +30,6 @@ import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 public class TagWriter extends Thread {
 	
 	final static private String TAG = "TagWriter";
-	
-	/**
-	 * Class containing information written to NFC tags
-	 */
-	public static class TagInformation implements Cloneable {
-		/**
-		 * Bluetooth address of device ("00:00:00:00:00:00" format)
-		 */
-		public String address;
-		
-		/**
-		 * Bluetooth name of device
-		 */
-		public String name;
-		
-		/**
-		 * If true writer will try to write protected the tag
-		 */
-		public boolean readOnly = false;
-		
-		/**
-		 * Pin code or if empty no pin code
-		 */
-		public String pin;
-		
-		@Override
-		public Object clone () {
-			try {
-				return super.clone();
-			} catch (CloneNotSupportedException e) {
-				return null;
-			}
-		}
-	}
 	
 	private Handler mHandler = null;
 	private boolean mCancelled = false;
@@ -150,7 +120,7 @@ public class TagWriter extends Thread {
 			Log.e(getClass().getName(),"Failed to format");
 			message = HANDLER_MSG_FAILED_TO_FORMAT;
 		} catch (Exception e) {
-			Log.w(getClass().getName(), "Exception: " + e.getMessage());
+			Log.w(TAG, "Exception: " + e.getClass().getSimpleName() + " " + e.getMessage());
 			message = HANDLER_MSG_CONNECTION_LOST;
 		}
 		

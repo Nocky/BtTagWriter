@@ -4,10 +4,13 @@
  * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
  * All rights reserved.
  */
-package fi.siika.bttagwriter;
+package fi.siika.bttagwriter.managers;
 
 import java.util.Iterator;
 import java.util.Set;
+
+import fi.siika.bttagwriter.R;
+import fi.siika.bttagwriter.R.string;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

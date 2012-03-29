@@ -4,7 +4,7 @@
  * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
  * All rights reserved.
  */
-package fi.siika.bttagwriter;
+package fi.siika.bttagwriter.writers;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -15,7 +15,9 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.util.Log;
-import fi.siika.bttagwriter.TagWriter.TagInformation;
+import fi.siika.bttagwriter.TagWriter;
+import fi.siika.bttagwriter.data.BtTagGenerator;
+import fi.siika.bttagwriter.data.TagInformation;
 import fi.siika.bttagwriter.exceptions.IOFailureException;
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 
@@ -117,14 +119,14 @@ public class NdefTechWriter extends TagTechWriter {
 		NdefMessage msg = BtTagGenerator.generateNdefMessageForBtTag(info, -1);
 		
 		if (info.readOnly) {
-			//try {
-			//	tag.formatReadOnly(msg);
-			//} catch (IOException e) {
-			//	throw new IOFailureException("Failed to RO format NdefFormatable");
-			//}
+			try {
+				tag.formatReadOnly(msg);
+			} catch (IOException e) {
+				throw new IOFailureException("Failed to RO format NdefFormatable");
+			}
 		} else {
 			try {
-				tag.format(null);
+				tag.format(msg);
 			} catch (IOException e) {
 				throw new IOFailureException("Failed to format NdefFormatable");
 			}

@@ -4,7 +4,7 @@
  * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
  * All rights reserved.
  */
-package fi.siika.bttagwriter;
+package fi.siika.bttagwriter.managers;
 
 import android.app.Activity;
 import android.app.PendingIntent;

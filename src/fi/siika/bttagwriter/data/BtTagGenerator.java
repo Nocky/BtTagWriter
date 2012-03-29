@@ -5,7 +5,7 @@
  * All rights reserved.
  */
 
-package fi.siika.bttagwriter;
+package fi.siika.bttagwriter.data;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -21,7 +21,7 @@ import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
  */
 public class BtTagGenerator {
 	
-	private static final String DEBUG_TAG = "BtTagGenerator";
+	private static final String TAG = "BtTagGenerator";
 	
 
 	/**
@@ -32,8 +32,8 @@ public class BtTagGenerator {
 	 * @return
 	 * @throws IOException
 	 */
-	public static NdefMessage generateNdefMessageForBtTag (
-		TagWriter.TagInformation info, int sizeLimit) throws OutOfSpaceException, UnsupportedEncodingException {
+	public static NdefMessage generateNdefMessageForBtTag (TagInformation info,
+		int sizeLimit) throws OutOfSpaceException, UnsupportedEncodingException {
 		
 		NdefRecord media = null;
 		
@@ -48,19 +48,14 @@ public class BtTagGenerator {
 		int minSize = 4 + mime.length 
 			+ BtSecureSimplePairing.MIN_SIZE_IN_BYTES;
 		
-		StringBuilder sb = new StringBuilder();
-		sb.append("minSize/sizeLimit ");
-		sb.append(minSize);
-		sb.append("/");
-		sb.append(sizeLimit);
-		Log.d (DEBUG_TAG, sb.toString());
-		
 		int mediaSizeLimit = 1024; // Safe max value
 		
 		if (sizeLimit > 0) {
 			if (minSize > sizeLimit) {
-				Log.e (DEBUG_TAG, "Not enough space!");
-				throw new OutOfSpaceException ("Too small tag");
+				Log.e (TAG, "Not enough space!");
+				throw new OutOfSpaceException (
+						"Tag is too small for NDEF content: " + minSize
+						+ " > " + sizeLimit);
 			}
 			
 			mediaSizeLimit = sizeLimit - 2 - mime.length;
@@ -71,9 +66,6 @@ public class BtTagGenerator {
 			new byte[] {(byte)0x01},
 			BtSecureSimplePairing.generate(content,
 			(short)(mediaSizeLimit-4)));
-		
-		Log.d (DEBUG_TAG, new StringBuilder().append(
-			"media size: ").append(media.toByteArray().length).toString());
 		
 		return new NdefMessage(new NdefRecord[] {
 			//HS is disabled as it does not seam to work with Android

@@ -20,7 +20,7 @@ import android.util.Log;
 public class BtInterfaces {
 	
 	
-	private final static String DEBUG_TAG = "BtInterfaces";
+	private final static String TAG = "BtInterfaces";
 	
     /**
      * As application APIs does not offer way to connect A2DP devices this
@@ -50,7 +50,7 @@ public class BtInterfaces {
     	    ibta = (IBluetoothA2dp) m.invoke(null, b);
 
     	} catch (Exception e) {
-    	    Log.e(DEBUG_TAG, "A2DP inteface problem: " + e.getMessage());
+    	    Log.e(TAG, "A2DP interface problem: " + e.getMessage());
     	}
     	
     	return ibta;
@@ -84,7 +84,7 @@ public class BtInterfaces {
     	    ibt = (IBluetooth) m.invoke(null, b);
 
     	} catch (Exception e) {
-    	    Log.e(DEBUG_TAG, "Bluetooth interface problem: " + e.getMessage());
+    	    Log.e(TAG, "Bluetooth interface problem: " + e.getMessage());
     	}
     	
     	return ibt;
