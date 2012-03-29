@@ -8,18 +8,15 @@
 package fi.siika.bttagwriter;
 
 import java.io.IOException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import android.nfc.FormatException;
-import android.nfc.NdefMessage;
 import android.nfc.Tag;
-import android.nfc.tech.MifareClassic;
 import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.Handler;
 import android.util.Log;
+import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 
 /**
  * TagWriter provides thread and code that will take care of the tag write
@@ -27,6 +24,8 @@ import android.util.Log;
  * @author Sami Viitanen <sami.viitanen@gmail.com>
  */
 public class TagWriter extends Thread {
+	
+	final static private String TAG = "TagWriter";
 	
 	/**
 	 * Class containing information written to NFC tags
@@ -103,7 +102,7 @@ public class TagWriter extends Thread {
 		
 		String[] techs = tag.getTechList();
 		for (int i = 0; i < techs.length; ++i) {
-			Log.d (getClass().getSimpleName(), "Tag tech: " + techs[i]);
+			Log.d (TAG, "Tag tech: " + techs[i]);
 		}
 		
 		MifareUltralight mul = MifareUltralight.get (tag);
@@ -117,7 +116,7 @@ public class TagWriter extends Thread {
 			mTag = tag;
 			mTechWriter = new NdefTechWriter();
 		} else {
-			Log.e (getClass().getSimpleName(), "Failed to identify tag given");
+			Log.e (TAG, "Failed to identify tag given");
 			return false;
 		}
 			
@@ -138,12 +137,12 @@ public class TagWriter extends Thread {
 			message = mTechWriter.writeToTag(mTag, mInfo);
 		} catch (OutOfSpaceException e) {
 			message = HANDLER_MSG_TOO_SMALL;
-			Log.w (getClass().getSimpleName(), "Not enough space");
+			Log.w (TAG, "Out of space: " + e.getMessage());
 		} catch (IOException e) {
 			if (mCancelled) {
 				message = HANDLER_MSG_CANCELLED;
 			} else {
-				Log.w(getClass().getName(), e.getClass().getSimpleName()
+				Log.w(TAG, e.getClass().getSimpleName()
 					+ " " + e.getMessage());
 				message = HANDLER_MSG_CONNECTION_LOST;
 			}

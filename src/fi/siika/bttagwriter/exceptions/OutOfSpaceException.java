@@ -1,20 +1,20 @@
 /**
  * OutOfSpaceException.java (bttagwriter)
  *
- * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
+ * Copyright 2012 Sami Viitanen <sami.viitanen@gmail.com>
  * All rights reserved.
  */
-package fi.siika.bttagwriter;
+package fi.siika.bttagwriter.exceptions;
 
 /**
- * Exception used when tag does not have enough space for content
+ * 
  */
 public class OutOfSpaceException extends Exception {
+	
+	private static final long serialVersionUID = 1L;
 	
 	public OutOfSpaceException (String msg) {
 		super (msg);
 	}
-	
-	private static final long serialVersionUID = 1L;
 	
 }

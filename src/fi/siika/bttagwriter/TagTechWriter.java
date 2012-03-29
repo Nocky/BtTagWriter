@@ -6,9 +6,10 @@
  */
 package fi.siika.bttagwriter;
 
-import fi.siika.bttagwriter.TagWriter.TagInformation;
 import android.nfc.NdefMessage;
 import android.nfc.Tag;
+import fi.siika.bttagwriter.TagWriter.TagInformation;
+import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 
 /**
  * Interface class for all different specific technology writers

@@ -11,6 +11,7 @@ import java.util.Arrays;
 import android.nfc.Tag;
 import android.nfc.tech.MifareUltralight;
 import android.util.Log;
+import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 
 /**
  * Special write functionality for Mifare Ultralights. This class can be
@@ -68,7 +69,7 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 			Log.e (DEBUG_TAG, new StringBuilder().append (
 				"Too many pages!").append(pages).toString());
 		    throw new OutOfSpaceException("Too many pages "
-				+ String.valueOf(pages));
+				+ String.valueOf(pages) + " for UL");
 		}
 		
 		// Construct CC

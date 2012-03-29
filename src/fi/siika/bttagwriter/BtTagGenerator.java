@@ -8,10 +8,12 @@
 package fi.siika.bttagwriter;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.util.Log;
+import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 
 /**
  * BtTagCreator is used to construct NdefMessages written to the tags
@@ -31,7 +33,7 @@ public class BtTagGenerator {
 	 * @throws IOException
 	 */
 	public static NdefMessage generateNdefMessageForBtTag (
-		TagWriter.TagInformation info, int sizeLimit) throws Exception {
+		TagWriter.TagInformation info, int sizeLimit) throws OutOfSpaceException, UnsupportedEncodingException {
 		
 		NdefRecord media = null;
 		

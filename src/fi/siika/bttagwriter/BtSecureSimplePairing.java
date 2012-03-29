@@ -6,12 +6,12 @@
  */
 package fi.siika.bttagwriter;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 import android.bluetooth.BluetoothAdapter;
 import android.util.Log;
+import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 
 /**
  * Class providing parse and generate functions for Bluetooth Secure Simple
@@ -69,7 +69,7 @@ public class BtSecureSimplePairing {
 		private String mAddress;
 		private byte[] mDeviceClass;
 		private byte[] mHash;
-		private byte[] mRandomizer;
+		private final byte[] mRandomizer;
 		private byte[] mManufacturerData;
 		
 		public Data() {
@@ -219,7 +219,7 @@ public class BtSecureSimplePairing {
 	 * @return Return binary content
 	 */
 	public static byte[] generate(Data input, short maxLength)
-		throws IOException {
+		throws OutOfSpaceException {
 		
 		StringBuilder sb = new StringBuilder();
 		sb.append ("oob ");
@@ -277,7 +277,7 @@ public class BtSecureSimplePairing {
 		//Still check that we are inside the limits
 		if (len > maxLength) {
 			Log.w (DEBUG_TAG, "Not enough space in tag for content");
-			throw new IOException("Not enough space");
+			throw new OutOfSpaceException("Not enough space for BT data");
 		}
 		
 		byte data[] = new byte[len];
@@ -292,7 +292,7 @@ public class BtSecureSimplePairing {
 		// address
 		byte[] addressBuffer = input.getAddressBuffer ();
 		for (int i = 0; i < addressBuffer.length; ++i) {
-			data[++index] = (byte)addressBuffer[i];
+			data[++index] = addressBuffer[i];
 		}
 		
 		// complete local name
@@ -300,7 +300,7 @@ public class BtSecureSimplePairing {
 			data[++index] = (byte)(nameBytes.length + 0x01);
 			data[++index] = BYTE_COMPLETE_LOCAL_NAME;
 			for (int i = 0; i < nameBytes.length; ++i) {
-				data[++index] = (byte)nameBytes[i];
+				data[++index] = nameBytes[i];
 			}
 		}
 		
@@ -309,7 +309,7 @@ public class BtSecureSimplePairing {
 			data[++index] = (byte)(1 + manBytes.length);
 			data[++index] = BYTE_MANUFACTURER_SPECIFIC_DATA;
 			for (int i = 0; i < manBytes.length; ++i) {
-				data[++index] = (byte)manBytes[i];
+				data[++index] = manBytes[i];
 			}
 		}
 		
@@ -318,7 +318,7 @@ public class BtSecureSimplePairing {
 			data[++index] = (byte)(1 + classBytes.length);
 			data[++index] = BYTE_CLASS_OF_DEVICE;
 			for (int i = 0; i < classBytes.length; ++i) {
-				data[++index] = (byte)classBytes[i];
+				data[++index] = classBytes[i];
 			}
 		}
 
@@ -338,7 +338,7 @@ public class BtSecureSimplePairing {
 		//TODO: There has to be nicer way to do this!!!
     	int[] addressBuffer = new int[6];
     	for (int i = 0; i < 6; i++) {
-    		addressBuffer[i] = (int)(binaryData[7-i]) & 0xff;
+    		addressBuffer[i] = (binaryData[7-i]) & 0xff;
     	}
     	StringBuilder sb = new StringBuilder();
     	for (int i = 0; i < 6; ++i) {
@@ -356,8 +356,8 @@ public class BtSecureSimplePairing {
     	
     	//Read the rest
     	for (int i = 8; i < binaryData.length; ++i) {
-    		int dataLen = (int)(binaryData[i]); //this includes type and data
-    		int dataType = (int)(binaryData[i+1]); //type bit
+    		int dataLen = (binaryData[i]); //this includes type and data
+    		int dataType = (binaryData[i+1]); //type bit
     		
     		/*
     		Log.d (DEBUG_TAG, new StringBuilder().append("Element: ").append(
