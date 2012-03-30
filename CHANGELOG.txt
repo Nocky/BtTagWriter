@@ -1,10 +1,11 @@
 BT Tag Writer Changelog
 
-*** #4 v0.4 [2012-04-0X]
+*** #4 v0.4 [2012-03-30]
   * Now for Android 4.0.3+
-  * Works now with other tag techs too (via Ndef and NdefFormatable)
+  * Not only Mifare Ultralights (support via Ndef and NdefFormatable)
   * Headsets hidden as connecting to those is failing
   * 1 crash fix
+  * UI changes ("ICS styled")
 
 *** #3 v0.3 [2011-12-20]
   * Mistake in 0.2 release fixed. Now paired devices are also shown if
