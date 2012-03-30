@@ -12,9 +12,9 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.IntentFilter.MalformedMimeTypeException;
 import android.nfc.NfcAdapter;
-import android.nfc.tech.MifareClassic;
 import android.nfc.tech.MifareUltralight;
 import android.nfc.tech.Ndef;
+import android.nfc.tech.NdefFormatable;
 import android.os.Build;
 import android.util.Log;
 
@@ -26,6 +26,7 @@ public class NfcManager {
 	private PendingIntent mPendingIntent = null;
 	private Activity mActivity = null;
 	private NfcAdapter mAdapter = null;
+	private final static String TAG = "NfcManager";
 	
 	public NfcManager (Activity activity) {
 		mActivity = activity;
@@ -53,7 +54,7 @@ public class NfcManager {
 			return;
 		}
 		
-		Log.d (getClass().getSimpleName(), "Enable ndef dispatch");
+		Log.d (TAG, "Enable ndef dispatch");
 
 		mPendingIntent = PendingIntent.getActivity(mActivity, 0,
 			new Intent(mActivity, mActivity.getClass()).addFlags(
@@ -80,7 +81,7 @@ public class NfcManager {
 			return;
 		}
 		
-		Log.d (getClass().getSimpleName(), "Enable tech dispatch");
+		Log.d (TAG, "Enable tech dispatch");
 
 		mPendingIntent = PendingIntent.getActivity(mActivity, 0,
 			new Intent(mActivity, mActivity.getClass()).addFlags(
@@ -97,7 +98,7 @@ public class NfcManager {
 		String[][] techList = new String[][] { new String[] {
 			MifareUltralight.class.getName() }, new String[] {
 			Ndef.class.getName() }, new String[] { 
-			MifareClassic.class.getName() } };
+			NdefFormatable.class.getName() } };
 
 		nfcAdapter.enableForegroundDispatch(mActivity, mPendingIntent,
 			new IntentFilter[] { tech }, techList);
@@ -107,7 +108,7 @@ public class NfcManager {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD_MR1) {
 			return;
 		} else if (mAdapter != null && mAdapter.isEnabled()) {
-			Log.d (getClass().getSimpleName(), "Disable dispatch");
+			Log.d (TAG, "Disable dispatch");
 			mAdapter.disableForegroundDispatch (mActivity);
 			mPendingIntent = null;
 		}

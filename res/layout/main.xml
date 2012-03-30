@@ -31,25 +31,16 @@
 			        android:paddingLeft="6pt"
 			        android:paddingRight="6pt"
 			        android:text="@string/start_guide_str" />
-			
-			    <Button
-			        android:id="@+id/startButton"
-			        android:layout_width="match_parent"
-			        android:layout_height="wrap_content"
-			        android:layout_marginLeft="6pt"
-			        android:layout_marginRight="6pt"
-			        android:layout_marginTop="6pt"
-			        android:text="@string/start_button_str" />
 			    
-			     <Button
-	                android:id="@+id/aboutButton"
-	                android:layout_width="match_parent"
-	                android:layout_height="wrap_content"
-	                android:layout_marginLeft="6pt"
-	                android:layout_marginRight="6pt"
-	                android:layout_marginTop="6pt"
-	                android:text="@string/about_button_str" />
-			
+			    <Button
+                    android:id="@+id/startButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="6pt"
+                    android:layout_marginRight="6pt"
+                    android:layout_marginTop="6pt"
+                    android:text="@string/start_button_str" />
+	
 			</LinearLayout>
 		
         </ScrollView>
@@ -163,7 +154,7 @@
 		        android:layout_height="wrap_content"
 		        android:paddingLeft="6pt"
 		        android:paddingRight="6pt"
-		        android:background="@color/bt_devices_caption_bgcolor" >
+		        android:background="@drawable/blue_gradient" >
 		
 		        <TextView
 		            android:id="@+id/btScanCaption"
@@ -232,7 +223,7 @@
                 android:id="@+id/extraOptionsTopHlinearLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@color/bt_devices_caption_bgcolor"
+                android:background="@drawable/blue_gradient"
                 android:orientation="horizontal"
                 >
         
@@ -375,8 +366,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:paddingLeft="6pt"
-                android:paddingRight="6pt"
+                android:paddingLeft="12pt"
+                android:paddingRight="12pt"
                 android:layout_marginBottom="6pt"
                 android:text="@string/tap_guide_str"
                 android:layout_weight="1"

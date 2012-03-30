@@ -7,14 +7,10 @@
 
 package fi.siika.bttagwriter;
 
-import java.util.Iterator;
-import java.util.Vector;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.nfc.NfcAdapter;
@@ -25,13 +21,13 @@ import android.os.Message;
 import android.text.Html;
 import android.util.Log;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -44,6 +40,9 @@ import android.widget.ViewFlipper;
 import fi.siika.bttagwriter.data.TagInformation;
 import fi.siika.bttagwriter.managers.BluetoothManager;
 import fi.siika.bttagwriter.managers.NfcManager;
+import fi.siika.bttagwriter.ui.BluetoothRowAdapter;
+import fi.siika.bttagwriter.ui.Pages;
+import fi.siika.bttagwriter.writers.TagWriter;
 
 /**
  * Main activity of BtTagWriter application
@@ -59,36 +58,26 @@ public class WriterActivity extends Activity implements
 	private final TagInformation mTagInfo = new TagInformation();
 	private BluetoothManager mBtMgr;
 	private NfcManager mNfcMgr;
+	private int lastPage;
 	
-	public enum Pages {
-		START(0), ABOUT(1), BT_SELECT(2), EXTRA_OPTIONS(3), TAG(4), SUCCESS(5);
-		
-		private final int mValue;
-		
-		private Pages(int value) {
-			mValue = value;
-		}
-		
-		public int toInt() {
-			return mValue;
-		}
-		
-		public boolean equal(int value) {
-			return toInt() == value;
-		}
-	};
-	
-	private void changeToPage (Pages page) {
-		if (showFlipChild (page.toInt())) {
-			if (page == Pages.BT_SELECT) {
-				startBluetoothDiscovery();
-			} else if (page == Pages.TAG) {
-				mNfcMgr.enableTechDiscovered();
-			}
-		}
+	private void setCurrentPage (Pages page) {
+	    setCurrentPage(page.toInt());
 	}
 	
-	private int currentPage() {
+	private void setCurrentPage(int page) {
+        int pageWas = getCurrentPage();
+        if (showFlipChild (page)) {
+            lastPage = pageWas;
+            if (Pages.BT_SELECT.equal(page)) {
+                startBluetoothDiscovery();
+            } else if (Pages.TAG.equal(page)) {
+                mNfcMgr.enableTechDiscovered();
+            }
+            invalidateOptionsMenu();
+        }	    
+	}
+	
+	private int getCurrentPage() {
 		ViewFlipper flip = (ViewFlipper)findViewById (R.id.mainFlipper);
 		return flip.getDisplayedChild();
 	}
@@ -103,7 +92,7 @@ public class WriterActivity extends Activity implements
 				new DialogInterface.OnClickListener() {
 
 					public void onClick(DialogInterface dialog, int which) {
-						changeToPage(Pages.START);
+						setCurrentPage(Pages.START);
 					}
 				
 				}, false, null);
@@ -135,6 +124,12 @@ public class WriterActivity extends Activity implements
 		
 		if (current == index) {
 			return false;
+		} else if (Pages.ABOUT.equal(current)) {
+            flip.setInAnimation(this, R.animator.fade_in_anim);
+            flip.setOutAnimation (this, R.animator.out_jump_anim);
+		} else if (Pages.ABOUT.equal(index)) {
+            flip.setInAnimation (this, R.animator.in_jump_anim);
+            flip.setOutAnimation(this, R.animator.fade_out_anim);
 		} else if (current < index) {
 			flip.setInAnimation (this, R.animator.in_left_anim);
 			flip.setOutAnimation (this, R.animator.out_right_anim);
@@ -152,7 +147,7 @@ public class WriterActivity extends Activity implements
 		public void onClick(View v) {
 			
 			mBtListAdapter.clear();
-			changeToPage (Pages.BT_SELECT);
+			setCurrentPage (Pages.BT_SELECT);
 		}
 	};
 	
@@ -160,13 +155,6 @@ public class WriterActivity extends Activity implements
 		public void onClick(View v) {
 			
 			mBtMgr.startDiscovery(WriterActivity.this);
-		}
-	};
-	
-	private final OnClickListener mAboutButtonListener = new OnClickListener() {
-		public void onClick(View v) {
-			
-			changeToPage (Pages.ABOUT);
 		}
 	};
 	
@@ -190,9 +178,8 @@ public class WriterActivity extends Activity implements
 			} else {
 				mTagInfo.pin = "";
 			}
-			
-			
-			changeToPage (Pages.TAG);
+
+			setCurrentPage (Pages.TAG);
 		}
 	};
 	
@@ -203,87 +190,6 @@ public class WriterActivity extends Activity implements
 		}
 	};
 	
-	//row adapter for bluetooth list
-	public class BluetoothRowAdapter extends ArrayAdapter<Object> {
-		
-		public class Row {
-			public String name;
-			public String address;
-			public boolean paired = false;
-		};
-		
-		private final Vector<Row> mList;
-
-		public BluetoothRowAdapter(Context context) {
-			super(context, R.layout.bt_device_layout, R.id.btDeviceNameTextView);
-			
-			mList = new Vector<Row> ();
-		}
-		
-		@Override
-		public int getCount() {
-			return mList.size();
-		}
-		
-		@Override
-		public View getView (int position, View convertView, ViewGroup parent) {
-			View row = convertView;
-			if (row == null) {
-				LayoutInflater inflater = getLayoutInflater();
-				row = inflater.inflate(R.layout.bt_device_layout, null);
-			}
-			
-			Row rowData = mList.elementAt(position);
-			TextView line =(TextView)row.findViewById (R.id.btDeviceNameTextView);
-			line.setText (rowData.name);
-			line =(TextView)row.findViewById (R.id.btDeviceAddressTextView);
-			
-			String addressLine = rowData.address;
-			if (rowData.paired) {
-				addressLine =
-					getResources().getString(R.string.btscan_paired_str) + " "
-					+ addressLine;
-			}
-			
-			line.setText (addressLine);
-			return(row);                         
-		}
-		
-		public void addDevice(String name, String address, boolean paired) {
-			Row row = new Row();
-			row.name = name;
-			row.address = address;
-			row.paired = paired;
-			mList.add(row);
-			notifyDataSetChanged();
-		}
-		
-		public void addDevice(BluetoothDevice device) {
-			addDevice (device.getName(), device.getAddress(),
-				device.getBondState() == BluetoothDevice.BOND_BONDED);
-		}
-		
-		public Row getRow (int index) {
-			return mList.elementAt(index);
-		}
-		
-		@Override
-		public void clear() {
-			mList.clear();
-			notifyDataSetChanged();
-		}
-		
-		public void addDeviceIfNotPresent (BluetoothDevice device) {
-			Iterator<Row> iter = mList.iterator();
-			while (iter.hasNext()) {
-				Row row = iter.next();
-				if (row.address.equals(device.getAddress())) {
-					return;
-				}
-			}
-			addDevice(device);
-		}
-	}
 	private BluetoothRowAdapter mBtListAdapter = null;
    
 	protected void connectSignals() {
@@ -291,16 +197,13 @@ public class WriterActivity extends Activity implements
 		button.setOnClickListener (mStartButtonListener);
 		
 		button = (Button)findViewById (R.id.restartButton);
-		button.setOnClickListener (mStartButtonListener);
+		button.setOnClickListener (mExtraoptsReadyButtonListener);
 		
 		button = (Button)findViewById (R.id.extraoptsReadyButton);
 		button.setOnClickListener (mExtraoptsReadyButtonListener);
 		
 		button = (Button)findViewById (R.id.exitButton);
 		button.setOnClickListener(mExitButtonListener);
-		
-		button = (Button)findViewById (R.id.aboutButton);
-		button.setOnClickListener(mAboutButtonListener);
 		
 		ImageButton ib = (ImageButton)findViewById (R.id.btRescanButton);
 		ib.setOnClickListener(mRescanButtonListener);
@@ -323,7 +226,7 @@ public class WriterActivity extends Activity implements
 			public void handleMessage (Message msg) {
 				switch (msg.what) {
 				case TagWriter.HANDLER_MSG_SUCCESS:
-					changeToPage(Pages.SUCCESS);
+					setCurrentPage(Pages.SUCCESS);
 					break;
 				case TagWriter.HANDLER_MSG_CANCELLED:
 					break;
@@ -378,7 +281,7 @@ public class WriterActivity extends Activity implements
         			R.id.extraoptsSelectedDeviceValue);
         		tview.setText(sbuilder.toString());
         		
-        		changeToPage (Pages.EXTRA_OPTIONS);
+        		setCurrentPage (Pages.EXTRA_OPTIONS);
         	}
         });
         
@@ -408,26 +311,34 @@ public class WriterActivity extends Activity implements
     
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	
-    	boolean ret = false;
-    	
+        
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-        	int curPage = currentPage();
-        	
-        	if (Pages.ABOUT.equal(curPage)) {
-        		changeToPage(Pages.START);
-        	} else if (Pages.BT_SELECT.equal(curPage)) {
-        		changeToPage(Pages.START);
-        	} else if (Pages.EXTRA_OPTIONS.equal(curPage)) {
-        		changeToPage(Pages.BT_SELECT);
-        	} else if (Pages.TAG.equal(curPage)) {
-        		changeToPage(Pages.EXTRA_OPTIONS);
-        	} else {
-        		ret = super.onKeyDown(keyCode, event);
-        	}
-        } else {
-        	ret = super.onKeyDown(keyCode, event);
+            if (Pages.ABOUT.equal(getCurrentPage())) {
+                setCurrentPage(lastPage);
+                return true;
+            }
         }
+        
+        return super.onKeyDown(keyCode, event);
+    }
+    
+    private boolean toPrevPage() {
+        
+        int curPage = getCurrentPage();
+        boolean ret = true;
+        
+        if (Pages.ABOUT.equal(curPage)) {
+            setCurrentPage(Pages.START);
+        } else if (Pages.BT_SELECT.equal(curPage)) {
+            setCurrentPage(Pages.START);
+        } else if (Pages.EXTRA_OPTIONS.equal(curPage)) {
+            setCurrentPage(Pages.BT_SELECT);
+        } else if (Pages.TAG.equal(curPage)) {
+            setCurrentPage(Pages.EXTRA_OPTIONS);
+        } else {
+            ret = false;
+        }
+        
         return ret;
     }
     
@@ -435,8 +346,6 @@ public class WriterActivity extends Activity implements
     public void onNewIntent(Intent intent) {
     	setIntent(intent);
     	String action = intent.getAction();
-    	
-    	//Log.d (TAG, "onNewIntent");
     	
     	
     	if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
@@ -453,6 +362,36 @@ public class WriterActivity extends Activity implements
     	}
     }
     
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+    	MenuInflater inflater = getMenuInflater();
+    	inflater.inflate(R.menu.main_menu, menu);
+        return true;
+    }
+    
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        int page = getCurrentPage();
+        menu.findItem(R.id.backItem).setVisible (!Pages.START.equal(page)
+                && !Pages.SUCCESS.equal(page) && !Pages.ABOUT.equal(page));
+        menu.findItem(R.id.aboutItem).setVisible(!Pages.ABOUT.equal(page));
+        return super.onPrepareOptionsMenu(menu);
+    }
+    
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.aboutItem:
+                setCurrentPage (Pages.ABOUT);
+                return true;
+            case R.id.backItem:
+                toPrevPage();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+    
     private void showActionDialog (int textResId, 
     	DialogInterface.OnClickListener clickListener,
     	boolean cancelable,
@@ -465,7 +404,8 @@ public class WriterActivity extends Activity implements
     	
     	if (clickListener != null) {
     		dialog.setCancelable(cancelable);
-    		dialog.setButton(getResources().getText(R.string.action_dialog_ok),
+    		dialog.setButton(AlertDialog.BUTTON_POSITIVE,
+    			getResources().getText(R.string.action_dialog_ok),
     			clickListener);
     		
     	} else {

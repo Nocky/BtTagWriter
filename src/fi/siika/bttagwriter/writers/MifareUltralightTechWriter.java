@@ -13,7 +13,6 @@ import java.util.Arrays;
 import android.nfc.Tag;
 import android.nfc.tech.MifareUltralight;
 import android.util.Log;
-import fi.siika.bttagwriter.TagWriter;
 import fi.siika.bttagwriter.data.TagInformation;
 import fi.siika.bttagwriter.exceptions.IOFailureException;
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;

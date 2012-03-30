@@ -11,10 +11,18 @@ package fi.siika.bttagwriter.exceptions;
  */
 public class OutOfSpaceException extends Exception {
 	
-	private static final long serialVersionUID = 1L;
+	private final Exception source;
 	
-	public OutOfSpaceException (String msg) {
+	public OutOfSpaceException (String msg, Exception source) {
 		super (msg);
+		this.source = source;
 	}
 	
+	public OutOfSpaceException (String msg) {
+        this(msg, null);
+    }
+	
+	public Exception getSource() {
+	    return source;
+	}
 }

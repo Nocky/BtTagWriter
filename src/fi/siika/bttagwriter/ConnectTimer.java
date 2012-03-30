@@ -6,6 +6,9 @@
  */
 package fi.siika.bttagwriter;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import android.os.CountDownTimer;
 
 /**
@@ -18,14 +21,24 @@ public class ConnectTimer extends CountDownTimer {
 		public void timerTick(int secondsLeft);
 	}
 	
-	private Listener mListener = null;
+	private final Collection<Listener> mListeners = new ArrayList<Listener>();
 
 	/**
 	 * 
 	 */
 	public ConnectTimer(Listener listener) {
 		super(10000, 1000);
-		 mListener = listener;
+		if (listener != null) {
+			mListeners.add(listener);
+		}
+	}
+	
+	public void addListener (Listener listener) {
+		mListeners.add(listener);
+	}
+	
+	public void removeListener (Listener listener) {
+		mListeners.remove(listener);
 	}
 
 	/* (non-Javadoc)
@@ -33,8 +46,8 @@ public class ConnectTimer extends CountDownTimer {
 	 */
 	@Override
 	public void onTick(long millisUntilFinished) {
-		if (mListener != null) {
-			mListener.timerTick((int)(millisUntilFinished / 1000));
+		for (Listener listener : mListeners) {
+			listener.timerTick((int)(millisUntilFinished / 1000));
 		}
 	}
 
@@ -43,8 +56,8 @@ public class ConnectTimer extends CountDownTimer {
 	 */
 	@Override
 	public void onFinish() {
-		if (mListener != null) {
-			mListener.timerTick(0);
+		for (Listener listener : mListeners) {
+			listener.timerTick(0);
 		}
 	}
 }

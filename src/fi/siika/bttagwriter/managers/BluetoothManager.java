@@ -9,9 +9,6 @@ package fi.siika.bttagwriter.managers;
 import java.util.Iterator;
 import java.util.Set;
 
-import fi.siika.bttagwriter.R;
-import fi.siika.bttagwriter.R.string;
-
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -20,6 +17,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 import android.widget.Toast;
+import fi.siika.bttagwriter.R;
 
 /**
  * 
@@ -41,6 +39,7 @@ public class BluetoothManager {
 	private DiscoveryListener mDiscoveryListener = null;
 	private StateListener mStateListener = null;
 	private boolean mReceiverConnected = false;
+	private final static String TAG = "BluetoothManager";
 	
 	public BluetoothManager(Context context) {
 		mContext = context;
@@ -103,6 +102,7 @@ public class BluetoothManager {
 	public void enable() {
 		BluetoothAdapter adapter = getBluetoothAdapter();
 		if (isEnabled() == false) {
+			Log.d(TAG, "Enable bluetooth");
 			mEnabledBt = true;
 			adapter.enable();
 		} else {
@@ -155,6 +155,7 @@ public class BluetoothManager {
 	public void disableIfEnabled() {
 		if (mBtAdapter != null) {
 			if (mEnabledBt == true) {
+				Log.d(TAG, "Disable bluetooth");
 				mBtAdapter.disable();
 				mEnabledBt = false;
 			}
@@ -171,6 +172,7 @@ public class BluetoothManager {
 	}
 	
 	private final BroadcastReceiver mBCReceiver = new BroadcastReceiver() {
+		@Override
 		public void onReceive(Context context, Intent intent) {
 			String action = intent.getAction();
 			

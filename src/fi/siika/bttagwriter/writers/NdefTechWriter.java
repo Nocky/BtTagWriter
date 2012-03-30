@@ -15,10 +15,10 @@ import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.util.Log;
-import fi.siika.bttagwriter.TagWriter;
 import fi.siika.bttagwriter.data.BtTagGenerator;
 import fi.siika.bttagwriter.data.TagInformation;
 import fi.siika.bttagwriter.exceptions.IOFailureException;
+import fi.siika.bttagwriter.exceptions.IOFailureException.Step;
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 
 /**
@@ -51,15 +51,19 @@ public class NdefTechWriter extends TagTechWriter {
 	}
 	
 	@Override
-	public void close (Tag tag) throws Exception {
+	public void close (Tag tag) throws IOFailureException {
 		Ndef ndef = Ndef.get(tag);
 		
-		if (ndef != null) {
-			ndef.close();
-		} else {
-			NdefFormatable form = NdefFormatable.get(tag);
-			form.close();
-		} 
+		try { 
+			if (ndef != null) {
+				ndef.close();
+			} else {
+				NdefFormatable form = NdefFormatable.get(tag);
+				form.close();
+			}
+		} catch (IOException e) {
+			throw new IOFailureException ("Failed to close Ndef(Formatable)", e);
+		}
 	}
 	
 	private int writeToNdef (Ndef tag, TagInformation info) throws IOFailureException,
@@ -67,10 +71,12 @@ public class NdefTechWriter extends TagTechWriter {
 		
 		int ret = TagWriter.HANDLER_MSG_SUCCESS;
 		
+		Log.d(TAG, "Ndef writing...");
+		
 		try {
 			tag.connect();
 		} catch (IOException e) {
-			throw new IOFailureException("Failed to connect with Ndef");
+			throw new IOFailureException("Failed to connect with Ndef", Step.CONNECT, e);
 		}
 		
 		NdefMessage msg = BtTagGenerator.generateNdefMessageForBtTag(info,
@@ -79,8 +85,8 @@ public class NdefTechWriter extends TagTechWriter {
 	
 		try {
 			tag.writeNdefMessage(msg);
-		} catch (IOException e1) {
-			throw new IOFailureException("Failed to write to Ndef");
+		} catch (IOException e) {
+			throw new IOFailureException("Failed to write to Ndef", Step.WRITE, e);
 		}
 		
 		
@@ -88,14 +94,14 @@ public class NdefTechWriter extends TagTechWriter {
 			try {
 				tag.makeReadOnly();
 			} catch (IOException e) {
-				throw new IOFailureException("Failed to make Ndef RO");
+				throw new IOFailureException("Failed to make Ndef RO", Step.FORMAT, e);
 			}
 		}
 		
 		try {
 			tag.close();
 		} catch (IOException e) {
-			throw new IOFailureException("Failed to close Ndef");
+			throw new IOFailureException("Failed to close Ndef", Step.CLOSE, e);
 		}
 		
 		Log.d (TAG, "Ndef written");
@@ -107,13 +113,14 @@ public class NdefTechWriter extends TagTechWriter {
 		throws IOFailureException, OutOfSpaceException, UnsupportedEncodingException, FormatException {
 		
 		int ret = TagWriter.HANDLER_MSG_SUCCESS;
+		Log.d(TAG, "NdefFormatable writing...");
 		
 		try {
 			if (tag.isConnected() == false) {
 				tag.connect();
 			}
 		} catch (IOException e) {
-			throw new IOFailureException("Failed to connect NdefFormatable");
+			throw new IOFailureException("Failed to connect NdefFormatable", Step.CONNECT, e);
 		}
 		
 		NdefMessage msg = BtTagGenerator.generateNdefMessageForBtTag(info, -1);
@@ -122,20 +129,20 @@ public class NdefTechWriter extends TagTechWriter {
 			try {
 				tag.formatReadOnly(msg);
 			} catch (IOException e) {
-				throw new IOFailureException("Failed to RO format NdefFormatable");
+				throw new IOFailureException("Failed to RO format NdefFormatable", Step.FORMAT, e);
 			}
 		} else {
 			try {
 				tag.format(msg);
 			} catch (IOException e) {
-				throw new IOFailureException("Failed to format NdefFormatable");
+				throw new IOFailureException("Failed to format NdefFormatable", Step.FORMAT, e);
 			}
 		}
 		
 		try {
 			tag.close();
 		} catch (IOException e) {
-			throw new IOFailureException("Failed to close NdefFormatable");
+			throw new IOFailureException("Failed to close NdefFormatable", Step.CLOSE, e);
 		}
 		
 		Log.d (TAG, "NdefFormatable written");

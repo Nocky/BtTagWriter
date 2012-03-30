@@ -6,9 +6,6 @@
  */
 package fi.siika.bttagwriter;
 
-import fi.siika.bttagwriter.data.BtSecureSimplePairing;
-import fi.siika.bttagwriter.managers.BluetoothManager;
-import fi.siika.bttagwriter.managers.NfcManager;
 import android.app.Activity;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -28,6 +25,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import fi.siika.bttagwriter.data.BtSecureSimplePairing;
+import fi.siika.bttagwriter.managers.BluetoothManager;
+import fi.siika.bttagwriter.managers.NfcManager;
 
 /**
  * Activity used to handle pairing when suitable NDEF message is found from
@@ -274,7 +274,7 @@ public class PairActivity extends Activity
 	    		payload);
 	    	
 	    	if (data == null) {
-	    		Log.d (getClass().getSimpleName(), "Ignoring tag");
+	    		Log.d (getClass().getSimpleName(), "Ignoring tag, invalid data");
 	    		this.finish();
 	    	}
 	    	

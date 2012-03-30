@@ -52,7 +52,7 @@ public abstract class TagTechWriter {
 			info, (short)(sizeLimit - SPACE_TAKEN_BY_TLV));
 		
 		if (ndefMessage == null) {
-			throw new OutOfSpaceException("Not enough space for message");
+			throw new OutOfSpaceException("Not enough space for payload");
 		}
 		
 		// Construct the payload
