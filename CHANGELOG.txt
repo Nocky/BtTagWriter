@@ -1,5 +1,8 @@
 BT Tag Writer Changelog
 
+*** #5 v0.5 [2012-??-??]
+  * Currently under development
+
 *** #4 v0.4 [2012-03-30]
   * Now for Android 4.0.3+
   * Not only Mifare Ultralights (support via Ndef and NdefFormatable)
