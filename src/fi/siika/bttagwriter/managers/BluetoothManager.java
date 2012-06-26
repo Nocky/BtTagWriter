@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -29,7 +30,12 @@ public class BluetoothManager {
 	}
 	
 	public interface DiscoveryListener {
-		public void bluetoothDeviceFound (BluetoothDevice device);
+	    /**
+	     * 
+	     * @param device
+	     * @param fromPaired true if device was from paired list (and not proper discovery)
+	     */
+		public void bluetoothDeviceFound (BluetoothDevice device, boolean fromPaired);
 		public void bluetoothDiscoveryStateChanged (boolean active);
 	};
 	
@@ -121,7 +127,7 @@ public class BluetoothManager {
 			BluetoothDevice device = iter.next();
 			
 			 if (mDiscoveryListener != null) {
-				 mDiscoveryListener.bluetoothDeviceFound(device);
+				 mDiscoveryListener.bluetoothDeviceFound(device, true);
 			 }
 		}
 	}
@@ -171,6 +177,29 @@ public class BluetoothManager {
 		}
 	}
 	
+	public static boolean isSuitableBluetoothDevice (BluetoothDevice device) {
+	    BluetoothClass btClass = device.getBluetoothClass();
+	    
+	    if (btClass == null) {
+            Log.w(TAG, "null from BluetoothDevice.getBluetoohClass");
+            return false;
+        }
+	    
+        //For now filter out everything but audio
+        if (btClass.hasService(BluetoothClass.Service.AUDIO) == false) {
+            return false;
+        }
+    
+        //Check that it is not headset (can not get those connected)
+        int devClass = btClass.getDeviceClass();
+        if (devClass == BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE ||
+            devClass == BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET) {
+            return false;
+        }
+        
+        return true;
+	}
+	
 	private final BroadcastReceiver mBCReceiver = new BroadcastReceiver() {
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -181,7 +210,7 @@ public class BluetoothManager {
 						 BluetoothDevice.EXTRA_DEVICE);
 				
 				 if (mDiscoveryListener != null) {
-					 mDiscoveryListener.bluetoothDeviceFound(device);
+					 mDiscoveryListener.bluetoothDeviceFound(device, false);
 				 }
 			
 			} else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(

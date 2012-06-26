@@ -45,6 +45,7 @@
     <string name="btscan_paired_str">(paired)</string>
     <string name="about_links_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Links&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;* video: http://www.youtube.com/watch?v=IbuLGsXIvKI&lt;br/&gt;* source code: http://oss.siika.fi&lt;br/&gt;</string>
     <string name="back_button">Back</string>
+    <string name="filter_bt_devices_str">Filter devices</string>
     
     
 

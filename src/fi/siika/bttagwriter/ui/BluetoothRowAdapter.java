@@ -11,88 +11,47 @@ import java.util.List;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 import fi.siika.bttagwriter.R;
+import fi.siika.bttagwriter.managers.BluetoothManager;
 
 /**
  * 
  */
 public class BluetoothRowAdapter extends ArrayAdapter<Object> {
-	
-	public class Row {
-		public String name;
-		public String address;
-		public boolean paired = false;
 		
-		public Row (String name, String address, boolean paired) {
-			this.name = name;
-			this.address = address;
-			this.paired = paired;
-		}
-		
-		/* (non-Javadoc)
-		 * @see java.lang.Object#hashCode()
-		 */
-		@Override
-		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + getOuterType().hashCode();
-			result = prime * result
-					+ ((address == null) ? 0 : address.hashCode());
-			return result;
-		}
-
-		/* (non-Javadoc)
-		 * @see java.lang.Object#equals(java.lang.Object)
-		 */
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true;
-			}
-			if (obj == null) {
-				return false;
-			}
-			if (getClass() != obj.getClass()) {
-				return false;
-			}
-			Row other = (Row) obj;
-			if (!getOuterType().equals(other.getOuterType())) {
-				return false;
-			}
-			if (address == null) {
-				if (other.address != null) {
-					return false;
-				}
-			} else if (!address.equals(other.address)) {
-				return false;
-			}
-			return true;
-		}
-
-		private BluetoothRowAdapter getOuterType() {
-			return BluetoothRowAdapter.this;
-		}
-		
-		@Override
-        public String toString() {
-		    return address;
-		}
-		
-	};
-	
-	private final List<Row> list;
+	private final List<BluetoothRow> list = new ArrayList<BluetoothRow>();
 	private final Activity activity;
+	private int discoveredColor;
+	private int pairedColor;
+	private Drawable unknownIcon;
+	private Drawable audioIcon;
 
 	public BluetoothRowAdapter(Activity activity) {
 		super(activity, R.layout.bt_device_layout, R.id.btDeviceNameTextView);
 		this.activity = activity;
-		list = new ArrayList<Row> ();
+	}
+	
+	public void setDiscoveredColor (int color) {
+	    discoveredColor = color;
+	}
+	
+	public void setPairedColor (int color) {
+	    pairedColor = color;
+    }
+	
+	public void setUnknownIcon (Drawable icon) {
+        unknownIcon = icon;
+    }
+	
+	public void setAudioIcon (Drawable icon) {
+	    audioIcon = icon;
 	}
 	
 	@Override
@@ -108,23 +67,35 @@ public class BluetoothRowAdapter extends ArrayAdapter<Object> {
 			row = inflater.inflate(R.layout.bt_device_layout, null);
 		}
 		
-		Row rowData = list.get(position);
-		TextView line =(TextView)row.findViewById (R.id.btDeviceNameTextView);
-		line.setText (rowData.name);
-		line =(TextView)row.findViewById (R.id.btDeviceAddressTextView);
+		BluetoothRow rowData = list.get(position);
+		TextView nameLine =(TextView)row.findViewById (R.id.btDeviceNameTextView);
+		nameLine.setText (rowData.getName());
+		TextView addressLine = (TextView)row.findViewById (R.id.btDeviceAddressTextView);
+		ImageView image = (ImageView)row.findViewById(R.id.deviceTypeIcon);
 		
-		String addressLine = rowData.address;
-		if (rowData.paired) {
-			addressLine =
-				activity.getResources().getString(R.string.btscan_paired_str) + " "
-				+ addressLine;
+		if (rowData.isAudio()) {
+		    image.setImageDrawable(audioIcon);
+		} else {
+		    image.setImageDrawable(unknownIcon);
 		}
 		
-		line.setText (addressLine);
+		String addressValue = rowData.getAddress();
+		if (rowData.isPaired()) {
+		    addressValue =
+				activity.getResources().getString(R.string.btscan_paired_str) + " "
+				+ addressValue;
+		}
+		
+		addressLine.setText (addressValue);
+		
+		int colorUsed = rowData.isDeviceVisible() ? discoveredColor : pairedColor;
+	    nameLine.setTextColor(colorUsed);
+	    addressLine.setTextColor(colorUsed);
+		
 		return(row);                         
 	}
 	
-	public Row getRow (int index) {
+	public BluetoothRow getRow (int index) {
 		return list.get(index);
 	}
 	
@@ -134,15 +105,42 @@ public class BluetoothRowAdapter extends ArrayAdapter<Object> {
 		notifyDataSetChanged();
 	}
 	
-	public void addDeviceIfNotPresent (BluetoothDevice device) {
+	public void clearNonAudio() {
+	    for (int i = list.size() - 1; i >= 0; --i) {
+	        if (list.get(i).isAudio()) {
+	            break;
+	        } else {
+	            list.remove(i);
+	        }
+	    }
+	    notifyDataSetChanged();
+	}
+	
+	public void addDeviceIfNotPresent (BluetoothDevice device, boolean visible) {
 	    
-	    Row row = new Row (device.getName(), device.getAddress(), device.getBondState() == BluetoothDevice.BOND_BONDED);
+	    boolean isPaired = device.getBondState() == BluetoothDevice.BOND_BONDED;
+	    boolean isAudio = BluetoothManager.isSuitableBluetoothDevice(device);
+	    
+	    BluetoothRow row = new BluetoothRow (device.getName(),
+	            device.getAddress(), isPaired, isAudio);
+	    row.setDeviceVisible(visible);
 	    
 		if (list.contains(row)) {
+		    list.set(list.indexOf(row), row);
 			return;
 		}
 		
-		list.add(row);
+		int location = 0;
+		for (location = 0; location < list.size(); ++location) {
+		    BluetoothRow old = list.get(location);
+		    if (row.isAudio() && !old.isAudio()) {
+		        break;
+		    }
+		    if (row.isPaired() && !old.isPaired()) {
+                break;
+            }
+		}
+		list.add(location, row);
 		notifyDataSetChanged();
 	}
 }

@@ -1,7 +1,9 @@
 BT Tag Writer Changelog
 
-*** #5 v0.5 [2012-??-??]
-  * Currently under development
+*** #5 v0.5 [2012-06-26]
+  * Bug fixes
+  * Removed forced Bluetooth filtering and replaced it with better UI and
+    optional filtering.
 
 *** #4 v0.4 [2012-03-30]
   * Now for Android 4.0.3+

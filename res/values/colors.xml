@@ -11,6 +11,8 @@
     <color name="extraopts_divider_color">#C0C0C0</color>
     <color name="toast_bgcolor">#C0000030</color>
     <color name="toast_fgcolor">#FFFFFF</color>
+    <color name="bt_device_discovered_fgcolor">#FFFFFF</color>
+    <color name="bt_device_paired_fgcolor">#B0B0B0</color>
 
     
 </resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+    <item android:id="@+id/aboutItem" android:title="@string/about_button_str" android:menuCategory="container" android:enabled="true" android:showAsAction="never"></item>
+    <item android:id="@+id/backItem" android:menuCategory="container" android:icon="@drawable/ic_ab_back_holo_dark" android:title="@string/back_button" android:enabled="true" android:visible="false" android:showAsAction="always"></item>
+    <item android:id="@+id/filterSearchitem" android:title="@string/filter_bt_devices_str" android:checkable="true" android:visible="false" android:enabled="true" android:menuCategory="container" android:showAsAction="never"></item>
+    
+
+</menu>

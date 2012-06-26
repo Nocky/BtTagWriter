@@ -9,17 +9,17 @@ package fi.siika.bttagwriter;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Html;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -52,6 +52,8 @@ public class WriterActivity extends Activity implements
 	BluetoothManager.DiscoveryListener {
 	
 	private final static String TAG = "WriterActivity";
+	private final static String PREFS_NAME = "WriterPrefs";
+	private final static String PREF_FILTER = "filter-devices";
 
 	private TagWriter mTagWriter;
 	private Handler mTagWriterHandler; 
@@ -59,6 +61,7 @@ public class WriterActivity extends Activity implements
 	private BluetoothManager mBtMgr;
 	private NfcManager mNfcMgr;
 	private int lastPage;
+	private SharedPreferences mSettings;
 	
 	private void setCurrentPage (Pages page) {
 	    setCurrentPage(page.toInt());
@@ -221,6 +224,8 @@ public class WriterActivity extends Activity implements
 	public void onResume() {
 		super.onResume();
 		
+		mSettings = getSharedPreferences(PREFS_NAME, 0);
+		
 		mTagWriterHandler = new Handler() {
 			@Override
 			public void handleMessage (Message msg) {
@@ -260,6 +265,10 @@ public class WriterActivity extends Activity implements
         
         if (mBtListAdapter == null) {
         	mBtListAdapter = new BluetoothRowAdapter(this);
+        	mBtListAdapter.setDiscoveredColor(getResources().getColor(R.color.bt_device_discovered_fgcolor));
+        	mBtListAdapter.setPairedColor(getResources().getColor(R.color.bt_device_paired_fgcolor));
+        	mBtListAdapter.setAudioIcon(getResources().getDrawable(R.drawable.audio_device_type));
+        	mBtListAdapter.setUnknownIcon(getResources().getDrawable(R.drawable.unknown_device_type));
         }
         ListView list = (ListView)findViewById (R.id.btDevicesList);
         list.setAdapter (mBtListAdapter);
@@ -268,13 +277,13 @@ public class WriterActivity extends Activity implements
         	public void onItemClick(AdapterView<?> parent, View view,
         		int position, long id) {
         		
-        		mTagInfo.name = mBtListAdapter.getRow(position).name;
-        		mTagInfo.address = mBtListAdapter.getRow(position).address;
+        		mTagInfo.name = mBtListAdapter.getRow(position).getName();
+        		mTagInfo.address = mBtListAdapter.getRow(position).getAddress();
         		
         		StringBuilder sbuilder = new StringBuilder();
-        		sbuilder.append(mBtListAdapter.getRow(position).name);
+        		sbuilder.append(mBtListAdapter.getRow(position).getName());
         		sbuilder.append(" (");
-        		sbuilder.append(mBtListAdapter.getRow(position).address);
+        		sbuilder.append(mBtListAdapter.getRow(position).getAddress());
         		sbuilder.append(")");
         		
         		TextView tview = (TextView)findViewById (
@@ -366,6 +375,9 @@ public class WriterActivity extends Activity implements
     public boolean onCreateOptionsMenu(Menu menu) {
     	MenuInflater inflater = getMenuInflater();
     	inflater.inflate(R.menu.main_menu, menu);
+
+        menu.findItem(R.id.filterSearchitem).setChecked(mSettings.getBoolean(PREF_FILTER, true));
+    	
         return true;
     }
     
@@ -375,6 +387,8 @@ public class WriterActivity extends Activity implements
         menu.findItem(R.id.backItem).setVisible (!Pages.START.equal(page)
                 && !Pages.SUCCESS.equal(page) && !Pages.ABOUT.equal(page));
         menu.findItem(R.id.aboutItem).setVisible(!Pages.ABOUT.equal(page));
+        menu.findItem(R.id.filterSearchitem).setVisible(Pages.BT_SELECT.equal(page));
+        menu.findItem(R.id.filterSearchitem).setChecked(getFilterDevices());
         return super.onPrepareOptionsMenu(menu);
     }
     
@@ -387,8 +401,29 @@ public class WriterActivity extends Activity implements
             case R.id.backItem:
                 toPrevPage();
                 return true;
+            case R.id.filterSearchitem:
+                item.setChecked(!item.isChecked());
+                setFilterDevicesEnabled (item.isChecked());
+                return true;    
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+    
+    private void setFilterDevicesEnabled (boolean enabled) {
+        if (getFilterDevices() != enabled) {
+            
+            Editor editor = mSettings.edit();
+            editor.putBoolean(PREF_FILTER, enabled);
+            editor.commit();
+            
+            if (enabled) {
+                mBtListAdapter.clearNonAudio();
+            }
+            
+            if (Pages.BT_SELECT.equal(this.getCurrentPage())) {
+                startBluetoothDiscovery();
+            }
         }
     }
     
@@ -423,28 +458,15 @@ public class WriterActivity extends Activity implements
 	/* (non-Javadoc)
 	 * @see fi.siika.bttagwriter.BluetoothManager.Listener#bluetoothDeviceFound(android.bluetooth.BluetoothDevice)
 	 */
-	public void bluetoothDeviceFound(BluetoothDevice device) {
-		
-		BluetoothClass btClass = device.getBluetoothClass();
-		
-		if (btClass == null) {
-			Log.w(TAG, "null from BluetoothDevice.getBluetoohClass");
-			return;
-		}
-		
-		//For now filter out everything but audio
-		if (btClass.hasService(BluetoothClass.Service.AUDIO) == false) {
-			return;
-		}
-		
-		//Check that it is not headset (can not get those connected)
-		int devClass = btClass.getDeviceClass();
-		if (devClass == BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE ||
-			devClass == BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET) {
-			return;
+	public void bluetoothDeviceFound(BluetoothDevice device, boolean fromPaired) {
+	    
+	    if (getFilterDevices()) {
+	        if (!BluetoothManager.isSuitableBluetoothDevice(device)) {
+	            return;
+	        }
 		}
 			
-		mBtListAdapter.addDeviceIfNotPresent (device);
+		mBtListAdapter.addDeviceIfNotPresent (device, !fromPaired);
 		
 	}
 
@@ -486,6 +508,14 @@ public class WriterActivity extends Activity implements
 			
 		}
 		
+	}
+	
+	/**
+	 * Get option if devices should be filtered
+	 * @return true to filter, false to not filter
+	 */
+	private boolean getFilterDevices() {
+	    return mSettings.getBoolean(PREF_FILTER, false);
 	}
 
 
