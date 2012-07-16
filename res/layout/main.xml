@@ -307,6 +307,19 @@
 		                android:scaleType="fitXY"
 		                android:src="@android:drawable/divider_horizontal_dark"
 		                android:visibility="gone" />
+		            
+		             <CheckBox
+                        android:id="@+id/jellyBeanCheckBox"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/extraopts_jellybean_mode_str" />
+		             
+		             <TextView
+                        android:id="@+id/extraoptsJellyBeanCaption"
+                        android:text="@string/extraopts_jellybean_mode_info_str"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        />
 
 		            <CheckBox
 		                android:id="@+id/readOnlycheckBox"
@@ -314,18 +327,9 @@
 		                android:layout_height="wrap_content"
 		                android:text="@string/extraopts_make_readonly_str" />
 		            
-		            <ImageView
-                        android:src="@android:drawable/divider_horizontal_dark"
-                        android:layout_width="fill_parent"
-                        android:layout_height="wrap_content"
-                        android:scaleType="fitXY"
-                        android:paddingBottom="3pt"
-                        android:paddingTop="3pt"
-                        />
-		            
 		            <TextView
                         android:id="@+id/extraoptsNoticeCaption"
-                        android:text="@string/extraopts_notice_str"
+                        android:text="@string/extraopts_make_readonly_info_str"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         />

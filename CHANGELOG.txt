@@ -1,5 +1,10 @@
 BT Tag Writer Changelog
 
+*** #6 v0.6 [2012-07-16]
+  * Moved back to proper Android design with usage of back button
+  * Added support for writing tags that Jelly Bean understands without need of
+    having this software installed.
+
 *** #5 v0.5 [2012-06-26]
   * Bug fixes
   * Removed forced Bluetooth filtering and replaced it with better UI and

@@ -38,6 +38,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 import fi.siika.bttagwriter.data.TagInformation;
+import fi.siika.bttagwriter.data.TagType;
 import fi.siika.bttagwriter.managers.BluetoothManager;
 import fi.siika.bttagwriter.managers.NfcManager;
 import fi.siika.bttagwriter.ui.BluetoothRowAdapter;
@@ -54,6 +55,7 @@ public class WriterActivity extends Activity implements
 	private final static String TAG = "WriterActivity";
 	private final static String PREFS_NAME = "WriterPrefs";
 	private final static String PREF_FILTER = "filter-devices";
+	private final static String PREF_JELLYBEAN = "jellybean";
 
 	private TagWriter mTagWriter;
 	private Handler mTagWriterHandler; 
@@ -170,10 +172,18 @@ public class WriterActivity extends Activity implements
 			
 			CheckBox cbox = (CheckBox)findViewById(R.id.readOnlycheckBox);
 			if (cbox != null) {
-				mTagInfo.readOnly = cbox.isChecked();
+				mTagInfo.setReadOnly(cbox.isChecked());
 			} else {
-				mTagInfo.readOnly = false;
+				mTagInfo.setReadOnly(false);
 			}
+			
+	        cbox = (CheckBox)findViewById(R.id.jellyBeanCheckBox);
+	        if (cbox != null) {
+	            mSettings.edit().putBoolean(PREF_JELLYBEAN, cbox.isChecked()).commit();
+	            mTagInfo.setType(cbox.isChecked() ? TagType.HANDOVER : TagType.TAGWRITER);
+            } else {
+                mTagInfo.setType(TagType.TAGWRITER);
+            }
 			
 			EditText editText = (EditText)findViewById(R.id.extraoptsPinEdit);
 			if (editText != null) {
@@ -225,6 +235,9 @@ public class WriterActivity extends Activity implements
 		super.onResume();
 		
 		mSettings = getSharedPreferences(PREFS_NAME, 0);
+		
+        CheckBox jellyBeanCB = (CheckBox)findViewById (R.id.jellyBeanCheckBox);
+        jellyBeanCB.setChecked(mSettings.getBoolean(PREF_JELLYBEAN, true));
 		
 		mTagWriterHandler = new Handler() {
 			@Override
@@ -307,10 +320,6 @@ public class WriterActivity extends Activity implements
         credsTV.setText (Html.fromHtml (getString (
         	R.string.about_credits_str)));
         
-        TextView eonTV = (TextView)findViewById (R.id.extraoptsNoticeCaption);
-        eonTV.setText (Html.fromHtml (getString (
-        	R.string.extraopts_notice_str)));
-        
         TextView linksTV = (TextView)findViewById (R.id.linksTextView);
         linksTV.setText (Html.fromHtml (getString (
         	R.string.about_links_str)));
@@ -322,8 +331,7 @@ public class WriterActivity extends Activity implements
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         
         if ((keyCode == KeyEvent.KEYCODE_BACK)) {
-            if (Pages.ABOUT.equal(getCurrentPage())) {
-                setCurrentPage(lastPage);
+            if (toPrevPage()) {
                 return true;
             }
         }
@@ -344,6 +352,8 @@ public class WriterActivity extends Activity implements
             setCurrentPage(Pages.BT_SELECT);
         } else if (Pages.TAG.equal(curPage)) {
             setCurrentPage(Pages.EXTRA_OPTIONS);
+        } else if (Pages.SUCCESS.equal(curPage)) {
+            setCurrentPage(Pages.TAG);
         } else {
             ret = false;
         }
@@ -384,8 +394,6 @@ public class WriterActivity extends Activity implements
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         int page = getCurrentPage();
-        menu.findItem(R.id.backItem).setVisible (!Pages.START.equal(page)
-                && !Pages.SUCCESS.equal(page) && !Pages.ABOUT.equal(page));
         menu.findItem(R.id.aboutItem).setVisible(!Pages.ABOUT.equal(page));
         menu.findItem(R.id.filterSearchitem).setVisible(Pages.BT_SELECT.equal(page));
         menu.findItem(R.id.filterSearchitem).setChecked(getFilterDevices());
@@ -397,9 +405,6 @@ public class WriterActivity extends Activity implements
         switch (item.getItemId()) {
             case R.id.aboutItem:
                 setCurrentPage (Pages.ABOUT);
-                return true;
-            case R.id.backItem:
-                toPrevPage();
                 return true;
             case R.id.filterSearchitem:
                 item.setChecked(!item.isChecked());

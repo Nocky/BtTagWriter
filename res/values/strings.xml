@@ -4,10 +4,10 @@
     <string name="bt_devices_caption_str">Select Bluetooth Device</string>
     <string name="start_button_str">Start Wizard</string>
     <string name="about_button_str">Application Details</string>
-    <string name="about_info_str">&lt;big&gt;&lt;b&gt;This program is still under development!&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;This software is provided &quot;as is&quot; and without any express or implied warranties, including, without limitation, the implied waranties of merchantability and fitness for a particular purpose.&lt;br/&gt;&lt;br/&gt;Please report issues and new feature requests to sami.viitanen@gmail.com&lt;br/&gt;&lt;br/&gt;Thanks!</string>
+    <string name="about_info_str">This software is provided &quot;as is&quot; and without any express or implied warranties, including, without limitation, the implied waranties of merchantability and fitness for a particular purpose.&lt;br/&gt;&lt;br/&gt;Please report issues and new feature requests to sami.viitanen@gmail.com&lt;br/&gt;&lt;br/&gt;Thanks!</string>
     <string name="about_credits_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Credits&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Programming and Graphics&lt;/b&gt;&lt;br/&gt;Sami Viitanen&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Testing and Special Thanks&lt;/b&gt;&lt;br/&gt;---&lt;br/&gt;</string>
     <string name="about_copyright_str">Copyright Sami Viitanen 2011, All rights reserved.</string>
-    <string name="about_issues_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Known limitations&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;* Only for A2DP audio devices (=speakers). Headsets not supported&lt;br/&gt;&lt;br/&gt;* Automatic PIN code handling for devices still missing. Devices with 0000 PIN code should work.&lt;br/&gt;&lt;br/&gt;* Support of different tag types depends on your device and version of Android. If you have issues with some tags please include following information to report: What were your device, version of Android and type of tag.&lt;br/&gt;&lt;br/&gt;* You have to have this application also on phones that only reads tags written with this application. In the future I might make reader only version of this application.</string>
+    <string name="about_issues_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Known limitations&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;* Only for A2DP audio devices (=speakers). Headsets not supported&lt;br/&gt;&lt;br/&gt;* Automatic PIN code handling for devices still missing. Devices with 0000 PIN code should work.&lt;br/&gt;&lt;br/&gt;* Support of different tag types depends on your device and version of Android. If you have issues with some tags please include following information to report: What were your device, version of Android and type of tag.&lt;br/&gt;&lt;br/&gt;* &quot;Jelly Bean&quot; tags are understood by all Android 4.1+ devices, but application tags only work with devices which have this application installed.</string>
     <string name="start_guide_str">This application allows you to write Bluetooth connectivity information to NFC tags. These tags can be then used for easy connecting between your Bluetooth devices and Android phone. Connecting and disconnecting happens simply by touching the NFC tag with your device.</string>
     <string name="end_success_str">Tag written successfully!</string>
     <string name="end_write_another_str">Write another tag</string>
@@ -36,7 +36,7 @@
     <string name="pair_failed_to_bound_str">Failed to pair %1</string><string name="pair_failed_to_connect_str">Failed to connect to %1</string>
     <string name="pair_failed_to_disconnect_str">Failed to disconnect %1</string>
     <string name="pair_failed_unknown_str">Failed: %1</string>
-    <string name="extraopts_notice_str">&lt;b&gt;Notice&lt;/b&gt;: Enabling write protecting can not be reversed. Due difference in tag sizes (bytes) and types some options asked here might not work with all tags.</string>
+    <string name="extraopts_make_readonly_info_str">Be careful! Setting tag read only is irreversible action.</string>
     <string name="btscan_started_str">Please enable the pair mode of your Bluetooth device.</string>
     <string name="btscan_no_devices_found_str">No Bluetooth audio devices found. Please check that your Bluetooth devices are turned on, in pairing mode and visible. Then restart the device discovery.</string>
     <string name="tag_write_failed_str">Writing to tag failed.\nPlease check that tag is not write protected. Also keep it close to device while software is writing.</string>
@@ -46,6 +46,8 @@
     <string name="about_links_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Links&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;* video: http://www.youtube.com/watch?v=IbuLGsXIvKI&lt;br/&gt;* source code: http://oss.siika.fi&lt;br/&gt;</string>
     <string name="back_button">Back</string>
     <string name="filter_bt_devices_str">Filter devices</string>
+    <string name="extraopts_jellybean_mode_str">Jelly Bean mode</string>
+    <string name="extraopts_jellybean_mode_info_str">Tag written with &quot;Jelly Bean mode&quot; can be read with all NFC enabled Android 4.1+ phones. So you do not need to install BT Tag Writer to read these tags. But at the same time you can not read these with older versions of Android.</string>
     
     
 

@@ -25,15 +25,20 @@ public class BtTagGenerator {
 	
 
 	/**
-	 * 
+	 * Generate simple pairing message
 	 * @param info
 	 * @param sizeLimit Will try to keep size of message lower than this limit.
 	 * If -1 will not do any size check and will generate full size message.
+	 * @param type Type of tag written
 	 * @return
 	 * @throws IOException
 	 */
 	public static NdefMessage generateNdefMessageForBtTag (TagInformation info,
 		int sizeLimit) throws OutOfSpaceException, UnsupportedEncodingException {
+	    
+	    if (info.getType() == null) {
+	        throw new IllegalArgumentException ("Type missing");
+	    }
 		
 		NdefRecord media = null;
 		
@@ -67,13 +72,17 @@ public class BtTagGenerator {
 			BtSecureSimplePairing.generate(content,
 			(short)(mediaSizeLimit-4)));
 		
-		return new NdefMessage(new NdefRecord[] {
-			//HS is disabled as it does not seam to work with Android
-			//generateHandoverSelectRecord(),
-			media});
+		if (info.getType() == TagType.HANDOVER) {
+		    return new NdefMessage(new NdefRecord[] {
+		            generateHandoverSelectRecord(), media});
+		} else if (info.getType() == TagType.TAGWRITER) {
+		    return new NdefMessage(new NdefRecord[] { media });
+		} else {
+		    Log.e(TAG, "Unsupported type: " + info.getType().toString());
+		    return new NdefMessage(new NdefRecord[] { media });
+		}
 	}
 	
-	/* Not used currently
 	private static NdefRecord generateHandoverSelectRecord() {
 		byte[] ac = new NdefRecord (NdefRecord.TNF_WELL_KNOWN,
 			NdefRecord.RTD_ALTERNATIVE_CARRIER, new byte[0],
@@ -89,9 +98,7 @@ public class BtTagGenerator {
 		return new NdefRecord (NdefRecord.TNF_WELL_KNOWN,
 			NdefRecord.RTD_HANDOVER_SELECT, new byte[0], data);
 	}
-	*/
-	
-	/* Not used currently
+
 	private static byte[] generateAlternativeCarrierData () {
 		//0x01 = active target
 		//0x01 = ndef record id
@@ -100,5 +107,4 @@ public class BtTagGenerator {
 		byte[] data = {0x01, 0x01, 0x30, 0x00};
 		return data;
 	}
-	*/
 }

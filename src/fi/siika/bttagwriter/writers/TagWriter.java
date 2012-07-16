@@ -28,12 +28,12 @@ public class TagWriter implements Runnable {
 	
 	final static private String TAG = "TagWriter";
 	
-	private Handler mHandler = null;
+	private final Handler mHandler;
 	private boolean mCancelled = false;
 	
-	private TagInformation mInfo = null;
-	private Tag mTag = null;
-	private TagTechWriter mTechWriter = null;
+	private TagInformation mInfo;
+	private Tag mTag;
+	private TagTechWriter mTechWriter;
 	
 	// handler messages emitted
 	public final static int HANDLER_MSG_SUCCESS = 0;
@@ -69,6 +69,7 @@ public class TagWriter implements Runnable {
 	 * success.
 	 * @param tag Tag now connected with device
 	 * @param information Information written to tag
+	 * @param type Type of tag written
 	 * @return true if write process and thread was started. false if given
 	 * tag is not supported
 	 */

@@ -25,6 +25,7 @@ public abstract class TagTechWriter {
 	 * Interface called to write information to given tag
 	 * @param tag
 	 * @param info
+	 * @param type Type of tag written
 	 * @return
 	 * @throws Exception
 	 */
@@ -40,11 +41,14 @@ public abstract class TagTechWriter {
 	/**
 	 * Generate payload with single ndef message. Adds TLV frame for it.
 	 * @param info Information used to generate payload
+	 * @param type Type of tag written
 	 * @param sizeLimit Limit in bytes
 	 * @return Payload in byte array
 	 * @throws UnsupportedEncodingException 
 	 */
-	protected static byte[] generatePayload (TagInformation info, int sizeLimit) throws OutOfSpaceException, UnsupportedEncodingException {
+	protected static byte[] generatePayload (TagInformation info,
+	        int sizeLimit) throws OutOfSpaceException,
+	        UnsupportedEncodingException {
 		
 		final int SPACE_TAKEN_BY_TLV = 2;
 		

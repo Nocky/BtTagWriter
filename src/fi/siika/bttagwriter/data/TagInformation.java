@@ -23,7 +23,12 @@ public class TagInformation implements Cloneable {
 	/**
 	 * If true writer will try to write protected the tag
 	 */
-	public boolean readOnly = false;
+	private boolean readOnly = false;
+	
+	/**
+	 * Format used to write information
+	 */
+	private TagType type = TagType.TAGWRITER;
 	
 	/**
 	 * Pin code or if empty no pin code
@@ -37,5 +42,21 @@ public class TagInformation implements Cloneable {
 		} catch (CloneNotSupportedException e) {
 			return null;
 		}
+	}
+	
+	public TagType getType() {
+	    return type;
+	}
+	
+	public void setType(TagType type) {
+	    this.type = type;
+	}
+	
+	public boolean isReadOnly() {
+	    return readOnly;
+	}
+	
+	public void setReadOnly (boolean readonly) {
+	    readOnly = readonly;
 	}
 }

@@ -17,6 +17,7 @@ import android.nfc.tech.NdefFormatable;
 import android.util.Log;
 import fi.siika.bttagwriter.data.BtTagGenerator;
 import fi.siika.bttagwriter.data.TagInformation;
+import fi.siika.bttagwriter.data.TagType;
 import fi.siika.bttagwriter.exceptions.IOFailureException;
 import fi.siika.bttagwriter.exceptions.IOFailureException.Step;
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
@@ -39,7 +40,7 @@ public class NdefTechWriter extends TagTechWriter {
 		Ndef ndef = Ndef.get(tag);
 		
 		if (ndef != null) {
-			return writeToNdef (ndef, info);
+			return writeToNdef (ndef, info, info.getType());
 		} else {
 			NdefFormatable form = NdefFormatable.get(tag);
 			if (form != null) {
@@ -66,7 +67,7 @@ public class NdefTechWriter extends TagTechWriter {
 		}
 	}
 	
-	private int writeToNdef (Ndef tag, TagInformation info) throws IOFailureException,
+	private int writeToNdef (Ndef tag, TagInformation info, TagType type) throws IOFailureException,
 		OutOfSpaceException, UnsupportedEncodingException, FormatException {
 		
 		int ret = TagWriter.HANDLER_MSG_SUCCESS;
@@ -90,7 +91,7 @@ public class NdefTechWriter extends TagTechWriter {
 		}
 		
 		
-		if (info.readOnly) {
+		if (info.isReadOnly()) {
 			try {
 				tag.makeReadOnly();
 			} catch (IOException e) {
@@ -125,7 +126,7 @@ public class NdefTechWriter extends TagTechWriter {
 		
 		NdefMessage msg = BtTagGenerator.generateNdefMessageForBtTag(info, -1);
 		
-		if (info.readOnly) {
+		if (info.isReadOnly()) {
 			try {
 				tag.formatReadOnly(msg);
 			} catch (IOException e) {

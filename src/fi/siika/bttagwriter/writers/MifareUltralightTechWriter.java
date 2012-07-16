@@ -45,7 +45,9 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 	 * @throws Exception Throws exception if error
 	 */
 	@Override
-	public int writeToTag (Tag tag, TagInformation info) throws IOFailureException, OutOfSpaceException, UnsupportedEncodingException {
+	public int writeToTag (Tag tag, TagInformation info)
+	        throws IOFailureException, OutOfSpaceException,
+	        UnsupportedEncodingException {
 		
 		MifareUltralight mul = MifareUltralight.get(tag);
 		
@@ -83,7 +85,7 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 		
 		// Construct CC
 		byte secByte = CC_NO_SECURITY_BYTE;
-		if (info.readOnly) {
+		if (info.isReadOnly()) {
 			secByte = CC_READ_ONLY_SECURITY_BYTE;
 		}
 		byte[] cc = new byte[] { CC_NDEF_BYTE, CC_NDEF_VERSION_1_1_BYTE,
@@ -92,7 +94,7 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 		
 		// Construct Lock bytes
 		byte[] intLock = null;
-		if (info.readOnly) {
+		if (info.isReadOnly()) {
 			Log.d (TAG, "Turning on lock bits");
 			intLock = new byte[] { 0x00, 0x00, 0x00, 0x00 };
 		    intLock[2] = -1;
@@ -108,7 +110,7 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 		
 		//Finally activate locking if needed
 		//TODO: what 0x26 is? find documentation and proper name for it
-		if (info.readOnly) {
+		if (info.isReadOnly()) {
 			try {
 				mul.transceive(new byte[] {MUL_CMD_REQA});
 			} catch (Exception e) {
