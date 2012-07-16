@@ -1,5 +1,11 @@
 BT Tag Writer Changelog
 
+*** #7 v0.6.1 [2012-07-16]
+  * Ok, stupid me, looks like old tags were already understood by Android 4.1+
+    So hiding Jelly Bean option for now. Same tags should work with both.
+    This option can be re-enabled later if it will offer better device support
+    (WinMo, iOS...?).
+
 *** #6 v0.6 [2012-07-16]
   * Moved back to proper Android design with usage of back button
   * Added support for writing tags that Jelly Bean understands without need of

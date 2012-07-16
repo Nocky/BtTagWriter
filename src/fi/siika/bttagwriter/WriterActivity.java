@@ -38,7 +38,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 import fi.siika.bttagwriter.data.TagInformation;
-import fi.siika.bttagwriter.data.TagType;
 import fi.siika.bttagwriter.managers.BluetoothManager;
 import fi.siika.bttagwriter.managers.NfcManager;
 import fi.siika.bttagwriter.ui.BluetoothRowAdapter;
@@ -177,6 +176,7 @@ public class WriterActivity extends Activity implements
 				mTagInfo.setReadOnly(false);
 			}
 			
+			/*
 	        cbox = (CheckBox)findViewById(R.id.jellyBeanCheckBox);
 	        if (cbox != null) {
 	            mSettings.edit().putBoolean(PREF_JELLYBEAN, cbox.isChecked()).commit();
@@ -184,6 +184,7 @@ public class WriterActivity extends Activity implements
             } else {
                 mTagInfo.setType(TagType.TAGWRITER);
             }
+            */
 			
 			EditText editText = (EditText)findViewById(R.id.extraoptsPinEdit);
 			if (editText != null) {
@@ -236,8 +237,8 @@ public class WriterActivity extends Activity implements
 		
 		mSettings = getSharedPreferences(PREFS_NAME, 0);
 		
-        CheckBox jellyBeanCB = (CheckBox)findViewById (R.id.jellyBeanCheckBox);
-        jellyBeanCB.setChecked(mSettings.getBoolean(PREF_JELLYBEAN, true));
+        //CheckBox jellyBeanCB = (CheckBox)findViewById (R.id.jellyBeanCheckBox);
+        //jellyBeanCB.setChecked(mSettings.getBoolean(PREF_JELLYBEAN, true));
 		
 		mTagWriterHandler = new Handler() {
 			@Override

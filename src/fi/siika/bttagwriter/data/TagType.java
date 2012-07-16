@@ -16,8 +16,7 @@ public enum TagType {
     TAGWRITER,
     
     /**
-     * Standard handover type tag (works with Android 4.1+ without need to
-     * have have this application installed).
+     * Standard handover type tag (not fully tested yet)
      */
     HANDOVER;
 }

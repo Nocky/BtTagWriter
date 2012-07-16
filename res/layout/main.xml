@@ -312,13 +312,16 @@
                         android:id="@+id/jellyBeanCheckBox"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/extraopts_jellybean_mode_str" />
+                        android:text="@string/extraopts_jellybean_mode_str" 
+                        android:visibility="gone"
+                        />
 		             
 		             <TextView
                         android:id="@+id/extraoptsJellyBeanCaption"
                         android:text="@string/extraopts_jellybean_mode_info_str"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:visibility="gone"
                         />
 
 		            <CheckBox
