@@ -6,23 +6,18 @@
  */
 package fi.siika.bttagwriter.exceptions;
 
+import fi.siika.bttagwriter.writers.WriteError;
+
 /**
  * 
  */
-public class OutOfSpaceException extends Exception {
-	
-	private final Exception source;
-	
+public class OutOfSpaceException extends WriteException {
+
 	public OutOfSpaceException (String msg, Exception source) {
-		super (msg);
-		this.source = source;
+		super (WriteError.TOO_SMALL, source, msg);
 	}
-	
+
 	public OutOfSpaceException (String msg) {
         this(msg, null);
     }
-	
-	public Exception getSource() {
-	    return source;
-	}
 }

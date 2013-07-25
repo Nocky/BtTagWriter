@@ -7,12 +7,13 @@
 
 package fi.siika.bttagwriter.data;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.util.Log;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 
 /**
@@ -29,7 +30,6 @@ public class BtTagGenerator {
 	 * @param info
 	 * @param sizeLimit Will try to keep size of message lower than this limit.
 	 * If -1 will not do any size check and will generate full size message.
-	 * @param type Type of tag written
 	 * @return
 	 * @throws IOException
 	 */
@@ -45,6 +45,9 @@ public class BtTagGenerator {
 		BtSecureSimplePairing.Data content = new BtSecureSimplePairing.Data();
 		content.setName(info.name);
 		content.setAddress(info.address);
+        if (info.deviceClass != null) {
+            content.setDeviceClass(info.deviceClass);
+        }
 		if (info.pin != null && info.pin.isEmpty() == false) {
 			content.setTempPin(info.pin);
 		}
@@ -75,7 +78,7 @@ public class BtTagGenerator {
 		if (info.getType() == TagType.HANDOVER) {
 		    return new NdefMessage(new NdefRecord[] {
 		            generateHandoverSelectRecord(), media});
-		} else if (info.getType() == TagType.TAGWRITER) {
+		} else if (info.getType() == TagType.SIMPLIFIED) {
 		    return new NdefMessage(new NdefRecord[] { media });
 		} else {
 		    Log.e(TAG, "Unsupported type: " + info.getType().toString());

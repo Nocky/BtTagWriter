@@ -6,9 +6,6 @@
  */
 package fi.siika.bttagwriter.managers;
 
-import java.util.Iterator;
-import java.util.Set;
-
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
@@ -18,6 +15,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.util.Log;
 import android.widget.Toast;
+
+import java.util.Iterator;
+import java.util.Set;
+
 import fi.siika.bttagwriter.R;
 
 /**
@@ -175,29 +176,6 @@ public class BluetoothManager {
 			}
 			disableIfEnabled();
 		}
-	}
-	
-	public static boolean isSuitableBluetoothDevice (BluetoothDevice device) {
-	    BluetoothClass btClass = device.getBluetoothClass();
-	    
-	    if (btClass == null) {
-            Log.w(TAG, "null from BluetoothDevice.getBluetoohClass");
-            return false;
-        }
-	    
-        //For now filter out everything but audio
-        if (btClass.hasService(BluetoothClass.Service.AUDIO) == false) {
-            return false;
-        }
-    
-        //Check that it is not headset (can not get those connected)
-        int devClass = btClass.getDeviceClass();
-        if (devClass == BluetoothClass.Device.AUDIO_VIDEO_HANDSFREE ||
-            devClass == BluetoothClass.Device.AUDIO_VIDEO_WEARABLE_HEADSET) {
-            return false;
-        }
-        
-        return true;
 	}
 	
 	private final BroadcastReceiver mBCReceiver = new BroadcastReceiver() {

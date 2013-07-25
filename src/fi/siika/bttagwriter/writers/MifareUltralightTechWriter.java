@@ -6,16 +6,18 @@
  */
 package fi.siika.bttagwriter.writers;
 
+import android.nfc.Tag;
+import android.nfc.tech.MifareUltralight;
+import android.util.Log;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
-import android.nfc.Tag;
-import android.nfc.tech.MifareUltralight;
-import android.util.Log;
 import fi.siika.bttagwriter.data.TagInformation;
 import fi.siika.bttagwriter.exceptions.IOFailureException;
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
+import fi.siika.bttagwriter.exceptions.WriteException;
 
 /**
  * Special write functionality for Mifare Ultralights. This class can be
@@ -45,9 +47,8 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 	 * @throws Exception Throws exception if error
 	 */
 	@Override
-	public int writeToTag (Tag tag, TagInformation info)
-	        throws IOFailureException, OutOfSpaceException,
-	        UnsupportedEncodingException {
+	public void writeToTag (Tag tag, TagInformation info)
+	        throws WriteException {
 		
 		MifareUltralight mul = MifareUltralight.get(tag);
 		
@@ -69,7 +70,11 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 			MifareUltralight.PAGE_SIZE;
 		
 		byte[] payload;
-		payload = generatePayload (info, sizeAvailableBytes);
+        try {
+		    payload = generatePayload (info, sizeAvailableBytes);
+        } catch (UnsupportedEncodingException e) {
+            throw new WriteException(WriteError.SYSTEM_ERROR, e, "Encoding exception");
+        }
 			
 		// Check the size of payload
 		int pages = payload.length / MifareUltralight.PAGE_SIZE;
@@ -126,7 +131,6 @@ public class MifareUltralightTechWriter extends TagTechWriter {
 		}
 		
 		Log.d (TAG, "Mifare Ultralight written");
-		return TagWriter.HANDLER_MSG_SUCCESS;
 	}
 	
 	@Override

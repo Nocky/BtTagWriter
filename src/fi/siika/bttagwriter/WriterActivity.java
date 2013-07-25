@@ -9,6 +9,7 @@ package fi.siika.bttagwriter;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -37,12 +38,17 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
+import android.util.Log;
+
 import fi.siika.bttagwriter.data.TagInformation;
+import fi.siika.bttagwriter.data.TagType;
 import fi.siika.bttagwriter.managers.BluetoothManager;
 import fi.siika.bttagwriter.managers.NfcManager;
+import fi.siika.bttagwriter.ui.BluetoothRow;
 import fi.siika.bttagwriter.ui.BluetoothRowAdapter;
 import fi.siika.bttagwriter.ui.Pages;
 import fi.siika.bttagwriter.writers.TagWriter;
+import fi.siika.bttagwriter.writers.WriteError;
 
 /**
  * Main activity of BtTagWriter application
@@ -54,10 +60,10 @@ public class WriterActivity extends Activity implements
 	private final static String TAG = "WriterActivity";
 	private final static String PREFS_NAME = "WriterPrefs";
 	private final static String PREF_FILTER = "filter-devices";
-	private final static String PREF_JELLYBEAN = "jellybean";
+	private final static String PREF_HANDOVER = "handover";
 
 	private TagWriter mTagWriter;
-	private Handler mTagWriterHandler; 
+	//private Handler mTagWriterHandler;
 	private final TagInformation mTagInfo = new TagInformation();
 	private BluetoothManager mBtMgr;
 	private NfcManager mNfcMgr;
@@ -175,16 +181,14 @@ public class WriterActivity extends Activity implements
 			} else {
 				mTagInfo.setReadOnly(false);
 			}
-			
-			/*
-	        cbox = (CheckBox)findViewById(R.id.jellyBeanCheckBox);
+
+	        cbox = (CheckBox)findViewById(R.id.extraoptsCompatibilityCheckBox);
 	        if (cbox != null) {
-	            mSettings.edit().putBoolean(PREF_JELLYBEAN, cbox.isChecked()).commit();
-	            mTagInfo.setType(cbox.isChecked() ? TagType.HANDOVER : TagType.TAGWRITER);
+	            mSettings.edit().putBoolean(PREF_HANDOVER, cbox.isChecked()).commit();
+	            mTagInfo.setType(cbox.isChecked() ? TagType.HANDOVER : TagType.SIMPLIFIED);
             } else {
-                mTagInfo.setType(TagType.TAGWRITER);
+                mTagInfo.setType(TagType.SIMPLIFIED);
             }
-            */
 			
 			EditText editText = (EditText)findViewById(R.id.extraoptsPinEdit);
 			if (editText != null) {
@@ -237,31 +241,31 @@ public class WriterActivity extends Activity implements
 		
 		mSettings = getSharedPreferences(PREFS_NAME, 0);
 		
-        //CheckBox jellyBeanCB = (CheckBox)findViewById (R.id.jellyBeanCheckBox);
-        //jellyBeanCB.setChecked(mSettings.getBoolean(PREF_JELLYBEAN, true));
+        CheckBox compCB = (CheckBox)findViewById (R.id.extraoptsCompatibilityCheckBox);
+        compCB.setChecked(mSettings.getBoolean(PREF_HANDOVER, false));
 		
-		mTagWriterHandler = new Handler() {
-			@Override
-			public void handleMessage (Message msg) {
-				switch (msg.what) {
-				case TagWriter.HANDLER_MSG_SUCCESS:
-					setCurrentPage(Pages.SUCCESS);
-					break;
-				case TagWriter.HANDLER_MSG_CANCELLED:
-					break;
-				case TagWriter.HANDLER_MSG_TOO_SMALL:
-					showActionDialog(R.string.tag_is_too_small_str,
-						mWriteFailedDialogListener, false, null);
-					break;
-				default:
-					showActionDialog(R.string.tag_write_failed_str,
-						mWriteFailedDialogListener, false, null);
-				}
-			}
-		};
-		
-		mTagWriter = new TagWriter (mTagWriterHandler);
+		mTagWriter = new TagWriter (this, tagWriterListener);
 	}
+
+    protected TagWriter.TagWriterListener tagWriterListener = new TagWriter.TagWriterListener() {
+
+        @Override
+        public void onSuccess() {
+            setCurrentPage(Pages.SUCCESS);
+        }
+
+        @Override
+        public void onFailure(WriteError error) {
+            if (error == WriteError.TOO_SMALL) {
+                showActionDialog(R.string.tag_is_too_small_str,
+                        mWriteFailedDialogListener, false, null);
+            } else if (error != WriteError.CANCELLED) {
+                Log.w(TAG, "Write failure received: " + error.toString());
+                showActionDialog(R.string.tag_write_failed_str,
+                        mWriteFailedDialogListener, false, null);
+            }
+        }
+    };
 	
 	@Override
 	public void onPause() {
@@ -279,10 +283,6 @@ public class WriterActivity extends Activity implements
         
         if (mBtListAdapter == null) {
         	mBtListAdapter = new BluetoothRowAdapter(this);
-        	mBtListAdapter.setDiscoveredColor(getResources().getColor(R.color.bt_device_discovered_fgcolor));
-        	mBtListAdapter.setPairedColor(getResources().getColor(R.color.bt_device_paired_fgcolor));
-        	mBtListAdapter.setAudioIcon(getResources().getDrawable(R.drawable.audio_device_type));
-        	mBtListAdapter.setUnknownIcon(getResources().getDrawable(R.drawable.unknown_device_type));
         }
         ListView list = (ListView)findViewById (R.id.btDevicesList);
         list.setAdapter (mBtListAdapter);
@@ -290,9 +290,10 @@ public class WriterActivity extends Activity implements
         list.setOnItemClickListener(new OnItemClickListener() {
         	public void onItemClick(AdapterView<?> parent, View view,
         		int position, long id) {
-        		
-        		mTagInfo.name = mBtListAdapter.getRow(position).getName();
-        		mTagInfo.address = mBtListAdapter.getRow(position).getAddress();
+
+                BluetoothRow row = mBtListAdapter.getRow(position);
+        		mTagInfo.name = row.getName();
+        		mTagInfo.address = row.getAddress();
         		
         		StringBuilder sbuilder = new StringBuilder();
         		sbuilder.append(mBtListAdapter.getRow(position).getName());
@@ -467,7 +468,7 @@ public class WriterActivity extends Activity implements
 	public void bluetoothDeviceFound(BluetoothDevice device, boolean fromPaired) {
 	    
 	    if (getFilterDevices()) {
-	        if (!BluetoothManager.isSuitableBluetoothDevice(device)) {
+	        if (!device.getBluetoothClass().hasService(BluetoothClass.Service.AUDIO)) {
 	            return;
 	        }
 		}

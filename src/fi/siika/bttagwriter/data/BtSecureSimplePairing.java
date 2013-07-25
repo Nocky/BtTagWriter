@@ -6,11 +6,12 @@
  */
 package fi.siika.bttagwriter.data;
 
+import android.bluetooth.BluetoothAdapter;
+import android.util.Log;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-import android.bluetooth.BluetoothAdapter;
-import android.util.Log;
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 
 /**
@@ -75,14 +76,17 @@ public class BtSecureSimplePairing {
 		public Data() {
 			mName = "";
 			mAddress = "00:00:00:00:00:00";
-			mDeviceClass = new byte[0];
+            // Use speaker as default
+			mDeviceClass = new byte[] { 0x14, 0x04, 0x20 };
 			mHash = new byte[0];
 			mRandomizer = new byte[0];
-			mManufacturerData = new byte[0];
+			mManufacturerData = null;
 		}
 		
 		public void setName(String name) {
-			mName = name;
+            mName = name;
+            // Remove all nonascii characters
+            //mName = name.replaceAll("[^\\x20-\\x7e]", "");
 		}
 		
 		public String getName () {
@@ -131,7 +135,9 @@ public class BtSecureSimplePairing {
 		public void setDeviceClass (byte[] deviceClass) {
 			if (deviceClass.length == 3) {
 				mDeviceClass = deviceClass;
-			}
+			} else {
+                Log.e(TAG, "Length of device class not accepted: " + deviceClass.length);
+            }
 		}
 		
 		public byte[] getDeviceClass () {
@@ -242,7 +248,7 @@ public class BtSecureSimplePairing {
 			}
 		}
 		
-		// Device class is also important, as I will be used later to separate
+		// Device class is also important, as it will be used later to separate
 		// different ways to connect the device.
 		if (moreIn && len < maxLength) {
 			classBytes = input.getDeviceClass();
@@ -281,8 +287,8 @@ public class BtSecureSimplePairing {
 		// total length (2 bytes)
 		ByteBuffer buffer = ByteBuffer.allocate(2);
 		buffer.putShort(len);
-		data[++index] = buffer.get(0);
-		data[++index] = buffer.get(1);
+        data[++index] = buffer.get(1);
+        data[++index] = buffer.get(0);
 		
 		// address
 		byte[] addressBuffer = input.getAddressBuffer ();
@@ -325,6 +331,7 @@ public class BtSecureSimplePairing {
 	 * @param binaryData Binary data
 	 * @return Binary data converted to class for easy access
 	 */
+    @Deprecated
 	public static Data parse (byte[] binaryData) throws Exception {
 		Data data = new Data();
 		
@@ -352,11 +359,6 @@ public class BtSecureSimplePairing {
     	for (int i = 8; i < binaryData.length; ++i) {
     		int dataLen = (binaryData[i]); //this includes type and data
     		int dataType = (binaryData[i+1]); //type bit
-    		
-    		/*
-    		Log.d (DEBUG_TAG, new StringBuilder().append("Element: ").append(
-    			dataLen).append(" ").append(dataType).toString());
-    		*/
     		
     		byte[] dataArray = Arrays.copyOfRange(binaryData, i+2,
     			i + 1 + dataLen);

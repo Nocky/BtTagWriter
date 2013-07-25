@@ -7,7 +7,7 @@
 package fi.siika.bttagwriter.ui;
 
 /**
- * 
+ * List of pages (or views) of application
  */
 public enum Pages {
     START(0), ABOUT(1), BT_SELECT(2), EXTRA_OPTIONS(3), TAG(4), SUCCESS(5);

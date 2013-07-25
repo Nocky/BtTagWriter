@@ -6,12 +6,14 @@
  */
 package fi.siika.bttagwriter.writers;
 
-import java.io.UnsupportedEncodingException;
-
 import android.nfc.NdefMessage;
 import android.nfc.Tag;
+
+import java.io.UnsupportedEncodingException;
+
 import fi.siika.bttagwriter.data.BtTagGenerator;
 import fi.siika.bttagwriter.data.TagInformation;
+import fi.siika.bttagwriter.exceptions.WriteException;
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
 
 /**
@@ -25,12 +27,10 @@ public abstract class TagTechWriter {
 	 * Interface called to write information to given tag
 	 * @param tag
 	 * @param info
-	 * @param type Type of tag written
-	 * @return
 	 * @throws Exception
 	 */
-	public abstract int writeToTag (Tag tag, TagInformation info)
-		throws Exception;
+	public abstract void writeToTag (Tag tag, TagInformation info)
+		throws WriteException;
 	
 	/**
 	 * Put specific close functionality behind this function
@@ -41,13 +41,12 @@ public abstract class TagTechWriter {
 	/**
 	 * Generate payload with single ndef message. Adds TLV frame for it.
 	 * @param info Information used to generate payload
-	 * @param type Type of tag written
 	 * @param sizeLimit Limit in bytes
 	 * @return Payload in byte array
 	 * @throws UnsupportedEncodingException 
 	 */
 	protected static byte[] generatePayload (TagInformation info,
-	        int sizeLimit) throws OutOfSpaceException,
+	        int sizeLimit) throws WriteException,
 	        UnsupportedEncodingException {
 		
 		final int SPACE_TAKEN_BY_TLV = 2;

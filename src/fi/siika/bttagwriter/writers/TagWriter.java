@@ -7,6 +7,7 @@
 
 package fi.siika.bttagwriter.writers;
 
+import android.app.Activity;
 import android.nfc.FormatException;
 import android.nfc.Tag;
 import android.nfc.tech.MifareUltralight;
@@ -14,10 +15,12 @@ import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.os.Handler;
 import android.util.Log;
+
 import fi.siika.bttagwriter.data.TagInformation;
 import fi.siika.bttagwriter.exceptions.IOFailureException;
 import fi.siika.bttagwriter.exceptions.IOFailureException.Step;
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
+import fi.siika.bttagwriter.exceptions.WriteException;
 
 /**
  * TagWriter provides thread and code that will take care of the tag write
@@ -28,29 +31,28 @@ public class TagWriter implements Runnable {
 	
 	final static private String TAG = "TagWriter";
 	
-	private final Handler mHandler;
+    //private final Handler mHandler;
 	private boolean mCancelled = false;
-	
+    private Activity mActivity;
+    private TagWriterListener mListener;
 	private TagInformation mInfo;
 	private Tag mTag;
 	private TagTechWriter mTechWriter;
-	
-	// handler messages emitted
-	public final static int HANDLER_MSG_SUCCESS = 0;
-	public final static int HANDLER_MSG_CANCELLED = 1;
-	public final static int HANDLER_MSG_CONNECTION_LOST = -1;
-	public final static int HANDLER_MSG_FAILED_TO_FORMAT = -2;
-	public final static int HANDLER_MSG_TOO_SMALL = -3;
-	public final static int HANDLER_MSG_TAG_NOT_ACCEPTED = -4;
-	public final static int HANDLER_MSG_FAILED_TO_WRITE = -5;
-	public final static int HANDLER_MSG_WRITE_PROTECTED = -6;
+
+    /**
+     * Interface for write result listener
+     */
+    public interface TagWriterListener {
+        void onSuccess();
+        void onFailure(WriteError error);
+    }
 
 	/**
 	 * Construct new TagWriter
-	 * @param handler Handler used to send messages
 	 */
-	public TagWriter (Handler handler) {
-		mHandler = handler;
+	public TagWriter (Activity activity, TagWriterListener listener) {
+		mActivity = activity;
+        mListener = listener;
 	}
 	
 	private TagTechWriter resolveTechWriter (Tag tag) {		
@@ -69,7 +71,6 @@ public class TagWriter implements Runnable {
 	 * success.
 	 * @param tag Tag now connected with device
 	 * @param information Information written to tag
-	 * @param type Type of tag written
 	 * @return true if write process and thread was started. false if given
 	 * tag is not supported
 	 */
@@ -107,40 +108,41 @@ public class TagWriter implements Runnable {
 	 * Implementation of Runnable run.
 	 */
 	public void run() {
-		int message = HANDLER_MSG_SUCCESS;
+        WriteError error = null;
 		
 		try {
-			message = mTechWriter.writeToTag(mTag, mInfo);
-		} catch (OutOfSpaceException e) {
-			message = HANDLER_MSG_TOO_SMALL;
-			Log.w (TAG, "Out of space: " + e.getMessage());
-		} catch (IOFailureException e) {
-			if (mCancelled) {
-				message = HANDLER_MSG_CANCELLED;
-			} else {
-				if (Step.FORMAT.equals(e.getStep())) {
-					message = HANDLER_MSG_FAILED_TO_FORMAT;
-				} else {
-					message = HANDLER_MSG_CONNECTION_LOST;
-				}
-				Log.e(TAG, "IO failure: " + e.getLongMessage());
-			}
-		} catch (FormatException e) {
-			Log.e(getClass().getName(),"Failed to format: " + e.getMessage());
-			message = HANDLER_MSG_FAILED_TO_FORMAT;
+			mTechWriter.writeToTag(mTag, mInfo);
+        } catch (WriteException e) {
+            error = e.getErrorCode();
+            Log.w (TAG, "Write exception: " + e.getMessage());
 		} catch (NullPointerException e) {
+            error = WriteError.SYSTEM_ERROR;
 			e.printStackTrace();
 			Log.e (TAG, "Null pointer exception!");
 		} catch (Exception e) {
 			Log.w(TAG, "Exception: " + e.getClass().getSimpleName() + " " + e.getMessage());
-			message = HANDLER_MSG_CONNECTION_LOST;
+            error = WriteError.CONNECTION_LOST;
 		}
 		
 		mTag = null;
 		
-		if (mHandler != null) {
-			mHandler.sendMessage(mHandler.obtainMessage(message));
-		}
+		if (error != null) {
+            final WriteError errorArg = error;
+			//mHandler.sendMessage(mHandler.obtainMessage(message));
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mListener.onFailure(errorArg);
+                }
+            });
+		} else {
+            mActivity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mListener.onSuccess();
+                }
+            });
+        }
 	}
 	
 	/**

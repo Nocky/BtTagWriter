@@ -19,6 +19,11 @@ public class TagInformation implements Cloneable {
 	 * Bluetooth name of device
 	 */
 	public String name;
+
+    /**
+     * Bluetooth class of device
+     */
+    public byte[] deviceClass;
 	
 	/**
 	 * If true writer will try to write protected the tag
@@ -28,7 +33,7 @@ public class TagInformation implements Cloneable {
 	/**
 	 * Format used to write information
 	 */
-	private TagType type = TagType.TAGWRITER;
+	private TagType type = TagType.SIMPLIFIED;
 	
 	/**
 	 * Pin code or if empty no pin code

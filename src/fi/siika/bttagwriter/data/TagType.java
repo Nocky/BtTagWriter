@@ -11,12 +11,12 @@ package fi.siika.bttagwriter.data;
  */
 public enum TagType {
     /**
-     * Simple format that needs BtTagWriter to read and pair
+     * Simplified format that works with Android
      */
-    TAGWRITER,
+    SIMPLIFIED,
     
     /**
-     * Standard handover type tag (not fully tested yet)
+     * Standard handover type tag (better compatibility)
      */
     HANDOVER;
 }

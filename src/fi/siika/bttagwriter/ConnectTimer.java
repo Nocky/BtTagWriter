@@ -6,10 +6,10 @@
  */
 package fi.siika.bttagwriter;
 
+import android.os.CountDownTimer;
+
 import java.util.ArrayList;
 import java.util.Collection;
-
-import android.os.CountDownTimer;
 
 /**
  * Polling of connecting if signals are lost. When code is done correctly I

@@ -6,10 +6,8 @@
  */
 package fi.siika.bttagwriter.ui;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.app.Activity;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
@@ -18,8 +16,11 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import fi.siika.bttagwriter.R;
-import fi.siika.bttagwriter.managers.BluetoothManager;
 
 /**
  * 
@@ -35,6 +36,10 @@ public class BluetoothRowAdapter extends ArrayAdapter<Object> {
 
 	public BluetoothRowAdapter(Activity activity) {
 		super(activity, R.layout.bt_device_layout, R.id.btDeviceNameTextView);
+        setDiscoveredColor(activity.getResources().getColor(R.color.bt_device_discovered_fgcolor));
+        setPairedColor(activity.getResources().getColor(R.color.bt_device_paired_fgcolor));
+        setAudioIcon(activity.getResources().getDrawable(R.drawable.audio_device_type));
+        setUnknownIcon(activity.getResources().getDrawable(R.drawable.unknown_device_type));
 		this.activity = activity;
 	}
 	
@@ -119,7 +124,7 @@ public class BluetoothRowAdapter extends ArrayAdapter<Object> {
 	public void addDeviceIfNotPresent (BluetoothDevice device, boolean visible) {
 	    
 	    boolean isPaired = device.getBondState() == BluetoothDevice.BOND_BONDED;
-	    boolean isAudio = BluetoothManager.isSuitableBluetoothDevice(device);
+	    boolean isAudio = device.getBluetoothClass().hasService(BluetoothClass.Service.AUDIO);
 	    
 	    BluetoothRow row = new BluetoothRow (device.getName(),
 	            device.getAddress(), isPaired, isAudio);

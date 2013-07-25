@@ -6,21 +6,23 @@
  */
 package fi.siika.bttagwriter.writers;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-
 import android.nfc.FormatException;
 import android.nfc.NdefMessage;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.nfc.tech.NdefFormatable;
 import android.util.Log;
+
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+
 import fi.siika.bttagwriter.data.BtTagGenerator;
 import fi.siika.bttagwriter.data.TagInformation;
 import fi.siika.bttagwriter.data.TagType;
 import fi.siika.bttagwriter.exceptions.IOFailureException;
 import fi.siika.bttagwriter.exceptions.IOFailureException.Step;
 import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
+import fi.siika.bttagwriter.exceptions.WriteException;
 
 /**
  * Class that takes care of writing to Ndef and to NdefFormatable tags
@@ -34,21 +36,22 @@ public class NdefTechWriter extends TagTechWriter {
 	 * @see fi.siika.bttagwriter.TagTechWriter#writeToTag(android.nfc.Tag, fi.siika.bttagwriter.TagWriter.TagInformation)
 	 */
 	@Override
-	public int writeToTag(Tag tag, TagInformation info) throws IOFailureException,
-	OutOfSpaceException, UnsupportedEncodingException, FormatException {
+	public void writeToTag(Tag tag, TagInformation info) throws WriteException {
 		
 		Ndef ndef = Ndef.get(tag);
 		
 		if (ndef != null) {
-			return writeToNdef (ndef, info, info.getType());
+			writeToNdef (ndef, info, info.getType());
+            return;
 		} else {
 			NdefFormatable form = NdefFormatable.get(tag);
 			if (form != null) {
-				return writeToNdefFormatable (form, info);
+				writeToNdefFormatable (form, info);
+                return;
 			}
 		}
-		
-		return TagWriter.HANDLER_MSG_FAILED_TO_WRITE;
+
+        throw new WriteException(WriteError.FAILED_TO_WRITE);
 	}
 	
 	@Override
@@ -67,27 +70,27 @@ public class NdefTechWriter extends TagTechWriter {
 		}
 	}
 	
-	private int writeToNdef (Ndef tag, TagInformation info, TagType type) throws IOFailureException,
-		OutOfSpaceException, UnsupportedEncodingException, FormatException {
-		
-		int ret = TagWriter.HANDLER_MSG_SUCCESS;
+	private void writeToNdef (Ndef tag, TagInformation info, TagType type) throws
+		WriteException {
 		
 		Log.d(TAG, "Ndef writing...");
 		
 		try {
 			tag.connect();
 		} catch (IOException e) {
-			throw new IOFailureException("Failed to connect with Ndef", Step.CONNECT, e);
+            throw new IOFailureException(WriteError.CONNECTION_LOST, e, "Failed to connect with Ndef");
 		}
-		
-		NdefMessage msg = BtTagGenerator.generateNdefMessageForBtTag(info,
-			tag.getMaxSize());
-		
 	
 		try {
+            NdefMessage msg = BtTagGenerator.generateNdefMessageForBtTag(info,
+                    tag.getMaxSize());
 			tag.writeNdefMessage(msg);
+        } catch (UnsupportedEncodingException e) {
+            throw new WriteException(WriteError.SYSTEM_ERROR, e, "Encoding exception");
+        } catch (FormatException e) {
+            throw new WriteException(WriteError.FAILED_TO_FORMAT, e, "Failed to format");
 		} catch (IOException e) {
-			throw new IOFailureException("Failed to write to Ndef", Step.WRITE, e);
+            throw new WriteException(WriteError.FAILED_TO_WRITE, e, "Failed to write NDEF");
 		}
 		
 		
@@ -95,25 +98,22 @@ public class NdefTechWriter extends TagTechWriter {
 			try {
 				tag.makeReadOnly();
 			} catch (IOException e) {
-				throw new IOFailureException("Failed to make Ndef RO", Step.FORMAT, e);
+                throw new WriteException(WriteError.FAILED_TO_FORMAT, e, "Failed to set read only");
 			}
 		}
 		
 		try {
 			tag.close();
 		} catch (IOException e) {
-			throw new IOFailureException("Failed to close Ndef", Step.CLOSE, e);
+            throw new WriteException(WriteError.FAILED_TO_WRITE, e, "Failed to close NDEF");
 		}
 		
 		Log.d (TAG, "Ndef written");
-		
-		return ret;
 	}
 	
-	private int writeToNdefFormatable (NdefFormatable tag, TagInformation info)
-		throws IOFailureException, OutOfSpaceException, UnsupportedEncodingException, FormatException {
-		
-		int ret = TagWriter.HANDLER_MSG_SUCCESS;
+	private void writeToNdefFormatable (NdefFormatable tag, TagInformation info)
+		throws WriteException {
+
 		Log.d(TAG, "NdefFormatable writing...");
 		
 		try {
@@ -121,34 +121,42 @@ public class NdefTechWriter extends TagTechWriter {
 				tag.connect();
 			}
 		} catch (IOException e) {
-			throw new IOFailureException("Failed to connect NdefFormatable", Step.CONNECT, e);
+            throw new IOFailureException(WriteError.CONNECTION_LOST, e, "Failed to connect NdefFormatable");
 		}
-		
-		NdefMessage msg = BtTagGenerator.generateNdefMessageForBtTag(info, -1);
+
+
+		NdefMessage msg;
+        try {
+            msg = BtTagGenerator.generateNdefMessageForBtTag(info, -1);
+        } catch (UnsupportedEncodingException e) {
+            throw new WriteException(WriteError.SYSTEM_ERROR, e, "Encoding exception");
+        }
 		
 		if (info.isReadOnly()) {
 			try {
 				tag.formatReadOnly(msg);
+            } catch (FormatException e) {
+                throw new WriteException(WriteError.FAILED_TO_FORMAT, e, "Failed to RO format");
 			} catch (IOException e) {
-				throw new IOFailureException("Failed to RO format NdefFormatable", Step.FORMAT, e);
+                throw new IOFailureException(WriteError.FAILED_TO_FORMAT, e, "Failed to RO format NdefFormatable");
 			}
 		} else {
 			try {
 				tag.format(msg);
+            } catch (FormatException e) {
+                throw new WriteException(WriteError.FAILED_TO_FORMAT, e, "Failed to format");
 			} catch (IOException e) {
-				throw new IOFailureException("Failed to format NdefFormatable", Step.FORMAT, e);
+                throw new IOFailureException(WriteError.FAILED_TO_FORMAT, e, "Failed to format NdefFormatable");
 			}
 		}
 		
 		try {
 			tag.close();
 		} catch (IOException e) {
-			throw new IOFailureException("Failed to close NdefFormatable", Step.CLOSE, e);
+            throw new WriteException(WriteError.FAILED_TO_WRITE, e, "Failed to close NDEF");
 		}
 		
 		Log.d (TAG, "NdefFormatable written");
-		
-		return ret;
 		
 	}
 
