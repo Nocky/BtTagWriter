@@ -84,9 +84,9 @@ public class BtSecureSimplePairing {
 		}
 		
 		public void setName(String name) {
-            mName = name;
+            //mName = name;
             // Remove all nonascii characters
-            //mName = name.replaceAll("[^\\x20-\\x7e]", "");
+            mName = name.replaceAll("[^\\x20-\\x7e]", "");
 		}
 		
 		public String getName () {
@@ -98,7 +98,7 @@ public class BtSecureSimplePairing {
 			
 			if (mName.isEmpty() == false) {
 				try {
-					ret = mName.getBytes("UTF-8");
+					ret = mName.getBytes("ASCII");
 				} catch (Exception e) {
 					ret = null;
 				}

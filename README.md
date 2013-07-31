@@ -1,4 +1,4 @@
-Bt Tag Writer (Android)
+BT Tag Writer (Android)
 =======================
 
 Wizard application that makes it easy to generate Bluetooth connection NFC tags. With these tags you can connect

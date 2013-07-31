@@ -22,8 +22,8 @@ import fi.siika.bttagwriter.exceptions.OutOfSpaceException;
  */
 public class BtTagGenerator {
 	
-	private static final String TAG = "BtTagGenerator";
-	
+	private final static String TAG = "BtTagGenerator";
+    private final static byte RECORD_ID_BYTE = 0x30;
 
 	/**
 	 * Generate simple pairing message
@@ -68,10 +68,15 @@ public class BtTagGenerator {
 			
 			mediaSizeLimit = sizeLimit - 2 - mime.length;
 		}
+
+        // Only use record ID if we use full handover format
+        byte[] recordId = null;
+        if (info.getType() == TagType.HANDOVER) {
+            recordId = new byte[] { RECORD_ID_BYTE };
+        }
 		
 		media = new NdefRecord (NdefRecord.TNF_MIME_MEDIA,
-			BtSecureSimplePairing.MIME_TYPE.getBytes("UTF-8"),
-			new byte[] {(byte)0x01},
+			BtSecureSimplePairing.MIME_TYPE.getBytes("UTF-8"), recordId,
 			BtSecureSimplePairing.generate(content,
 			(short)(mediaSizeLimit-4)));
 		
@@ -85,6 +90,19 @@ public class BtTagGenerator {
 		    return new NdefMessage(new NdefRecord[] { media });
 		}
 	}
+
+    /**
+     * Get record ID of pairing data.
+     * @param info Info used to generate data.
+     * @return Null if not used, byte array of ID if used.
+     */
+    private static byte[] getRecordId(TagType type) {
+        byte ret[] = null;
+        if (type == TagType.HANDOVER) {
+            ret = new byte[] { 0x30 };
+        }
+        return ret;
+    }
 	
 	private static NdefRecord generateHandoverSelectRecord() {
 		byte[] ac = new NdefRecord (NdefRecord.TNF_WELL_KNOWN,
@@ -105,9 +123,9 @@ public class BtTagGenerator {
 	private static byte[] generateAlternativeCarrierData () {
 		//0x01 = active target
 		//0x01 = ndef record id
-		//0x30 = TODO: FIX THIS. Length of something
+		//0x30 = ID of record?
 		//0x00 = RFU
-		byte[] data = {0x01, 0x01, 0x30, 0x00};
+		byte[] data = {0x01, 0x01, RECORD_ID_BYTE, 0x00};
 		return data;
 	}
 }
