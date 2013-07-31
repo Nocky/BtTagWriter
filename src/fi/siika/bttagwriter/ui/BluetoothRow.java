@@ -1,7 +1,9 @@
-/**
- * BluetoothRow.java (bttagwriter)
+/*
+ * BluetoothRow.java (BT Tag Writer)
  *
- * Copyright 2012 Sami Viitanen <sami.viitanen@gmail.com>
+ * https://github.com/alump/BtTagWriter
+ *
+ * Copyright 2011-2013 Sami Viitanen <sami.viitanen@gmail.com>
  * All rights reserved.
  */
 package fi.siika.bttagwriter.ui;
@@ -16,38 +18,38 @@ public class BluetoothRow {
     private boolean paired = false;
     private boolean deviceVisible = true;
     private boolean audio = false;
-    
-    public BluetoothRow (String name, String address, boolean paired, boolean audio) {
+
+    public BluetoothRow(String name, String address, boolean paired, boolean audio) {
         this.name = name;
         this.address = address;
         this.paired = paired;
         this.audio = audio;
     }
-    
+
     public String getName() {
         return name;
     }
-    
+
     public String getAddress() {
         return address;
     }
-    
+
     public boolean isPaired() {
         return paired;
     }
-    
-    public void setDeviceVisible (boolean visible) {
+
+    public void setDeviceVisible(boolean visible) {
         deviceVisible = visible;
     }
-    
+
     public boolean isDeviceVisible() {
         return deviceVisible;
     }
-    
+
     public boolean isAudio() {
         return audio;
     }
-    
+
     /* (non-Javadoc)
      * @see java.lang.Object#hashCode()
      */
@@ -80,7 +82,7 @@ public class BluetoothRow {
         }
         return true;
     }
-    
+
     @Override
     public String toString() {
         return address;

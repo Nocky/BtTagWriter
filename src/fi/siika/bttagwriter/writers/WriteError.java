@@ -1,3 +1,12 @@
+/*
+ * WriteError.java (BT Tag Writer)
+ *
+ * https://github.com/alump/BtTagWriter
+ *
+ * Copyright 2011-2013 Sami Viitanen <sami.viitanen@gmail.com>
+ * All rights reserved.
+ */
+
 package fi.siika.bttagwriter.writers;
 
 /**

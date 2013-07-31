@@ -1,0 +1,3 @@
+<component name="DependencyValidationManager">
+  <scope name="BTTagWriter Packages" pattern="src:fi.siika.bttagwriter..*" />
+</component>

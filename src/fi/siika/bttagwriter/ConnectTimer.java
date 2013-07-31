@@ -1,7 +1,9 @@
-/**
- * ConnectTimer.java (bttagwriter)
+/*
+ * ConnectTimer.java (BT Tag Writer)
  *
- * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
+ * https://github.com/alump/BtTagWriter
+ *
+ * Copyright 2011-2013 Sami Viitanen <sami.viitanen@gmail.com>
  * All rights reserved.
  */
 package fi.siika.bttagwriter;
@@ -16,48 +18,48 @@ import java.util.Collection;
  * should be able to remove this class.
  */
 public class ConnectTimer extends CountDownTimer {
-	
-	public interface Listener {
-		public void timerTick(int secondsLeft);
-	}
-	
-	private final Collection<Listener> mListeners = new ArrayList<Listener>();
 
-	/**
-	 * 
-	 */
-	public ConnectTimer(Listener listener) {
-		super(10000, 1000);
-		if (listener != null) {
-			mListeners.add(listener);
-		}
-	}
-	
-	public void addListener (Listener listener) {
-		mListeners.add(listener);
-	}
-	
-	public void removeListener (Listener listener) {
-		mListeners.remove(listener);
-	}
+    public interface Listener {
+        public void timerTick(int secondsLeft);
+    }
 
-	/* (non-Javadoc)
-	 * @see android.os.CountDownTimer#onTick(long)
-	 */
-	@Override
-	public void onTick(long millisUntilFinished) {
-		for (Listener listener : mListeners) {
-			listener.timerTick((int)(millisUntilFinished / 1000));
-		}
-	}
+    private final Collection<Listener> mListeners = new ArrayList<Listener>();
 
-	/* (non-Javadoc)
-	 * @see android.os.CountDownTimer#onFinish()
-	 */
-	@Override
-	public void onFinish() {
-		for (Listener listener : mListeners) {
-			listener.timerTick(0);
-		}
-	}
+    /**
+     *
+     */
+    public ConnectTimer(Listener listener) {
+        super(10000, 1000);
+        if (listener != null) {
+            mListeners.add(listener);
+        }
+    }
+
+    public void addListener(Listener listener) {
+        mListeners.add(listener);
+    }
+
+    public void removeListener(Listener listener) {
+        mListeners.remove(listener);
+    }
+
+    /* (non-Javadoc)
+     * @see android.os.CountDownTimer#onTick(long)
+     */
+    @Override
+    public void onTick(long millisUntilFinished) {
+        for (Listener listener : mListeners) {
+            listener.timerTick((int) (millisUntilFinished / 1000));
+        }
+    }
+
+    /* (non-Javadoc)
+     * @see android.os.CountDownTimer#onFinish()
+     */
+    @Override
+    public void onFinish() {
+        for (Listener listener : mListeners) {
+            listener.timerTick(0);
+        }
+    }
 }

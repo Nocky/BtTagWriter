@@ -1,41 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:paddingLeft="6pt"
-    android:paddingTop="3pt"
-    android:paddingBottom="3pt"
-    >
+              android:layout_width="match_parent"
+              android:layout_height="match_parent"
+              android:orientation="horizontal"
+              android:paddingLeft="6pt"
+              android:paddingTop="3pt"
+              android:paddingBottom="3pt"
+        >
 
     <ImageView
-        android:id="@+id/deviceTypeIcon"
-        android:layout_width="18pt"
-        android:layout_height="18pt"
-        android:src="@drawable/unknown_device_type" />
-    
+            android:id="@+id/deviceTypeIcon"
+            android:layout_width="18pt"
+            android:layout_height="18pt"
+            android:src="@drawable/unknown_device_type"/>
+
     <LinearLayout
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:paddingLeft="6pt" >
+            xmlns:android="http://schemas.android.com/apk/res/android"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="6pt">
 
-    <TextView
-        android:id="@+id/btDeviceNameTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/bt_device_name_str"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:textColor="@color/bt_device_paired_fgcolor" />
+        <TextView
+                android:id="@+id/btDeviceNameTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/bt_device_name_str"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="@color/bt_device_paired_fgcolor"/>
 
-    <TextView
-        android:id="@+id/btDeviceAddressTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/bt_device_address_str"
-        android:textColor="@color/bt_device_paired_fgcolor" />
-    
+        <TextView
+                android:id="@+id/btDeviceAddressTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/bt_device_address_str"
+                android:textColor="@color/bt_device_paired_fgcolor"/>
+
     </LinearLayout>
 
 </LinearLayout>

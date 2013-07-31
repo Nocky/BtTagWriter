@@ -4,37 +4,74 @@
     <string name="bt_devices_caption_str">Select device</string>
     <string name="start_button_str">Start Wizard</string>
     <string name="about_button_str">Application Details</string>
-    <string name="about_info_str">This software is provided &quot;as is&quot; and without any express or implied warranties, including, without limitation, the implied waranties of merchantability and fitness for a particular purpose.&lt;br/&gt;&lt;br/&gt;Please report issues and new feature requests to sami.viitanen@gmail.com&lt;br/&gt;&lt;br/&gt;Thanks!</string>
-    <string name="about_credits_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Credits&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Programming and Graphics&lt;/b&gt;&lt;br/&gt;Sami Viitanen&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Testing and Special Thanks&lt;/b&gt;&lt;br/&gt;---&lt;br/&gt;</string>
+    <string name="about_info_str">This software is provided &quot;as is&quot; and without any
+        express or implied warranties, including, without limitation, the implied waranties of
+        merchantability and fitness for a particular purpose.&lt;br/&gt;&lt;br/&gt;Please report
+        issues and new feature requests to sami.viitanen@gmail.com&lt;br/&gt;&lt;br/&gt;Thanks!
+    </string>
+    <string name="about_credits_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Credits&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Programming
+        and Graphics&lt;/b&gt;&lt;br/&gt;Sami Viitanen&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Testing and
+        Special Thanks&lt;/b&gt;&lt;br/&gt;---&lt;br/&gt;</string>
     <string name="about_copyright_str">Copyright Sami Viitanen 2011, All rights reserved.</string>
-    <string name="about_issues_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Known limitations&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;* Automatic PIN code handling for devices still missing. Devices with 0000 PIN code should work.&lt;br/&gt;&lt;br/&gt;* Support of different tag types depends on your device and version of Android. If you have issues with some tags please include following information to report: What were your device, version of Android and type of tag.&lt;br/&gt;&lt;br/&gt;* Tag can be read by any Android 4.1+ phone (with NFC support), or with Android 4.0.x phones which have this application installed.</string>
-    <string name="start_guide_str">This application allows you to write Bluetooth connectivity information to NFC tags. These tags can be then used for easy connecting between your Bluetooth devices and Android phone. Connecting and disconnecting happens simply by touching the NFC tag with your device.</string>
+    <string name="about_issues_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Known limitations&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;*
+        Automatic PIN code handling for devices still missing. Devices with 0000 PIN code should
+        work.&lt;br/&gt;&lt;br/&gt;* Support of different tag types depends on your device and
+        version of Android. If you have issues with some tags please include following information
+        to report: What were your device, version of Android and type of tag.&lt;br/&gt;&lt;br/&gt;*
+        Tag can be read by any Android 4.1+ phone (with NFC support), or with Android 4.0.x phones
+        which have this application installed.
+    </string>
+    <string name="start_guide_str">This application allows you to write Bluetooth connectivity
+        information to NFC tags. These tags can be then used for easy connecting between your
+        Bluetooth devices and Android phone. Connecting and disconnecting happens simply by touching
+        the NFC tag with your device.
+    </string>
     <string name="end_success_str">Tag written successfully!</string>
     <string name="end_write_another_str">Write another tag</string>
     <string name="bt_device_name_str">Unknown device</string>
     <string name="bt_device_address_str">00:00:00:00:00:00</string>
     <string name="end_exit_str">Exit</string>
-    <string name="action_dialog_nfc_not_enabled_str">NFC does not seem to be enabled. You have to enable it manually. Tap OK to start settings. Return to this application with back after you are done.</string>
+    <string name="action_dialog_nfc_not_enabled_str">NFC does not seem to be enabled. You have to
+        enable it manually. Tap OK to start settings. Return to this application with back after you
+        are done.
+    </string>
     <string name="action_dialog_ok">OK</string>
     <string name="action_dialog_bluetooth_failed_str">Failed to enable Bluetooth.</string>
-    <string name="tap_guide_str">Please move your phone close to writable NFC tag. When tag is found, Bluetooth connectivity information will be written to it.</string>
+    <string name="tap_guide_str">Please move your phone close to writable NFC tag. When tag is
+        found, Bluetooth connectivity information will be written to it.
+    </string>
     <string name="extraopts_caption_str">Write options</string>
     <string name="extraopts_ready_str">Write to tag</string>
     <string name="extraopts_selected_device_caption_str">Selected device</string>
     <string name="extraopts_selected_device_default_str">-</string>
     <string name="extraopts_pin_caption_str">Pin code:</string>
     <string name="extraopts_make_readonly_str">Enable write protection of the tag</string>
-    <string name="toast_bluetooth_enabled_str">Bluetooth enabled to locate Bluetooth devices.</string>
+    <string name="toast_bluetooth_enabled_str">Bluetooth enabled to locate Bluetooth devices.
+    </string>
     <string name="tag_no_nfc_support_str">Your device does not support NFC</string>
-    <string name="extraopts_make_readonly_info_str">Be careful! Setting tag read only is irreversible action.</string>
-    <string name="btscan_started_str">Please enable the pair mode of your Bluetooth device, if your device is not listed here.</string>
-    <string name="btscan_no_devices_found_str">No Bluetooth audio devices found. Please check that your Bluetooth devices are turned on, in pairing mode and visible. Then restart the device discovery.</string>
-    <string name="tag_write_failed_str">Writing to tag failed.\n\nPlease check that tag is not write protected, and there is enough space for data.</string>
-    <string name="tag_is_too_small_str">Given tag is too small to contain information needed.</string>
+    <string name="extraopts_make_readonly_info_str">Be careful! Setting tag read only is
+        irreversible action.
+    </string>
+    <string name="btscan_started_str">Please enable the pair mode of your Bluetooth device, if your
+        device is not listed here.
+    </string>
+    <string name="btscan_no_devices_found_str">No Bluetooth audio devices found. Please check that
+        your Bluetooth devices are turned on, in pairing mode and visible. Then restart the device
+        discovery.
+    </string>
+    <string name="tag_write_failed_str">Writing to tag failed.\n\nPlease check that tag is not write
+        protected, and there is enough space for data.
+    </string>
+    <string name="tag_is_too_small_str">Given tag is too small to contain information needed.
+    </string>
     <string name="tag_unsupported_str">Given tag is unsupported. Try another.</string>
     <string name="btscan_paired_str">(paired)</string>
-    <string name="about_links_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Links&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;* video: http://www.youtube.com/watch?v=IbuLGsXIvKI&lt;br/&gt;* source code: http://oss.siika.fi&lt;br/&gt;</string>
+    <string name="about_links_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Links&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;*
+        video: http://www.youtube.com/watch?v=IbuLGsXIvKI&lt;br/&gt;* source code:
+        http://oss.siika.fi&lt;br/&gt;</string>
     <string name="filter_bt_devices_str">Filter devices</string>
     <string name="extraopts_compatibility_mode">Compatibility mode</string>
-    <string name="extraopts_compatibility_mode_info_str">Adds Handover Select record to tag, for better compatibility. Will not fit to smallest tags.</string>
+    <string name="extraopts_compatibility_mode_info_str">Adds Handover Select record to tag, for
+        better compatibility. Will not fit to smallest tags.
+    </string>
 </resources>

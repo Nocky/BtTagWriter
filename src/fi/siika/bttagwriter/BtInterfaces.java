@@ -1,7 +1,9 @@
-/**
- * BtInterfaces.java (bttagwriter)
+/*
+ * BtInterfaces.java (BT Tag Writer)
  *
- * Copyright 2011 Sami Viitanen <sami.viitanen@gmail.com>
+ * https://github.com/alump/BtTagWriter
+ *
+ * Copyright 2011-2013 Sami Viitanen <sami.viitanen@gmail.com>
  * All rights reserved.
  */
 package fi.siika.bttagwriter;
@@ -17,41 +19,42 @@ import java.lang.reflect.Method;
  * provided by normal application APIs
  */
 public class BtInterfaces {
-	
-	
-	private final static String TAG = "BtInterfaces";
-    
+
+
+    private final static String TAG = "BtInterfaces";
+
     /**
      * As application API does not offer direct access to pairing of new
      * bluetooth devices this has to be done via interface class
+     *
      * @return Bluetooth interface class
      */
     public static IBluetooth getBluetooth() {
 
-    	IBluetooth ibt = null;
+        IBluetooth ibt = null;
 
-    	try {
+        try {
 
-    	    Class c2 = Class.forName("android.os.ServiceManager");
+            Class c2 = Class.forName("android.os.ServiceManager");
 
-    	    Method m2 = c2.getDeclaredMethod("getService", String.class);
-    	    IBinder b = (IBinder) m2.invoke(null, "bluetooth");
-    	    
-    	    Class c3 = Class.forName("android.bluetooth.IBluetooth");
+            Method m2 = c2.getDeclaredMethod("getService", String.class);
+            IBinder b = (IBinder) m2.invoke(null, "bluetooth");
 
-    	    Class[] s2 = c3.getDeclaredClasses();
+            Class c3 = Class.forName("android.bluetooth.IBluetooth");
 
-    	    Class c = s2[0];
-    	    // printMethods(c);
-    	    Method m = c.getDeclaredMethod("asInterface", IBinder.class);
+            Class[] s2 = c3.getDeclaredClasses();
 
-    	    m.setAccessible(true);
-    	    ibt = (IBluetooth) m.invoke(null, b);
+            Class c = s2[0];
+            // printMethods(c);
+            Method m = c.getDeclaredMethod("asInterface", IBinder.class);
 
-    	} catch (Exception e) {
-    	    Log.e(TAG, "Bluetooth interface problem: " + e.getMessage());
-    	}
-    	
-    	return ibt;
+            m.setAccessible(true);
+            ibt = (IBluetooth) m.invoke(null, b);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Bluetooth interface problem: " + e.getMessage());
+        }
+
+        return ibt;
     }
 }

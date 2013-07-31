@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <resources>
     <color name="bt_devices_caption_bgcolor">#000055</color>
     <color name="bt_devices_caption_fgcolor">#FFFFFF</color>
@@ -14,5 +15,5 @@
     <color name="bt_device_discovered_fgcolor">#FFFFFF</color>
     <color name="bt_device_paired_fgcolor">#B0B0B0</color>
 
-    
+
 </resources>
