@@ -94,7 +94,12 @@ public class TagWriter implements Runnable {
             Log.d(TAG, "Tech writer " + mTechWriter.toString());
         }
 
-        mInfo = (TagInformation) (information.clone());
+        try {
+            mInfo = (TagInformation) (information.clone());
+            Log.e(TAG, "Failed to clone the tag information");
+        } catch (CloneNotSupportedException e) {
+            return false;
+        }
         mCancelled = false;
         mTag = tag;
 

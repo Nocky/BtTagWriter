@@ -117,7 +117,7 @@ public class NdefTechWriter extends TagTechWriter {
         Log.d(TAG, "NdefFormatable writing...");
 
         try {
-            if (tag.isConnected() == false) {
+            if (!tag.isConnected()) {
                 tag.connect();
             }
         } catch (IOException e) {

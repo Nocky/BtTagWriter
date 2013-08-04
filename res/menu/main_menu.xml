@@ -6,7 +6,7 @@
             android:title="@string/about_button_str"
             android:menuCategory="container"
             android:enabled="true"
-            android:showAsAction="never"></item>
+            android:showAsAction="never" />
     <item
             android:id="@+id/filterSearchitem"
             android:title="@string/filter_bt_devices_str"
@@ -14,5 +14,5 @@
             android:visible="false"
             android:enabled="true"
             android:menuCategory="container"
-            android:showAsAction="never"></item>
+            android:showAsAction="never" />
 </menu>

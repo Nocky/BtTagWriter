@@ -75,15 +75,23 @@ public class BluetoothRowAdapter extends ArrayAdapter<Object> {
         }
 
         BluetoothRow rowData = list.get(position);
+
+        int colorUsed = rowData.isDeviceVisible() ? discoveredColor : pairedColor;
+
         TextView nameLine = (TextView) row.findViewById(R.id.btDeviceNameTextView);
-        nameLine.setText(rowData.getName());
+        if (nameLine != null) {
+            nameLine.setText(rowData.getName());
+            nameLine.setTextColor(colorUsed);
+        }
         TextView addressLine = (TextView) row.findViewById(R.id.btDeviceAddressTextView);
         ImageView image = (ImageView) row.findViewById(R.id.deviceTypeIcon);
 
-        if (rowData.isAudio()) {
-            image.setImageDrawable(audioIcon);
-        } else {
-            image.setImageDrawable(unknownIcon);
+        if (image != null) {
+            if (rowData.isAudio()) {
+                image.setImageDrawable(audioIcon);
+            } else {
+                image.setImageDrawable(unknownIcon);
+            }
         }
 
         String addressValue = rowData.getAddress();
@@ -93,11 +101,10 @@ public class BluetoothRowAdapter extends ArrayAdapter<Object> {
                             + addressValue;
         }
 
-        addressLine.setText(addressValue);
-
-        int colorUsed = rowData.isDeviceVisible() ? discoveredColor : pairedColor;
-        nameLine.setTextColor(colorUsed);
-        addressLine.setTextColor(colorUsed);
+        if (addressLine != null) {
+            addressLine.setText(addressValue);
+            addressLine.setTextColor(colorUsed);
+        }
 
         return (row);
     }

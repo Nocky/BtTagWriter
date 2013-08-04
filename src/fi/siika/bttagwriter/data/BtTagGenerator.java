@@ -38,11 +38,12 @@ public class BtTagGenerator {
     /**
      * Generate simple pairing message
      *
-     * @param info
+     * @param info Tag information written
      * @param sizeLimit Will try to keep size of message lower than this limit.
      *                  If -1 will not do any size check and will generate full size message.
-     * @return
-     * @throws IOException
+     * @return NDEF message generated
+     * @throws OutOfSpaceException Size limit too small for content
+     * @throws UnsupportedEncodingException Encoding issues
      */
     public static NdefMessage generateNdefMessageForBtTag(TagInformation info,
                                                           int sizeLimit) throws OutOfSpaceException, UnsupportedEncodingException {
@@ -59,9 +60,7 @@ public class BtTagGenerator {
         if (info.deviceClass != null) {
             content.setDeviceClass(info.deviceClass);
         }
-        if (info.pin != null && info.pin.isEmpty() == false) {
-            content.setTempPin(info.pin);
-        }
+        // TODO: Pin (if possible)
 
         byte[] mime = BtSecureSimplePairing.MIME_TYPE.getBytes("UTF-8");
         int minSize = 4 + mime.length
@@ -116,17 +115,15 @@ public class BtTagGenerator {
         return ret;
     }
 
+    @SuppressWarnings( "deprecation" )
     private static NdefRecord generateHandoverSelectRecord() {
         byte[] ac = new NdefRecord(NdefRecord.TNF_WELL_KNOWN,
                 NdefRecord.RTD_ALTERNATIVE_CARRIER, new byte[0],
                 generateAlternativeCarrierData()).toByteArray();
 
-
         byte[] data = new byte[1 + ac.length];
         data[0] = 0x12;
-        for (int i = 0; i < ac.length; ++i) {
-            data[1 + i] = ac[i];
-        }
+        System.arraycopy(ac, 0, data, 1, ac.length);
 
         return new NdefRecord(NdefRecord.TNF_WELL_KNOWN,
                 NdefRecord.RTD_HANDOVER_SELECT, new byte[0], data);
@@ -135,14 +132,13 @@ public class BtTagGenerator {
     /**
      * Generates AC data used in Handover
      *
-     * @return
+     * @return Alternative carrier data
      */
     private static byte[] generateAlternativeCarrierData() {
         //1st byte: 0x01 = active target
         //2nd byte: 0x01 = ndef record id
         //3rd byte: ID of record (eg. 0x30 == "0")
         //4th byte: 0x00 = RFU
-        byte[] data = {0x01, 0x01, RECORD_ID_BYTE, 0x00};
-        return data;
+        return new byte[] {0x01, 0x01, RECORD_ID_BYTE, 0x00};
     }
 }

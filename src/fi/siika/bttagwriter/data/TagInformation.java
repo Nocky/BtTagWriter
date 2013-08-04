@@ -38,17 +38,13 @@ public class TagInformation implements Cloneable {
     private TagType type = TagType.SIMPLIFIED;
 
     /**
-     * Pin code or if empty no pin code
+     * Pin code or if empty no pin code (Not yet supported)
      */
     public String pin;
 
     @Override
-    public Object clone() {
-        try {
-            return super.clone();
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
+    public Object clone() throws CloneNotSupportedException {
+        return super.clone();
     }
 
     public TagType getType() {

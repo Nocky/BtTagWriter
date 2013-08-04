@@ -1,12 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  ~ AndroidManifest.xml (BT Tag Writer)
-  ~
-  ~ https://github.com/alump/BtTagWriter
-  ~
-  ~ Copyright 2011-2013 Sami Viitanen <sami.viitanen@gmail.com>
-  ~ All rights reserved.
-  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="fi.siika.bttagwriter"

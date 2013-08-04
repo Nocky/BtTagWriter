@@ -36,10 +36,7 @@ public class NfcManager {
 
 
     public NfcAdapter getAdapter() {
-        //TODO: Remove this
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD_MR1) {
-            return null;
-        } else if (mAdapter == null) {
+        if (mAdapter == null) {
             mAdapter = NfcAdapter.getDefaultAdapter(mActivity);
         }
 
@@ -56,7 +53,7 @@ public class NfcManager {
             return;
         }
 
-        Log.d(TAG, "Enable ndef dispatch");
+        Log.d(TAG, "Enable NDEF dispatch");
 
         mPendingIntent = PendingIntent.getActivity(mActivity, 0,
                 new Intent(mActivity, mActivity.getClass()).addFlags(
@@ -107,9 +104,7 @@ public class NfcManager {
     }
 
     public void disableForegroundDispatch() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.GINGERBREAD_MR1) {
-            return;
-        } else if (mAdapter != null && mAdapter.isEnabled()) {
+        if (mAdapter != null && mAdapter.isEnabled()) {
             Log.d(TAG, "Disable dispatch");
             mAdapter.disableForegroundDispatch(mActivity);
             mPendingIntent = null;

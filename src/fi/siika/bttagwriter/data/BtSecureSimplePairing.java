@@ -54,7 +54,6 @@ public class BtSecureSimplePairing {
     private final static byte BYTE_CLASS_OF_DEVICE = 0x0D;
     private final static byte BYTE_SIMPLE_PAIRING_HASH = 0x0E;
     private final static byte BYTE_SIMPLE_PAIRING_RANDOMIZER = 0x0F;
-
     private final static byte BYTE_MANUFACTURER_SPECIFIC_DATA = -1; //-1 = 0xFF
 
     private final static String TAG = "BtSecureSimplePairing";
@@ -112,12 +111,12 @@ public class BtSecureSimplePairing {
         /**
          * Get name as byte buffer
          *
-         * @return
+         * @return Name as byte buffer
          */
         public byte[] getNameBuffer() {
             byte[] ret = null;
 
-            if (mName.isEmpty() == false) {
+            if (!mName.isEmpty()) {
                 try {
                     ret = mName.getBytes("ASCII");
                 } catch (Exception e) {
@@ -204,47 +203,7 @@ public class BtSecureSimplePairing {
             return mManufacturerData;
         }
 
-        private final static String MANUFACTURER_DATA_PIN_PREFIX = "PIN";
-
-        /**
-         * This is temporary solution! Must move to use hash and randomizer
-         * if possible!
-         *
-         * @return Pin in string format if defined inside manufacturer data
-         * as this application assumes it.
-         */
-        public String getTempPin() {
-            String ret = null;
-            try {
-                ret = new String(mManufacturerData, "UTF-8");
-                if (ret.startsWith(MANUFACTURER_DATA_PIN_PREFIX)) {
-                    ret = ret.substring(MANUFACTURER_DATA_PIN_PREFIX.length());
-                } else {
-                    ret = null;
-                }
-            } catch (Exception e) {
-            }
-            return ret;
-        }
-
-        /**
-         * This is temporary solution! Must move to use hash and randomizer
-         * if possible!
-         *
-         * @param pin Pin stored under manufacturer data as this application
-         *            assumes it.
-         */
-        public void setTempPin(String pin) {
-            String str = MANUFACTURER_DATA_PIN_PREFIX + pin;
-            try {
-                mManufacturerData = str.getBytes("UTF-8");
-            } catch (Exception e) {
-            }
-        }
-
     }
-
-    ;
 
 	/*
 	 * How binary data is constructed:
@@ -275,7 +234,7 @@ public class BtSecureSimplePairing {
         boolean moreIn = true;
 
         // Manufacturer data is most important (as for now it contains PIN)
-        if (moreIn && len < maxLength) {
+        if (len < maxLength) {
             manBytes = input.getManufacturerData();
             if (manBytes == null) {
                 moreIn = true;
@@ -321,48 +280,47 @@ public class BtSecureSimplePairing {
         }
 
         byte data[] = new byte[len];
-        int index = -1;
+        int index = 0;
 
         // total length (2 bytes)
         ByteBuffer buffer = ByteBuffer.allocate(2);
         buffer.putShort(len);
-        data[++index] = buffer.get(1);
-        data[++index] = buffer.get(0);
+        data[index++] = buffer.get(1);
+        data[index++] = buffer.get(0);
 
         // address
-        byte[] addressBuffer = input.getAddressByteArray();
-        for (int i = 0; i < addressBuffer.length; ++i) {
-            data[++index] = addressBuffer[i];
-        }
+        final byte[] addressBuffer = input.getAddressByteArray();
+        System.arraycopy(addressBuffer, 0, data, index, addressBuffer.length);
+        index += addressBuffer.length;
 
         // complete local name
-        if (nameBytes != null) {
-            data[++index] = (byte) (nameBytes.length + 0x01);
-            data[++index] = BYTE_COMPLETE_LOCAL_NAME;
-            for (int i = 0; i < nameBytes.length; ++i) {
-                data[++index] = nameBytes[i];
-            }
-        }
+        index = addPart(index, data, nameBytes, BYTE_COMPLETE_LOCAL_NAME);
 
         // manufacturer specific data
-        if (manBytes != null) {
-            data[++index] = (byte) (1 + manBytes.length);
-            data[++index] = BYTE_MANUFACTURER_SPECIFIC_DATA;
-            for (int i = 0; i < manBytes.length; ++i) {
-                data[++index] = manBytes[i];
-            }
-        }
+        index = addPart(index, data, manBytes, BYTE_MANUFACTURER_SPECIFIC_DATA);
 
         // class of device
-        if (classBytes != null) {
-            data[++index] = (byte) (1 + classBytes.length);
-            data[++index] = BYTE_CLASS_OF_DEVICE;
-            for (int i = 0; i < classBytes.length; ++i) {
-                data[++index] = classBytes[i];
-            }
-        }
+        index = addPart(index, data, classBytes, BYTE_CLASS_OF_DEVICE);
 
         return data;
+    }
+
+    /**
+     * Add Bluetooth Secure Simple Pairing part
+     * @param index Index where added
+     * @param dest Destination buffer where added
+     * @param data Data added
+     * @param id ID of data
+     * @return New position index
+     */
+    private static int addPart(int index, byte[] dest, byte[] data, byte id) {
+        if (data != null) {
+            dest[index++] = (byte) (data.length + 1);
+            dest[index++] = id;
+            System.arraycopy(data, 0, dest, index, data.length);
+            index += data.length;
+        }
+        return index;
     }
 
     /**
@@ -427,8 +385,7 @@ public class BtSecureSimplePairing {
                     break;
                 default:
                     //There are many known elements we ignore here
-                    Log.w(TAG, new StringBuilder().append(
-                            "Unknown element: ").append(dataType).toString());
+                    Log.w(TAG, "Unknown element: " + dataType);
             }
 
         }

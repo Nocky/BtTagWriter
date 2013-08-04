@@ -13,7 +13,7 @@ package fi.siika.bttagwriter.data;
  */
 public enum TagType {
     /**
-     * Simplified (smaller) format, works with Android
+     * Simplified (smaller) format, works with Android.
      */
     SIMPLIFIED,
 

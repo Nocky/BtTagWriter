@@ -28,17 +28,17 @@ public abstract class TagTechWriter {
     /**
      * Interface called to write information to given tag
      *
-     * @param tag
-     * @param info
-     * @throws Exception
+     * @param tag Tag where information is written
+     * @param info Information written
+     * @throws WriteException Exception if write fails
      */
     public abstract void writeToTag(Tag tag, TagInformation info)
             throws WriteException;
 
     /**
      * Put specific close functionality behind this function
+     * @param tag Tag which connection is closde
      *
-     * @return
      */
     public abstract void close(Tag tag) throws Exception;
 
@@ -48,7 +48,8 @@ public abstract class TagTechWriter {
      * @param info      Information used to generate payload
      * @param sizeLimit Limit in bytes
      * @return Payload in byte array
-     * @throws UnsupportedEncodingException
+     * @throws WriteException Payload generating issues
+     * @throws UnsupportedEncodingException Encoding issues
      */
     protected static byte[] generatePayload(TagInformation info,
                                             int sizeLimit) throws WriteException,
@@ -74,9 +75,7 @@ public abstract class TagTechWriter {
         byte[] payload = new byte[msgLen + SPACE_TAKEN_BY_TLV];
         payload[0] = TLV_NDEF_MESSAGE;
         payload[1] = (byte) (msgLen);
-        for (int i = 0; i < msgLen; ++i) {
-            payload[SPACE_TAKEN_BY_TLV + i] = message[i];
-        }
+        System.arraycopy(message, 0, payload, SPACE_TAKEN_BY_TLV, msgLen);
         return payload;
     }
 

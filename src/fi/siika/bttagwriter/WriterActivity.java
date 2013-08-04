@@ -68,7 +68,6 @@ public class WriterActivity extends Activity implements
     private final TagInformation mTagInfo = new TagInformation();
     private BluetoothManager mBtMgr;
     private NfcManager mNfcMgr;
-    private int lastPage;
     private SharedPreferences mSettings;
 
     private void setCurrentPage(Pages page) {
@@ -78,7 +77,6 @@ public class WriterActivity extends Activity implements
     private void setCurrentPage(int page) {
         int pageWas = getCurrentPage();
         if (showFlipChild(page)) {
-            lastPage = pageWas;
             if (Pages.BT_SELECT.equal(page)) {
                 startBluetoothDiscovery();
             } else if (Pages.TAG.equal(page)) {
@@ -98,7 +96,7 @@ public class WriterActivity extends Activity implements
      */
     private void startBluetoothDiscovery() {
 
-        if (mBtMgr.startDiscovery(this) == false) {
+        if (!mBtMgr.startDiscovery(this)) {
             showActionDialog(R.string.action_dialog_bluetooth_failed_str,
                     new DialogInterface.OnClickListener() {
 
@@ -298,15 +296,13 @@ public class WriterActivity extends Activity implements
                 mTagInfo.name = row.getName();
                 mTagInfo.address = row.getAddress();
 
-                StringBuilder sbuilder = new StringBuilder();
-                sbuilder.append(mBtListAdapter.getRow(position).getName());
-                sbuilder.append(" (");
-                sbuilder.append(mBtListAdapter.getRow(position).getAddress());
-                sbuilder.append(")");
-
                 TextView tview = (TextView) findViewById(
                         R.id.extraoptsSelectedDeviceValue);
-                tview.setText(sbuilder.toString());
+                if (tview != null) {
+                    String text = mBtListAdapter.getRow(position).getName() +
+                        " (" + mBtListAdapter.getRow(position).getAddress() + ")";
+                    tview.setText(text);
+                }
 
                 setCurrentPage(Pages.EXTRA_OPTIONS);
             }
@@ -374,7 +370,7 @@ public class WriterActivity extends Activity implements
 
         if (NfcAdapter.ACTION_TECH_DISCOVERED.equals(action)) {
             Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-            if (mTagWriter.writeToTag(tag, mTagInfo) == false) {
+            if (!mTagWriter.writeToTag(tag, mTagInfo)) {
                 showActionDialog(R.string.tag_unsupported_str,
                         mWriteFailedDialogListener, false, null);
             }

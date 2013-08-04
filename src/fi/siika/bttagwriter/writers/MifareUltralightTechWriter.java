@@ -45,9 +45,7 @@ public class MifareUltralightTechWriter extends TagTechWriter {
      *
      * @param tag  Tag where information is written
      * @param info Information written
-     * @return TagWriter handler result
-     * @throws UnsupportedEncodingException
-     * @throws Exception                    Throws exception if error
+     * @throws WriteException Throws exception if error
      */
     @Override
     public void writeToTag(Tag tag, TagInformation info)
@@ -66,8 +64,7 @@ public class MifareUltralightTechWriter extends TagTechWriter {
             ndefSizeLimitPages = 12;
         }
 
-        Log.d(TAG, new StringBuilder().append(
-                "Assume MUL size to be ").append(ndefSizeLimitPages).toString());
+        Log.d(TAG, "Assume MUL size to be " + ndefSizeLimitPages);
 
         int sizeAvailableBytes = ndefSizeLimitPages *
                 MifareUltralight.PAGE_SIZE;
@@ -85,8 +82,7 @@ public class MifareUltralightTechWriter extends TagTechWriter {
             pages += 1;
         }
         if (ndefSizeLimitPages < pages) {
-            Log.e(TAG, new StringBuilder().append(
-                    "Too many pages!").append(pages).toString());
+            Log.e(TAG, "Too many pages! " + pages);
             throw new OutOfSpaceException("Too many pages "
                     + String.valueOf(pages) + " for UL");
         }

@@ -27,8 +27,6 @@ public class IOFailureException extends WriteException {
         READ, WRITE, FORMAT, CONNECT, CLOSE;
     }
 
-    ;
-
     @Deprecated
     public IOFailureException(String msg, Step step) {
         this(msg, step, null);
