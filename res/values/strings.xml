@@ -34,7 +34,7 @@
     </string>
     <string name="action_dialog_ok">OK</string>
     <string name="action_dialog_bluetooth_failed_str">Failed to enable Bluetooth.</string>
-    <string name="tap_guide_str">Please move your phone close to writable NFC tag. When tag is
+    <string name="tap_guide_str">Please move your define close to writable NFC tag. When tag is
         found, Bluetooth connectivity information will be written to it.
     </string>
     <string name="extraopts_caption_str">Write options</string>
@@ -46,8 +46,7 @@
     <string name="toast_bluetooth_enabled_str">Bluetooth enabled to locate Bluetooth devices.
     </string>
     <string name="tag_no_nfc_support_str">Your device does not support NFC</string>
-    <string name="extraopts_make_readonly_info_str">Be careful! Setting tag read only is
-        irreversible action.
+    <string name="extraopts_make_readonly_info_str">Be careful! Read only setting can NOT be reverted.
     </string>
     <string name="btscan_started_str">Please enable the pair mode of your Bluetooth device, if your
         device is not listed here.
@@ -65,7 +64,7 @@
     <string name="btscan_paired_str">(paired)</string>
     <string name="about_links_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Links&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;*
         video: http://www.youtube.com/watch?v=IbuLGsXIvKI&lt;br/&gt;* source code:
-        http://oss.siika.fi&lt;br/&gt;</string>
+        https://github.com/alump/BtTagWriter&lt;br/&gt;</string>
     <string name="filter_bt_devices_str">Filter devices</string>
     <string name="extraopts_compatibility_mode">Compatibility mode</string>
     <string name="extraopts_compatibility_mode_info_str">Adds Handover Select record to tag for
