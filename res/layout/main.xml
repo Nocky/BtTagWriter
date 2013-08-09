@@ -63,15 +63,6 @@
                 android:autoLink="all"
                 android:text=""/>
 
-        <ImageView
-                android:src="@android:drawable/divider_horizontal_dark"
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:scaleType="fitXY"
-                android:paddingBottom="3pt"
-                android:paddingTop="3pt"
-                />
-
         <TextView
                 android:id="@+id/limitationsTextView"
                 android:layout_width="wrap_content"

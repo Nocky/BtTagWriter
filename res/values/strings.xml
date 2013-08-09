@@ -12,10 +12,8 @@
     <string name="about_credits_str">&lt;big&gt;&lt;b&gt;&lt;u&gt;Credits&lt;/u&gt;&lt;/b&gt;&lt;/big&gt;&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Programming
         and Graphics&lt;/b&gt;&lt;br/&gt;Sami Viitanen&lt;br/&gt;&lt;br/&gt;&lt;b&gt;Testing and
         Special Thanks&lt;/b&gt;&lt;br/&gt;---&lt;br/&gt;</string>
+    <string name="about_tips_str">If you can choose, please use NTAG203 NFC tags for the best compatibility with all devices. Writable memory of NTAG203 tag is also large enough to contain needed Bluetooth pairing data.</string>
     <string name="about_copyright_str">Copyright Sami Viitanen 2011&#8211;2013, All rights reserved.</string>
-    <string name="about_tips_str">If you can choose, please use NTAG203 NFC tags for the best
-        compatibility with all devices. It's also big enough to contain needed Bluetooth pairing
-        data.</string>
     <string name="start_guide_str">This application allows you to write Bluetooth connectivity
         information to NFC tags. These tags can be then used for easy connecting between your
         Bluetooth devices and Android phone. Connecting and disconnecting happens simply by touching
