@@ -243,7 +243,7 @@ public class WriterActivity extends Activity implements
         mSettings = getSharedPreferences(PREFS_NAME, 0);
 
         CheckBox compCB = (CheckBox) findViewById(R.id.extraoptsCompatibilityCheckBox);
-        compCB.setChecked(mSettings.getBoolean(PREF_HANDOVER, false));
+        compCB.setChecked(mSettings.getBoolean(PREF_HANDOVER, true));
 
         mTagWriter = new TagWriter(this, tagWriterListener);
     }
@@ -314,8 +314,7 @@ public class WriterActivity extends Activity implements
                 R.string.about_info_str)));
 
         TextView limitTV = (TextView) findViewById(R.id.limitationsTextView);
-        limitTV.setText(Html.fromHtml(getString(
-                R.string.about_issues_str)));
+        limitTV.setText(Html.fromHtml(getString(R.string.about_tips_str)));
 
         TextView credsTV = (TextView) findViewById(R.id.creditsTextView);
         credsTV.setText(Html.fromHtml(getString(
